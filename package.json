@@ -1,0 +1,77 @@
+{
+	"name": "api-serv-cli",
+	"version": "0.0.0",
+	"license": "MIT",
+	"bin": {
+		"kq": "./bin/kq"
+	},
+	"engines": {
+		"node": ">=10"
+	},
+	"scripts": {
+		"build": "tsc",
+		"start": "tsc -w",
+		"test": "xo && ava"
+	},
+	"files": [
+		"dist/**/*",
+		"bin/**/*"
+	],
+	"dependencies": {
+		"import-jsx": "^4.0.0",
+		"ink": "^3.0.3",
+		"ink-confirm-input": "^2.0.0",
+		"ink-multi-select": "^1.1.2",
+		"ink-select-input": "^4.0.0",
+		"ink-spinner": "^4.0.0",
+		"ink-text-input": "^4.0.0",
+		"meow": "^7.0.1",
+		"minimist": "^1.2.5",
+		"node-fetch": "^2.6.0",
+		"openapi-2-kong": "^2.2.12",
+		"react": "^16.13.1",
+		"react-ridge-state": "^4.1.6",
+		"valid-url": "^1.0.9",
+		"validate.js": "^0.13.1",
+		"yaml": "^1.10.0"
+	},
+	"devDependencies": {
+		"@apidevtools/swagger-parser": "^10.0.1",
+		"@ava/babel": "^1.0.1",
+		"@babel/preset-env": "^7.11.0",
+		"@babel/preset-react": "^7.10.4",
+		"@babel/register": "^7.10.5",
+		"@types/minimist": "^1.2.0",
+		"@types/node-fetch": "^2.5.7",
+		"@types/react": "^16.9.46",
+		"@types/valid-url": "^1.0.3",
+		"@types/validate.js": "^0.11.0",
+		"ava": "^3.11.1",
+		"chalk": "^4.1.0",
+		"eslint-config-xo-react": "^0.23.0",
+		"eslint-plugin-react": "^7.20.5",
+		"eslint-plugin-react-hooks": "^4.0.8",
+		"ink-testing-library": "^2.0.1",
+		"prettier": "^2.0.5",
+		"typescript": "^3.9.7",
+		"xo": "^0.32.1"
+	},
+	"ava": {
+		"babel": true,
+		"require": [
+			"@babel/register"
+		]
+	},
+	"babel": {
+		"presets": [
+			"@babel/preset-env",
+			"@babel/preset-react"
+		]
+	},
+	"xo": {
+		"extends": "xo-react",
+		"rules": {
+			"react/prop-types": "off"
+		}
+	}
+}

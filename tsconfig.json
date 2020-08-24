@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "src",
+    "strict": true,
+    "jsx": "react",
+    "strictNullChecks": true,
+    "declaration": true,
+    "sourceMap": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "lib": ["es6"],
+    "baseUrl": "./",
+    "paths": {
+      "src/*": ["src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
