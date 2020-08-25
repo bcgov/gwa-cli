@@ -1,18 +1,25 @@
 import * as React from 'react';
 import { Box, Text } from 'ink';
+import Spinner from 'ink-spinner';
 
 import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
 import StepHeader from '../../components/step-header';
 import { orgState } from '../../state/org';
+import { specState } from '../../state/spec';
+import { parseYaml } from '../../services/kong';
+import { specState } from 'src/state/spec';
 
 interface ConfigOrgProps {
   onComplete: () => void;
   step: number;
 }
 const ConfigOrg = ({ onComplete, step }: ConfigOrgProps) => {
+  const [isProcessing, setProcessing] = React.useState<boolean>(false);
+  const [processError, setProcessError] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState({});
   const [org, setOrg] = orgState.use();
+  const [spec, setSpec] = specState.use();
 
   const onChange = (name: string, value: any) => {
     setFormData((prev) => ({
@@ -20,10 +27,18 @@ const ConfigOrg = ({ onComplete, step }: ConfigOrgProps) => {
       [name]: value,
     }));
   };
-  const onSubmit = () => {
-    console.log('Done!');
-    setOrg(formData);
-    onComplete();
+  const onSubmit = async () => {
+    setProcessing(true);
+    try {
+      setOrg(formData);
+      const config = await parseYaml(formData.specUrl, formData.name);
+      setSpec(config);
+      onComplete();
+    } catch (err) {
+      setProcessError(err.message);
+    } finally {
+      setProcessing(false);
+    }
   };
 
   return (
@@ -51,6 +66,18 @@ const ConfigOrg = ({ onComplete, step }: ConfigOrgProps) => {
           onChange={onChange}
         />
       </PromptForm>
+      {isProcessing && (
+        <Box>
+          <Text>
+            <Spinner /> Processing OpenAPI Spec...
+          </Text>
+        </Box>
+      )}
+      {processError && (
+        <Box borderColor="redBright" borderStyle="round" marginY={1}>
+          <Text color="redBright">{processError}</Text>
+        </Box>
+      )}
     </Box>
   );
 };
