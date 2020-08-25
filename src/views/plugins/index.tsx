@@ -40,7 +40,7 @@ const Plugins = ({ step }: PluginsProps) => {
             onHighlight={onHighlight}
           />
         </Box>
-        <Box flexDirection="column">
+        <Box flexDirection="column" marginLeft={5}>
           <Box marginBottom={1}>
             <Text bold underline>
               {`Configure ${selectedPlugin} Plugin`}

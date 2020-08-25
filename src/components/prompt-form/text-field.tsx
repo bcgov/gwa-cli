@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import TextInput from 'ink-text-input';
-import { Box, Text } from 'ink';
+import { Box, Text, useFocus } from 'ink';
 import validUrl from 'valid-url';
 
 import { FormValue } from './types';
@@ -24,6 +24,7 @@ function TextField({
   required,
   type,
 }: TextFieldProps) {
+  const { isFocused } = useFocus();
   const [value, setValue] = useState<string>('');
   const [error, setError] = useState<string>('');
   const hasError = Boolean(error);
@@ -64,13 +65,16 @@ function TextField({
             {label}:
           </Text>
         </Box>
-        <Box flexGrow={1} width="50%">
-          <TextInput
-            placeholder={placeholder}
-            value={value}
-            onChange={handleChange}
-            onSubmit={onSubmit}
-          />
+        <Box flexGrow={1}>
+          {isFocused && (
+            <TextInput
+              placeholder={placeholder}
+              value={value}
+              onChange={handleChange}
+              onSubmit={onSubmit}
+            />
+          )}
+          {!isFocused && <Text>{value}</Text>}
         </Box>
       </Box>
       {hasError && (

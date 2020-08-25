@@ -35,9 +35,8 @@ const ConfigOrg = ({ onComplete, step }: ConfigOrgProps) => {
       setSpec(config);
       onComplete();
     } catch (err) {
-      setProcessError(err.message);
-    } finally {
       setProcessing(false);
+      setProcessError(err.message);
     }
   };
 
