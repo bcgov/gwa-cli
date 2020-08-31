@@ -1,3 +1,4 @@
+import { IPlugin } from '../../types';
 import { IIpRestriction } from './types';
 
 const constraints = {

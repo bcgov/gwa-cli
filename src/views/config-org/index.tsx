@@ -6,22 +6,32 @@ import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
 import StepHeader from '../../components/step-header';
 import { orgState } from '../../state/org';
-import { specState } from '../../state/spec';
 import { parseYaml } from '../../services/kong';
 import { specState } from 'src/state/spec';
+
+type FormData = {
+  name: string;
+  specUrl: string;
+  maintainers: string[];
+};
 
 interface ConfigOrgProps {
   onComplete: () => void;
   step: number;
 }
-const ConfigOrg = ({ onComplete, step }: ConfigOrgProps) => {
+
+const ConfigOrg: React.FC<ConfigOrgProps> = ({ onComplete, step }) => {
   const [isProcessing, setProcessing] = React.useState<boolean>(false);
   const [processError, setProcessError] = React.useState<string | null>(null);
-  const [formData, setFormData] = React.useState({});
+  const [formData, setFormData] = React.useState<FormData>({
+    name: '',
+    specUrl: '',
+    maintainers: [],
+  });
   const [org, setOrg] = orgState.use();
   const [spec, setSpec] = specState.use();
 
-  const onChange = (name: string, value: any) => {
+  const onChange = (name: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,

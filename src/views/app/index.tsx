@@ -3,7 +3,7 @@ import { Box, Text, useApp, useInput } from 'ink';
 
 import AppContext from '../../services/context';
 import ConfigOrg from '../config-org';
-import ConfigSrc from '../config-src';
+import { IAppContext } from '../../types';
 import Plugins from '../plugins';
 import Review from '../review';
 import Stepper from '../../components/stepper';
@@ -12,7 +12,7 @@ interface AppProps {
   args: IAppContext;
 }
 
-const App = ({ args }: AppProps) => {
+const App: React.FC<AppProps> = ({ args }) => {
   const [step, advance] = React.useState<number>(0);
   const [plugin, setPlugin] = React.useState<any | null>(null);
   const nextStep = () => advance((prev) => prev + 1);

@@ -1,4 +1,5 @@
 import { IGwaEndpoint } from './types';
+import { IPlugin } from '../../types';
 
 const constraints = {
   api_owners: {

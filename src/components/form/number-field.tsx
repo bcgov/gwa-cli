@@ -12,7 +12,7 @@ interface NumberFieldProps {
   value: number;
 }
 
-function NumberField({
+const NumberField: React.FC<NumberFieldProps> = ({
   onChange,
   max,
   min,
@@ -20,7 +20,7 @@ function NumberField({
   required = false,
   step,
   value = 0,
-}: NumberFieldProps) {
+}) => {
   const hasEntered = React.useRef<boolean>(false);
   const [error, setError] = React.useState<string>('');
   const { isFocused } = useFocus();
@@ -61,6 +61,6 @@ function NumberField({
       )}
     </Box>
   );
-}
+};
 
 export default NumberField;

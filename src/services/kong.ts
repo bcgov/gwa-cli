@@ -34,7 +34,7 @@ export async function parseYaml(url: string, tag: string) {
   return YAML.parse(yamlDocs);
 }
 
-export function buildSpec(dir) {
+export function buildSpec(dir: string) {
   const spec = specState.get();
   const plugins = pluginsState.get();
   const org = orgState.get();

@@ -7,7 +7,11 @@ interface ButtonProps {
   onClick: () => void;
 }
 
-const Button = ({ children, color = 'white', onClick }: ButtonProps) => {
+const Button: React.FC<ButtonProps> = ({
+  children,
+  color = 'white',
+  onClick,
+}) => {
   const { isFocused } = useFocus();
   const bgColor = isFocused ? 'green' : color;
 

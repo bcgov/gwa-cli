@@ -6,7 +6,7 @@ interface StepperProps {
   step: number;
 }
 
-const Stepper = ({ children, step }: StepperProps) => {
+const Stepper: React.FC<StepperProps> = ({ children, step }) => {
   let element = null;
 
   Children.forEach(children, (child: React.ReactElement, index: number) => {

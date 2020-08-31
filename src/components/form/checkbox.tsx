@@ -8,7 +8,12 @@ interface CheckboxProps {
   onChange: (value: boolean) => void;
 }
 
-const Checkbox = ({ checked, label, name, onChange }: CheckboxProps) => {
+const Checkbox: React.FC<CheckboxProps> = ({
+  checked,
+  label,
+  name,
+  onChange,
+}) => {
   const { isFocused } = useFocus();
 
   useInput((input, key) => {

@@ -1,4 +1,5 @@
 import { IGwaIpAnonymity } from './types';
+import { IPlugin } from '../../types';
 
 const constraints = {
   ipv4_mask: {

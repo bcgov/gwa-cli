@@ -5,13 +5,14 @@ import { ValidateJS } from 'validate.js';
 
 import Checkbox from '../../components/form/checkbox';
 import Form from '../../components/form';
+import { IPlugin } from '../../types';
 import { pluginsState } from '../../state/plugins';
 
 interface PluginEditorProps {
   selected: string;
 }
 
-const PluginEditor = ({ selected }: PluginEditorProps) => {
+const PluginEditor: React.FC<PluginEditorProps> = ({ selected }) => {
   const [plugins, setPlugin] = pluginsState.use();
   const plugin: IPlugin = plugins[selected];
 

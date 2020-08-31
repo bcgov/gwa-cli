@@ -1,3 +1,4 @@
+import { IPlugin } from '../../types';
 import { IRateLimiting } from './types';
 
 const constraints = {

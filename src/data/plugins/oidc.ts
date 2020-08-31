@@ -1,3 +1,4 @@
+import { IPlugin } from '../../types';
 import { IOidc } from './types';
 
 const constraints = {

@@ -6,7 +6,7 @@ interface StepHeaderProps {
   title: string;
 }
 
-const StepHeader = ({ step, title }: StepHeaderProps) => (
+const StepHeader: React.FC<StepHeaderProps> = ({ step, title }) => (
   <Box marginBottom={1}>
     <Text>
       <Text bold>{`Step ${(step + 1).toString()}:`}</Text> {title}

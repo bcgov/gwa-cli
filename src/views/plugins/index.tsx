@@ -12,11 +12,10 @@ interface PluginsProps {
   step: number;
 }
 
-const Plugins = ({ step }: PluginsProps) => {
+const Plugins: React.FC<PluginsProps> = ({ step }) => {
   const plugins = pluginsState.useValue();
   const [selectedPlugin, setSelectedPlugin] = activePluginState.use();
-  const pluginNames = Object.keys(plugins);
-  const activePlugin = pluginNames[selectedPlugin];
+  const pluginNames: string[] = Object.keys(plugins);
   const items = pluginNames.map((plugin) => ({
     id: plugin,
     label: plugin,

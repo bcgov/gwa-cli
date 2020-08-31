@@ -4,27 +4,27 @@ import { Box, Text, useFocus } from 'ink';
 import validUrl from 'valid-url';
 
 interface ArrayFieldProps {
-  error: any | undefined;
+  error?: any | undefined;
   name: string;
-  onChange: (key: string, value: string) => void;
+  onChange: (key: string, value: string[]) => void;
   required?: boolean;
   type?: 'text' | 'url';
-  value?: string | null;
+  value?: string[] | null;
 }
 
-const ArrayField = ({
+const ArrayField: React.FC<ArrayFieldProps> = ({
   error,
   onChange,
   name,
   required = false,
   type,
   value,
-}: ArrayFieldProps) => {
+}) => {
   const { isFocused } = useFocus();
   const hasError = Boolean(error);
   const focusedColor = isFocused ? 'green' : '';
   const labelColor = hasError ? 'red' : focusedColor;
-  const valueString = value.join(', ');
+  const valueString = value ? value.join(', ') : '';
   const changeHandler = (value: string) => {
     onChange(name, value.split(', '));
   };

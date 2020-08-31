@@ -1,3 +1,4 @@
+import { IPlugin } from '../../types';
 import { ISpecExpose } from './types';
 
 const constraints = {

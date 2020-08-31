@@ -6,8 +6,7 @@ import React, {
   useState,
 } from 'react';
 import { Box, Text } from 'ink';
-import has from 'lodash-es/has';
-import validate, { ValidateJS } from 'validate.js';
+import validate from 'validate.js';
 
 import ArrayField from './array-field';
 import TextField from './text-field';
@@ -63,17 +62,21 @@ const getElement = ({
 };
 
 interface FormProps {
-  constraints: ValidateJS;
+  constraints: any;
   data: any;
   onSubmit?: (data: any) => void;
 }
 
-const Form = ({ constraints, data, onSubmit = () => false }: FormProps) => {
+const Form: React.FC<FormProps> = ({
+  constraints,
+  data,
+  onSubmit = () => false,
+}) => {
   const [errors, setErrors] = useState<string[] | null>(null);
   const [formData, setFormData] = useState<any>(data);
   const elements = [];
   const onChange: ChangeHandler = (key, value) => {
-    setFormData((state) => ({ ...state, [key]: value }));
+    setFormData((state: any) => ({ ...state, [key]: value }));
   };
   const onSubmitClick = useCallback(() => {
     const errors = validate(formData, constraints, { format: 'flat' });

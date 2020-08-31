@@ -9,5 +9,5 @@ export interface IPlugin {
   name: string;
   enabled: boolean;
   config: any;
-  constraints: ValidateJS;
+  constraints: any;
 }

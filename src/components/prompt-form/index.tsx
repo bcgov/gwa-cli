@@ -7,7 +7,7 @@ interface PromptFormProps {
   onSubmit: () => void;
 }
 
-function PromptForm({ children, onSubmit }: PromptFormProps) {
+const PromptForm: React.FC<PromptFormProps> = ({ children, onSubmit }) => {
   const [formIndex, setFormIndex] = useState<number>(0);
   const [items, setItems] = useState<FormValue[]>([]);
   const onEnter = useCallback(
@@ -56,6 +56,6 @@ function PromptForm({ children, onSubmit }: PromptFormProps) {
       {formElement}
     </Box>
   );
-}
+};
 
 export default PromptForm;

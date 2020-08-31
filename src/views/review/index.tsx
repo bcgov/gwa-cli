@@ -4,7 +4,7 @@ import { Box, Newline, Text } from 'ink';
 import AppContext from '../../services/context';
 import { buildSpec } from '../../services/kong';
 
-const Review = () => {
+const Review: React.FC = () => {
   const { dir } = useContext(AppContext);
   useEffect(() => {
     buildSpec(dir);

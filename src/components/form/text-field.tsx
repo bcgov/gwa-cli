@@ -4,7 +4,7 @@ import { Box, Text, useFocus } from 'ink';
 import validUrl from 'valid-url';
 
 interface TextFieldProps {
-  error: any | undefined;
+  error?: any | undefined;
   name: string;
   onChange: (key: string, value: string) => void;
   required?: boolean;
@@ -12,14 +12,14 @@ interface TextFieldProps {
   value?: string | null;
 }
 
-const TextField = ({
+const TextField: React.FC<TextFieldProps> = ({
   error,
   onChange,
   name,
   required = false,
   type,
   value,
-}: TextFieldProps) => {
+}) => {
   const { isFocused } = useFocus();
   const hasError = Boolean(error);
   const focusedColor = isFocused ? 'green' : '';
@@ -38,10 +38,7 @@ const TextField = ({
       </Box>
       <Box flexGrow={1} width="50%">
         {isFocused && (
-          <TextInput
-            value={value === null ? 'null' : value}
-            onChange={changeHandler}
-          />
+          <TextInput value={value ? value : 'null'} onChange={changeHandler} />
         )}
         {!isFocused && <Text>{value === null ? 'null' : value}</Text>}
       </Box>

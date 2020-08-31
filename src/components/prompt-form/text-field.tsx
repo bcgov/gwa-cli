@@ -8,14 +8,14 @@ import { FormValue } from './types';
 interface TextFieldProps {
   label: string;
   name: string;
-  onChange: (key: string, value: any) => void;
+  onChange: (key: string, value: string) => void;
   onEnter?: (value: Omit<FormValue, 'id'>) => void;
   placeholder?: string;
   required: boolean;
   type?: 'text' | 'url';
 }
 
-function TextField({
+const TextField: React.FC<TextFieldProps> = ({
   label,
   name,
   onEnter = () => false,
@@ -23,7 +23,7 @@ function TextField({
   placeholder,
   required,
   type,
-}: TextFieldProps) {
+}) => {
   const { isFocused } = useFocus();
   const [value, setValue] = useState<string>('');
   const [error, setError] = useState<string>('');
@@ -84,6 +84,6 @@ function TextField({
       )}
     </Box>
   );
-}
+};
 
 export default TextField;
