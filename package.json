@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"bin": {
-		"kq": "./bin/kq"
+		"gwa": "./bin/gwa"
 	},
 	"engines": {
 		"node": ">=10"

@@ -7,7 +7,7 @@ import TextField from '../../components/prompt-form/text-field';
 import StepHeader from '../../components/step-header';
 import { orgState } from '../../state/org';
 import { parseYaml } from '../../services/kong';
-import { specState } from 'src/state/spec';
+import { specState } from '../../state/spec';
 
 type FormData = {
   name: string;
