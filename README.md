@@ -44,7 +44,6 @@ Key: `ctrl + p`
 
 To install checkout this repo in the `dev` branch, then run the following:
 
-## Development
 ```bash
 $ npm i
 $ npm run build

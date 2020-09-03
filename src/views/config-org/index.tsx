@@ -26,7 +26,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({ onComplete, step }) => {
   const [formData, setFormData] = React.useState<FormData>({
     name: '',
     specUrl: '',
-    maintainers: [],
+    maintainers: []
   });
   const [org, setOrg] = orgState.use();
   const [spec, setSpec] = specState.use();
@@ -43,7 +43,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({ onComplete, step }) => {
       setOrg(formData);
       const config = await parseYaml(formData.specUrl, formData.name);
       setSpec(config);
-      onComplete();
+      setProcessing(false);
     } catch (err) {
       setProcessing(false);
       setProcessError(err.message);
@@ -70,9 +70,10 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({ onComplete, step }) => {
         />
         <TextField
           required
-          label="Maintainers (comma separated)"
+          label="Maintainers"
           name="maintainers"
           onChange={onChange}
+          placeholder="Github usernames, comma separated"
         />
       </PromptForm>
       {isProcessing && (

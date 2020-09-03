@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Box, Text, Newline } from 'ink';
+import { Box, Text, Newline, useFocus, useFocusManager, useInput } from 'ink';
+import { match } from 'react-router';
 import TextInput from 'ink-text-input';
 import { ValidateJS } from 'validate.js';
 
@@ -9,32 +10,40 @@ import { IPlugin } from '../../types';
 import { pluginsState } from '../../state/plugins';
 
 interface PluginEditorProps {
-  selected: string;
+  match: match;
 }
 
-const PluginEditor: React.FC<PluginEditorProps> = ({ selected }) => {
+const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
   const [plugins, setPlugin] = pluginsState.use();
-  const plugin: IPlugin = plugins[selected];
+  const plugin: IPlugin = plugins[match.params.plugin];
+  const { focusNext } = useFocusManager();
+  const { isFocused } = useFocus();
+
+  useInput((input, key) => {
+    if (!isFocused && key.return) {
+      focusNext();
+    }
+  });
 
   const onSubmit = (formData: any) => {
-    setPlugin((prev) => ({
-      ...prev,
-      [selected]: {
-        ...prev[selected],
-        config: formData,
-      },
-    }));
+    /* setPlugin((prev) => ({
+     *   ...prev,
+     *   [selected]: {
+     *     ...prev[selected],
+     *     config: formData,
+     *   },
+     * })); */
   };
   const onToggleEnabled = (value: boolean) => {
-    setPlugin((prev) => {
-      return {
-        ...prev,
-        [selected]: {
-          ...prev[selected],
-          enabled: value,
-        },
-      };
-    });
+    /* setPlugin((prev) => {
+     *   return {
+     *     ...prev,
+     *     [selected]: {
+     *       ...prev[selected],
+     *       enabled: value,
+     *     },
+     *   };
+     * }); */
   };
 
   return (

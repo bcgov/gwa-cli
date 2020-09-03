@@ -1,5 +1,3 @@
-import { ValidateJS } from 'validate.js';
-
 export interface IAppContext {
   dir: string;
 }

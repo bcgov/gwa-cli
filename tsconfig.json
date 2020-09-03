@@ -14,6 +14,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
+    "resolveJsonModule": true,
     "lib": ["es6"],
     "baseUrl": "./",
     "paths": {

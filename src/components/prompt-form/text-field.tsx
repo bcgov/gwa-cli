@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import TextInput from 'ink-text-input';
-import { Box, Text, useFocus } from 'ink';
+import { Box, Text, useFocus, Transform } from 'ink';
 import validUrl from 'valid-url';
 
 import { FormValue } from './types';
@@ -28,7 +28,7 @@ const TextField: React.FC<TextFieldProps> = ({
   const [value, setValue] = useState<string>('');
   const [error, setError] = useState<string>('');
   const hasError = Boolean(error);
-  const labelColor = hasError ? 'red' : '';
+  const labelColor = hasError ? 'red' : 'yellow';
   const handleChange = (v: string) => {
     setError('');
     setValue(v);
@@ -61,14 +61,14 @@ const TextField: React.FC<TextFieldProps> = ({
       <Box>
         <Box marginRight={1}>
           <Text bold color={labelColor}>
-            {required && '*'}
             {label}:
           </Text>
         </Box>
         <Box flexGrow={1}>
           {isFocused && (
             <TextInput
-              placeholder={placeholder}
+              focus
+              placeholder={`${required && '[Required] '}${placeholder || ''}`}
               value={value}
               onChange={handleChange}
               onSubmit={onSubmit}
@@ -79,7 +79,14 @@ const TextField: React.FC<TextFieldProps> = ({
       </Box>
       {hasError && (
         <Box>
-          <Text color="red">^^^^^^^^^^ {error}</Text>
+          <Text bold color="red">
+            <Transform
+              transform={(output: string) => output.replace(/./gi, '^')}
+            >
+              <Text>{label}:</Text>
+            </Transform>
+            {` ${error}`}
+          </Text>
         </Box>
       )}
     </Box>

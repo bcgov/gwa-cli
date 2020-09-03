@@ -20,6 +20,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ children, onSubmit }) => {
   const totalFields = Children.count(children);
   const isFinished = totalFields < formIndex + 1;
   let formElement: React.ReactElement | null = null;
+
   useInput((input, key) => {
     if (isFinished && input === 'Y') {
       onSubmit();
@@ -36,7 +37,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ children, onSubmit }) => {
 
   return (
     <Box flexDirection="column">
-      <Box flexDirection="column">
+      <Box flexDirection="column" marginBottom={1}>
         {items.map((item) => (
           <Box key={item.id}>
             <Box marginRight={1}>
