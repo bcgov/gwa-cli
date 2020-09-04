@@ -16,11 +16,14 @@ const plugin: IPlugin = {
   id: 'gwa-ip-anonymity',
   name: 'IP Anonymity',
   description: 'lorem',
-  enabled: false,
   constraints,
-  config: {
-    ipv4_mask: 0,
-    ipv6_mask: 0,
+  data: {
+    name: 'gwa-ip-anonymity',
+    enabled: false,
+    config: {
+      ipv4_mask: 0,
+      ipv6_mask: 0,
+    },
   },
 };
 

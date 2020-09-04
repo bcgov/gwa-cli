@@ -5,9 +5,9 @@ interface StepHeaderProps {
   title: string;
 }
 
-const StepHeader: React.FC<StepHeaderProps> = ({ step, title }) => (
+const StepHeader: React.FC<StepHeaderProps> = ({ title }) => (
   <Box marginBottom={1}>
-    <Text>{title}</Text>
+    <Text inverse>{` ${title} `}</Text>
   </Box>
 );
 

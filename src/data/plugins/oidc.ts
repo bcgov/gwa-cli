@@ -65,28 +65,31 @@ const plugin: IPlugin = {
   id: 'oidc',
   name: 'OIDC',
   description: 'lorem',
-  enabled: false,
   constraints,
-  config: {
-    response_type: 'code',
-    introspection_endpoint:
-      'https://{HOST}/auth/realms/{REALM}/protocol/openid-connect/token/introspect',
-    filters: null,
-    bearer_only: 'no',
-    ssl_verify: 'no',
-    session_secret: null,
-    introspection_endpoint_auth_method: null,
-    realm: 'kong',
-    redirect_after_logout_uri: '/',
-    scope: 'openid',
-    token_endpoint_auth_method: 'client_secret_post',
-    logout_path: '/logout',
-    client_id: '',
-    client_secret: '',
-    discovery:
-      'https://{HOST}/auth/realms/{REALM}/.well-known/openid-configuration',
-    recovery_page_path: null,
-    redirect_uri_path: null,
+  data: {
+    name: 'oidc',
+    enabled: false,
+    config: {
+      response_type: 'code',
+      introspection_endpoint:
+        'https://{HOST}/auth/realms/{REALM}/protocol/openid-connect/token/introspect',
+      filters: null,
+      bearer_only: 'no',
+      ssl_verify: 'no',
+      session_secret: null,
+      introspection_endpoint_auth_method: null,
+      realm: 'kong',
+      redirect_after_logout_uri: '/',
+      scope: 'openid',
+      token_endpoint_auth_method: 'client_secret_post',
+      logout_path: '/logout',
+      client_id: '',
+      client_secret: '',
+      discovery:
+        'https://{HOST}/auth/realms/{REALM}/.well-known/openid-configuration',
+      recovery_page_path: null,
+      redirect_uri_path: null,
+    },
   },
 };
 

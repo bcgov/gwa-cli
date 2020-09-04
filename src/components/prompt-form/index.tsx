@@ -4,10 +4,15 @@ import { FormValue } from './types';
 
 interface PromptFormProps {
   children: React.ReactElement[];
+  complete: boolean;
   onSubmit: () => void;
 }
 
-const PromptForm: React.FC<PromptFormProps> = ({ children, onSubmit }) => {
+const PromptForm: React.FC<PromptFormProps> = ({
+  children,
+  complete,
+  onSubmit,
+}) => {
   const [formIndex, setFormIndex] = useState<number>(0);
   const [items, setItems] = useState<FormValue[]>([]);
   const onEnter = useCallback(
@@ -48,7 +53,7 @@ const PromptForm: React.FC<PromptFormProps> = ({ children, onSubmit }) => {
             <Text underline>{item.value}</Text>
           </Box>
         ))}
-        {isFinished && (
+        {isFinished && !complete && (
           <Box marginY={1}>
             <Text bold>All Finished! Type Y to confirm</Text>
           </Box>

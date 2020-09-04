@@ -8,6 +8,7 @@ const o2k = require('openapi-2-kong');
 import { specState } from '../state/spec';
 import { pluginsState } from '../state/plugins';
 import { orgState } from '../state/org';
+import { IPlugin } from 'src/types';
 
 export async function parseYaml(url: string, tag: string) {
   const res = await fetch(url);
@@ -34,17 +35,47 @@ export async function parseYaml(url: string, tag: string) {
   return YAML.parse(yamlDocs);
 }
 
+export function loadConfig(file: string) {
+  fs.readFile(file, 'utf8', (err, data) => {
+    const result = YAML.parse(data);
+    const name = result.services[0].tags.slice(-1)[0];
+    const specUrl = result.services[0].url;
+    const plugins = result.services[0].plugins;
+    orgState.set((prev) => ({
+      ...prev,
+      name,
+      specUrl,
+    }));
+    plugins.forEach((plugin: IPlugin) => {
+      pluginsState.set((prev) => ({
+        ...prev,
+        [plugin.name]: {
+          data: {
+            enabled: plugin.data.enabled,
+            config: {
+              ...prev[plugin.name].data.config,
+              ...[plugin.name].data.config,
+              id: plugin.name,
+              name: prev[plugin.name].data.config.name,
+            },
+          },
+        },
+      }));
+    });
+  });
+}
+
 export function buildSpec(dir: string) {
   const spec = specState.get();
   const plugins = pluginsState.get();
   const org = orgState.get();
   const enabledPlugins = Object.values(plugins)
-    .filter((p) => p.enabled)
+    .filter((p) => p.data.enabled)
     .map((p) => ({
-      name: p.name,
+      name: p.data.name,
       tags: [org.name],
       enabled: true,
-      config: p.config,
+      config: p.data.config,
     }));
   const configRef = JSON.parse(JSON.stringify(spec)); //TODO This is lazy, replace with a proper clone
   configRef.services[0].plugins = enabledPlugins;

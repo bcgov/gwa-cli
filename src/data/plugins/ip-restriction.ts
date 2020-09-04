@@ -14,10 +14,13 @@ const plugin: IPlugin = {
   id: 'ip-restriction',
   name: 'IP Restriction',
   description: 'lorem',
-  enabled: false,
   constraints,
-  config: {
-    allow: ['10.10.10.0/24'],
+  data: {
+    name: 'ip-restriction',
+    enabled: false,
+    config: {
+      allow: ['10.10.10.0/24'],
+    },
   },
 };
 

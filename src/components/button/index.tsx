@@ -26,7 +26,8 @@ const Button: React.FC<ButtonProps> = ({
   return (
     <Box>
       <Text inverse color={bgColor}>
-        {children}
+        {' '}
+        {children}{' '}
       </Text>
     </Box>
   );

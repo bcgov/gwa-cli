@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Text, useFocus, useInput } from 'ink';
 
 interface CheckboxProps {
+  autoFocus: boolean;
   checked: boolean;
   label: string;
   name: string;
@@ -9,12 +10,13 @@ interface CheckboxProps {
 }
 
 const Checkbox: React.FC<CheckboxProps> = ({
+  autoFocus = false,
   checked,
   label,
   name,
   onChange,
 }) => {
-  const { isFocused } = useFocus();
+  const { isFocused } = useFocus({ autoFocus });
 
   useInput((input, key) => {
     if (isFocused && key.return) {
@@ -24,9 +26,17 @@ const Checkbox: React.FC<CheckboxProps> = ({
 
   return (
     <Box>
-      <Text bold={isFocused}>
-        <Text>[{checked ? 'X' : ' '}]</Text> {label}
-      </Text>
+      <Box marginRight={1}>
+        <Text bold={isFocused}>[{checked ? 'X' : ' '}]</Text>
+      </Box>
+      <Box marginRight={3}>
+        <Text>{label}</Text>
+      </Box>
+      <Box>
+        <Text italic color="grey">
+          Enter to toggle
+        </Text>
+      </Box>
     </Box>
   );
 };

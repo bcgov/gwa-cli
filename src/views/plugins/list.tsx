@@ -44,13 +44,15 @@ const PluginsList: React.FC<PluginsListProps> = ({
             <Box>
               <Text
                 bold
-                color={plugin.enabled || pluginIdx === index ? 'white' : 'grey'}
+                color={
+                  plugin.data.enabled || pluginIdx === index ? 'white' : 'grey'
+                }
               >
                 {plugin.name}
               </Text>
             </Box>
             <Box marginLeft={2}>
-              {plugin.enabled ? (
+              {plugin.data.enabled ? (
                 <Text color="greenBright">[Enabled]</Text>
               ) : (
                 <Text dimColor color="red">
@@ -62,7 +64,9 @@ const PluginsList: React.FC<PluginsListProps> = ({
           <Box marginLeft={6}>
             <Text
               bold={false}
-              color={plugin.enabled || pluginIdx === index ? 'white' : 'grey'}
+              color={
+                plugin.data.enabled || pluginIdx === index ? 'white' : 'grey'
+              }
             >
               {plugin.description}
             </Text>

@@ -1,12 +1,16 @@
 export interface IAppContext {
   dir: string;
+  file: string | null;
 }
 
 export interface IPlugin {
   id: string;
   name: string;
   description: string;
-  enabled: boolean;
-  config: any;
   constraints: any;
+  data: {
+    name: string;
+    enabled: boolean;
+    config: any;
+  };
 }

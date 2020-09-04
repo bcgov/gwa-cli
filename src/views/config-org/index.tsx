@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
+import { useHistory } from 'react-router';
 
 import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
@@ -18,8 +19,10 @@ type FormData = {
 interface ConfigOrgProps {}
 
 const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
+  const history = useHistory();
   const [isProcessing, setProcessing] = React.useState<boolean>(false);
   const [processError, setProcessError] = React.useState<string | null>(null);
+  const [valid, setValid] = React.useState<boolean>(false);
   const [formData, setFormData] = React.useState<FormData>({
     name: '',
     specUrl: '',
@@ -41,16 +44,24 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
       const config = await parseYaml(formData.specUrl, formData.name);
       setSpec(config);
       setProcessing(false);
+      setValid(true);
     } catch (err) {
+      setValid(true);
       setProcessing(false);
       setProcessError(err.message);
     }
   };
 
+  useInput((input, key) => {
+    if (valid && input === 'n' && key.ctrl) {
+      history.push('/editor');
+    }
+  });
+
   return (
     <Box flexDirection="column">
       <StepHeader title="Configure Your Organization" />
-      <PromptForm onSubmit={onSubmit}>
+      <PromptForm complete={valid} onSubmit={onSubmit}>
         <TextField
           required
           label="Organization Name"
@@ -83,6 +94,13 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
       {processError && (
         <Box borderColor="redBright" borderStyle="round" marginY={1}>
           <Text color="redBright">{processError}</Text>
+        </Box>
+      )}
+      {valid && (
+        <Box borderColor="greenBright" borderStyle="round" marginY={1}>
+          <Text color="greenBright">
+            Organization Saved! Press ctrl + n to configure plugins.
+          </Text>
         </Box>
       )}
     </Box>

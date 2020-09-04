@@ -13,10 +13,13 @@ const plugin: IPlugin = {
   id: 'bcgov-gwa-endpoint',
   name: 'GWA Endpoint',
   description: 'lorem',
-  enabled: false,
   constraints,
-  config: {
-    api_owners: [],
+  data: {
+    name: 'bcgov-gwa-endpoint',
+    enabled: false,
+    config: {
+      api_owners: [],
+    },
   },
 };
 

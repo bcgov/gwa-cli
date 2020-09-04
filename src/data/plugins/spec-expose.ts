@@ -13,10 +13,13 @@ const plugin: IPlugin = {
   id: 'kong-spec-expose',
   name: 'Kong Spec Expose',
   description: 'lorem',
-  enabled: false,
   constraints,
-  config: {
-    spec_url: '',
+  data: {
+    name: 'kong-spec-expose',
+    enabled: false,
+    config: {
+      spec_url: '',
+    },
   },
 };
 

@@ -21,10 +21,12 @@ const App: React.FC<AppProps> = ({ args }) => {
   useInput((input, key) => {
     if (input === 'q' && key.ctrl) {
       exit();
-    } else if (input === 'n' && key.ctrl) {
+    } else if (/(k|l)/.test(input) && key.ctrl) {
       history.goForward();
-    } else if (input === 'p' && key.ctrl) {
+    } else if (/(h|j)/.test(input) && key.ctrl) {
       history.goBack();
+    } else if (input === 's' && key.ctrl) {
+      history.push('/review');
     }
   });
 
