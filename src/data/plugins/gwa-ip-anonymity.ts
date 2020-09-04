@@ -14,7 +14,8 @@ const constraints = {
 
 const plugin: IPlugin = {
   id: 'gwa-ip-anonymity',
-  name: 'gwa-ip-anonymity',
+  name: 'IP Anonymity',
+  description: 'lorem',
   enabled: false,
   constraints,
   config: {

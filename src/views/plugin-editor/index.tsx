@@ -35,15 +35,15 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
      * })); */
   };
   const onToggleEnabled = (value: boolean) => {
-    /* setPlugin((prev) => {
-     *   return {
-     *     ...prev,
-     *     [selected]: {
-     *       ...prev[selected],
-     *       enabled: value,
-     *     },
-     *   };
-     * }); */
+    setPlugin((prev) => {
+      return {
+        ...prev,
+        [plugin.id]: {
+          ...prev[plugin.id],
+          enabled: value,
+        },
+      };
+    });
   };
 
   return (

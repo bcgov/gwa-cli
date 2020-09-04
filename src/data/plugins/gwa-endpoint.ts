@@ -1,4 +1,3 @@
-import { IGwaEndpoint } from './types';
 import { IPlugin } from '../../types';
 
 const constraints = {
@@ -12,7 +11,8 @@ const constraints = {
 
 const plugin: IPlugin = {
   id: 'bcgov-gwa-endpoint',
-  name: 'bcgov-gwa-endpoint',
+  name: 'GWA Endpoint',
+  description: 'lorem',
   enabled: false,
   constraints,
   config: {

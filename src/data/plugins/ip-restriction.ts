@@ -12,7 +12,8 @@ const constraints = {
 
 const plugin: IPlugin = {
   id: 'ip-restriction',
-  name: 'ip-restriction',
+  name: 'IP Restriction',
+  description: 'lorem',
   enabled: false,
   constraints,
   config: {

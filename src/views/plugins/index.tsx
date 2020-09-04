@@ -1,12 +1,14 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { Route } from 'react-router';
 import { Tab, Tabs } from 'ink-tab';
 import { match, useHistory } from 'react-router';
 
+import { IPlugin } from '../../types';
 import { activePluginState, pluginsState } from '../../state/plugins';
+import PluginsList from './list';
 import PluginEditor from '../plugin-editor';
-// import StepHeader from '../../components/step-header';
+import StepHeader from '../../components/step-header';
 import PluginItem from './item';
 
 interface PluginsProps {
@@ -15,40 +17,33 @@ interface PluginsProps {
 }
 
 const Plugins: React.FC<PluginsProps> = ({ match }) => {
-  const history = useHistory();
-  const plugins = pluginsState.useValue();
-  const [selectedPlugin, setSelectedPlugin] = activePluginState.use();
-  const pluginNames: string[] = Object.keys(plugins);
-  const tabs = pluginNames.map((plugin) => ({
-    url: `/${plugin}`,
-    name: plugin,
-  }));
-  const onChange = (name: string) => history.push(match.url + name);
+  const [index, setIndex] = useState<number>(0);
+  const state = pluginsState.useValue();
+  const plugins: IPlugin[] = Object.values(state);
 
   return (
-    <Box>
-      <Box marginRight={4} flexDirection="column">
+    <Box flexDirection="column">
+      <StepHeader title="Configure Your Organization" />
+      <Box flexDirection="column">
         <Box marginBottom={1}>
           <Text bold underline>
             Plugins
           </Text>
         </Box>
-        <Tabs flexDirection="column" onChange={onChange}>
-          {tabs.map((tab: any) => (
-            <Tab key={tab.url} name={tab.url}>
-              {tab.name}
-            </Tab>
-          ))}
-        </Tabs>
+        <Route
+          exact
+          path={match.url}
+          render={(props) => (
+            <PluginsList
+              {...props}
+              data={plugins}
+              index={index}
+              onChange={setIndex}
+            />
+          )}
+        />
       </Box>
-      <Box flexDirection="column" marginLeft={5}>
-        <Box marginBottom={1}>
-          <Text bold underline>
-            Configure
-          </Text>
-        </Box>
-        <Route exact path={`${match.url}/:plugin`} component={PluginEditor} />
-      </Box>
+      <Route exact path={`${match.url}/:plugin`} component={PluginEditor} />
     </Box>
   );
 };

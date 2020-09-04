@@ -64,6 +64,7 @@ const constraints = {
 const plugin: IPlugin = {
   id: 'oidc',
   name: 'OIDC',
+  description: 'lorem',
   enabled: false,
   constraints,
   config: {

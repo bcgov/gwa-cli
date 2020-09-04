@@ -11,7 +11,8 @@ const constraints = {
 
 const plugin: IPlugin = {
   id: 'kong-spec-expose',
-  name: 'kong-spec-expose',
+  name: 'Kong Spec Expose',
+  description: 'lorem',
   enabled: false,
   constraints,
   config: {

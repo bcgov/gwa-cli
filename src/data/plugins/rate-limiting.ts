@@ -58,7 +58,8 @@ const constraints = {
 
 const plugin: IPlugin = {
   id: 'rate-limiting',
-  name: 'rate-limiting',
+  name: 'Rate Limiting',
+  description: 'lorem',
   enabled: false,
   constraints,
   config: {

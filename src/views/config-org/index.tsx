@@ -15,18 +15,15 @@ type FormData = {
   maintainers: string[];
 };
 
-interface ConfigOrgProps {
-  onComplete: () => void;
-  step: number;
-}
+interface ConfigOrgProps {}
 
-const ConfigOrg: React.FC<ConfigOrgProps> = ({ onComplete, step }) => {
+const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   const [isProcessing, setProcessing] = React.useState<boolean>(false);
   const [processError, setProcessError] = React.useState<string | null>(null);
   const [formData, setFormData] = React.useState<FormData>({
     name: '',
     specUrl: '',
-    maintainers: []
+    maintainers: [],
   });
   const [org, setOrg] = orgState.use();
   const [spec, setSpec] = specState.use();
@@ -52,7 +49,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({ onComplete, step }) => {
 
   return (
     <Box flexDirection="column">
-      <StepHeader step={step} title="Configure Your Organization" />
+      <StepHeader title="Configure Your Organization" />
       <PromptForm onSubmit={onSubmit}>
         <TextField
           required
