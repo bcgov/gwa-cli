@@ -15,7 +15,8 @@ const constraints = {
 const plugin: IPlugin = {
   id: 'gwa-ip-anonymity',
   name: 'IP Anonymity',
-  description: 'lorem',
+  description:
+    'A Kong plugin (current DataBC API Gateway) used for hide full or partial client IP to upstream services.',
   constraints,
   data: {
     name: 'gwa-ip-anonymity',

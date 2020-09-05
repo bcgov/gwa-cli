@@ -18,6 +18,7 @@
 		"bin/**/*"
 	],
 	"dependencies": {
+		"deepmerge": "^4.2.2",
 		"history": "^4.0.0",
 		"import-jsx": "^4.0.0",
 		"ink": "^3.0.3",

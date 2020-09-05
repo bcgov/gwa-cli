@@ -12,7 +12,8 @@ const constraints = {
 const plugin: IPlugin = {
   id: 'bcgov-gwa-endpoint',
   name: 'GWA Endpoint',
-  description: 'lorem',
+  description:
+    'Kong Plugin to process BC Government siteminder headers to apply kong consumers and acls (groups) to BC Government users.',
   constraints,
   data: {
     name: 'bcgov-gwa-endpoint',

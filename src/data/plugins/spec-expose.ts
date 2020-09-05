@@ -12,7 +12,8 @@ const constraints = {
 const plugin: IPlugin = {
   id: 'kong-spec-expose',
   name: 'Kong Spec Expose',
-  description: 'lorem',
+  description:
+    'This plugin will expose the OpenAPI Spec (OAS), Swagger, or other specification of auth protected API services fronted by the Kong gateway.',
   constraints,
   data: {
     name: 'kong-spec-expose',

@@ -99,7 +99,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
       {valid && (
         <Box borderColor="greenBright" borderStyle="round" marginY={1}>
           <Text color="greenBright">
-            Organization Saved! Press ctrl + n to configure plugins.
+            Group config saved! Press ctrl + n to configure plugins.
           </Text>
         </Box>
       )}

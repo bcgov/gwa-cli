@@ -59,7 +59,8 @@ const constraints = {
 const plugin: IPlugin = {
   id: 'rate-limiting',
   name: 'Rate Limiting',
-  description: 'lorem',
+  description:
+    'Rate limit how many HTTP requests can be made in a given period of seconds, minutes, hours, days, months, or years. If the underlying Service/Route (or deprecated API entity) has no authentication layer, the Client IP address will be used, otherwise the Consumer will be used if an authentication plugin has been configured.',
   constraints,
   data: {
     name: 'rate-limiting',

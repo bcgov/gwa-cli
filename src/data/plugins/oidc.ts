@@ -64,7 +64,8 @@ const constraints = {
 const plugin: IPlugin = {
   id: 'oidc',
   name: 'OIDC',
-  description: 'lorem',
+  description:
+    'kong-oidc is a plugin for Kong implementing the OpenID Connect Relying Party (RP) functionality.',
   constraints,
   data: {
     name: 'oidc',

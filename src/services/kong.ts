@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
+import merge from 'deepmerge';
 import { resolve } from 'path';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import YAML from 'yaml';
@@ -41,26 +42,22 @@ export function loadConfig(file: string) {
     const name = result.services[0].tags.slice(-1)[0];
     const specUrl = result.services[0].url;
     const plugins = result.services[0].plugins;
+    specState.set(result);
     orgState.set((prev) => ({
       ...prev,
       name,
       specUrl,
     }));
-    plugins.forEach((plugin: IPlugin) => {
-      pluginsState.set((prev) => ({
-        ...prev,
-        [plugin.name]: {
-          data: {
-            enabled: plugin.data.enabled,
-            config: {
-              ...prev[plugin.name].data.config,
-              ...[plugin.name].data.config,
-              id: plugin.name,
-              name: prev[plugin.name].data.config.name,
-            },
+    plugins.forEach((plugin: any) => {
+      pluginsState.set((prev) => {
+        return {
+          ...prev,
+          [plugin.name]: {
+            ...prev[plugin.name],
+            data: merge(prev[plugin.name].data, plugin),
           },
-        },
-      }));
+        };
+      });
     });
   });
 }

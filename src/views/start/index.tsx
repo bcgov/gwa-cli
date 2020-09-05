@@ -1,19 +1,25 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import BigText from 'ink-big-text';
 import { Box, Text } from 'ink';
 import SelectInput, { Item } from 'ink-select-input';
 import { useHistory } from 'react-router';
 
+import AppContext from '../../services/context';
+import FileDetails from './file-details';
+
 const StartView: React.FC<{}> = () => {
+  const { file } = useContext(AppContext);
   const { push } = useHistory();
   const items = [
     {
-      label: 'Create organization',
+      label: 'Configure Group',
       value: '/org',
+      enabled: !file,
     },
     {
       label: 'Plugin Editor',
       value: '/editor',
+      enabled: true,
     },
   ];
   const onSelect = (item: any) => {
@@ -40,8 +46,12 @@ const StartView: React.FC<{}> = () => {
           <Text bold>API Gateway Config</Text>
           <Text>Version 1.0.0</Text>
         </Box>
-        <Box justifyContent="center" marginY={2}>
-          <SelectInput items={items} onSelect={onSelect} />
+        <Box alignItems="center" flexDirection="column" marginY={2}>
+          {file && <FileDetails file={file} />}
+          <SelectInput
+            items={items.filter((d) => d.enabled)}
+            onSelect={onSelect}
+          />
         </Box>
         <Box justifyContent="center">
           <Text>Help/Legend coming soon</Text>

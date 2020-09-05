@@ -8,6 +8,7 @@ import {
   useFocusManager,
   useInput,
 } from 'ink';
+import merge from 'deepmerge';
 import { RouteComponentProps } from 'react-router';
 import TextInput from 'ink-text-input';
 import { ValidateJS } from 'validate.js';
@@ -39,10 +40,7 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
         ...prev[plugin.id],
         data: {
           ...prev[plugin.id].data,
-          config: {
-            ...prev[plugin.id].data.config,
-            formData,
-          },
+          config: merge(prev[plugin.id].data.config, formData),
         },
       },
     }));
