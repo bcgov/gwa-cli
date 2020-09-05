@@ -16,6 +16,7 @@ main({ dir: args.dir, file: configFile });
 
 function main(args: IAppContext) {
   if (args.file) {
+    // TODO: Handle if the file doesn't exist.
     loadConfig(args.file);
   }
 

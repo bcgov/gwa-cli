@@ -38,6 +38,10 @@ export async function parseYaml(url: string, tag: string) {
 
 export function loadConfig(file: string) {
   fs.readFile(file, 'utf8', (err, data) => {
+    if (err) {
+      return;
+    }
+
     const result = YAML.parse(data);
     const name = result.services[0].tags.slice(-1)[0];
     const specUrl = result.services[0].url;
