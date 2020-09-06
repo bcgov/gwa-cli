@@ -44,6 +44,7 @@ const PluginsList: React.FC<PluginsListProps> = ({
             <Box>
               <Text
                 bold
+                inverse={pluginIdx === index}
                 color={
                   plugin.data.enabled || pluginIdx === index ? 'white' : 'grey'
                 }

@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import validate from 'validate.js';
 
 import ArrayField from './array-field';
@@ -101,8 +101,14 @@ const Form: React.FC<FormProps> = ({
     }
   }, [data]);
 
+  useInput((input, key) => {
+    if (input === 's' && key.ctrl) {
+      onSubmitClick();
+    }
+  });
+
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" margin={1}>
       {errors && (
         <Box flexDirection="column" borderColor="redBright" borderStyle="round">
           {errors.map((err) => (
@@ -113,9 +119,6 @@ const Form: React.FC<FormProps> = ({
         </Box>
       )}
       <Box flexDirection="column">{elements}</Box>
-      <Box marginTop={2}>
-        <Button onClick={onSubmitClick}>Submit</Button>
-      </Box>
     </Box>
   );
 };

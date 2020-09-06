@@ -23,15 +23,12 @@ interface PluginEditorProps extends RouteComponentProps<{ plugin: string }> {}
 const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
   const [plugins, setPlugin] = pluginsState.use();
   const [saved, setSaved] = useState<boolean>(false);
+  const ids = Object.keys(plugins);
   const plugin: IPlugin = plugins[match.params.plugin];
   const { focusNext } = useFocusManager();
   const { isFocused } = useFocus();
-
-  useInput((input, key) => {
-    if (!isFocused && key.return) {
-      focusNext();
-    }
-  });
+  const index = ids.indexOf(match.params.plugin);
+  const total = ids.length;
 
   const onSubmit = (formData: any) => {
     setPlugin((prev) => ({
@@ -61,29 +58,30 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
     });
   };
 
+  useInput((input, key) => {
+    if (input === 'e' && key.ctrl) {
+      onToggleEnabled(!plugin.data.enabled);
+    }
+    /* if (!isFocused && key.return) {
+     *   focusNext();
+     * } */
+  });
+
   return (
-    <Box flexDirection="column" width="100%">
+    <Box flexDirection="column">
       <Box marginBottom={1} justifyContent="space-between">
         <Box>
-          <Text inverse color="yellow">
-            {plugin.name}
+          <Text bold inverse color="blueBright">
+            {` ${plugin.name} `}
+            <Text>{` [${(index + 1).toString()}/${total}] `}</Text>
           </Text>
-          <Text inverse color="gray">
-            {` 1/3 `}
+          <Text
+            inverse
+            color={plugin.data.enabled ? 'greenBright' : 'magentaBright'}
+          >
+            {plugin.data.enabled ? ' Enabled ' : ' Disabled '}
           </Text>
         </Box>
-        <Box>
-          <Text>Prev [ctrl+p] / Next [ctrl+n]</Text>
-        </Box>
-      </Box>
-      <Box marginBottom={1}>
-        <Checkbox
-          autoFocus
-          checked={plugin.data.enabled}
-          name="enabled"
-          label="Plugin Enabled"
-          onChange={onToggleEnabled}
-        />
       </Box>
       <Form
         constraints={plugin.constraints}
@@ -91,6 +89,9 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
         onSubmit={onSubmit}
       />
       {saved && <Text color="greenBright">Settings Saved</Text>}
+      <Box justifyContent="flex-end">
+        <Text dimColor>Prev [ctrl+p] / Next [ctrl+n]</Text>
+      </Box>
     </Box>
   );
 };

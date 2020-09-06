@@ -11,14 +11,7 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
   const org = orgState.useValue();
 
   return (
-    <Box
-      paddingX={3}
-      paddingY={1}
-      flexDirection="column"
-      marginBottom={1}
-      borderColor="green"
-      borderStyle="bold"
-    >
+    <Box paddingX={3} flexDirection="column" marginBottom={1}>
       <Box>
         <Box width={10} marginRight={2} justifyContent="flex-end">
           <Text bold>Group:</Text>

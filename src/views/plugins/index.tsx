@@ -41,8 +41,7 @@ const Plugins: React.FC<PluginsProps> = ({ match }) => {
 
   return (
     <Box flexDirection="column">
-      <StepHeader title="Configure Plugins" />
-      <Box flexDirection="column">
+      <Box flexDirection="column" width="100%">
         <Route
           exact
           path={match.url}
