@@ -44,24 +44,26 @@ export function loadConfig(file: string) {
 
     const result = YAML.parse(data);
     const name = result.services[0].tags.slice(-1)[0];
-    const specUrl = result.services[0].url;
+    const host = result.services[0].host;
     const plugins = result.services[0].plugins;
     specState.set(result);
     orgState.set((prev) => ({
       ...prev,
       name,
-      specUrl,
+      host,
     }));
     plugins.forEach((plugin: any) => {
-      pluginsState.set((prev) => {
-        return {
-          ...prev,
-          [plugin.name]: {
-            ...prev[plugin.name],
-            data: merge(prev[plugin.name].data, plugin),
-          },
-        };
-      });
+      if (pluginsState.get()[plugin.name]) {
+        pluginsState.set((prev) => {
+          return {
+            ...prev,
+            [plugin.name]: {
+              ...prev[plugin.name],
+              data: merge(prev[plugin.name].data, plugin),
+            },
+          };
+        });
+      }
     });
   });
 }

@@ -69,19 +69,8 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
 
   return (
     <Box flexDirection="column">
-      <Box marginBottom={1} justifyContent="space-between">
-        <Box>
-          <Text bold inverse color="blueBright">
-            {` ${plugin.name} `}
-            <Text>{` [${(index + 1).toString()}/${total}] `}</Text>
-          </Text>
-          <Text
-            inverse
-            color={plugin.data.enabled ? 'greenBright' : 'magentaBright'}
-          >
-            {plugin.data.enabled ? ' Enabled ' : ' Disabled '}
-          </Text>
-        </Box>
+      <Box marginY={1} justifyContent="space-between">
+        <Text>Form Header</Text>
       </Box>
       <Form
         constraints={plugin.constraints}

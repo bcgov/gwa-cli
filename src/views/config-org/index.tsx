@@ -13,7 +13,6 @@ import { specState } from '../../state/spec';
 type FormData = {
   name: string;
   specUrl: string;
-  maintainers: string[];
 };
 
 interface ConfigOrgProps {}
@@ -26,7 +25,6 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   const [formData, setFormData] = React.useState<FormData>({
     name: '',
     specUrl: '',
-    maintainers: [],
   });
   const [org, setOrg] = orgState.use();
   const [spec, setSpec] = specState.use();
@@ -75,13 +73,6 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
           placeholder="URL should end with a .json"
           name="specUrl"
           onChange={onChange}
-        />
-        <TextField
-          required
-          label="Maintainers"
-          name="maintainers"
-          onChange={onChange}
-          placeholder="Github usernames, comma separated"
         />
       </PromptForm>
       {isProcessing && (

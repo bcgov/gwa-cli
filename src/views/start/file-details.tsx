@@ -20,9 +20,9 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
       </Box>
       <Box>
         <Box width={10} marginRight={2} justifyContent="flex-end">
-          <Text bold>Spec:</Text>
+          <Text bold>Host:</Text>
         </Box>
-        <Text>{org.specUrl}</Text>
+        <Text>{org.host}</Text>
       </Box>
       <Box>
         <Box width={10} marginRight={2} justifyContent="flex-end">
