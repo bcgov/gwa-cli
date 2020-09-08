@@ -31,11 +31,35 @@ Key: `ctrl + c`
 
 This works the same as any command-line runtime
 
-##### Next Page
+##### Export
+
+Key: `ctrl + y`
+
+This command will try to export the config as is.
+
+##### Go Forward (if in history)
+
+Key: `ctrl + k`
+
+##### Go Back
+
+Key: `ctrl + j`
+
+#### Editor commands
+
+##### Enable/Disable plugin
+
+Key: `ctrl + e`
+
+##### Save plugin config
+
+Key: `ctrl + s`
+
+##### Go to Next Plugin Config (when viewing config)
 
 Key: `ctrl + n`
 
-##### Previous Page
+##### Go to Previous Plugin Config (when viewing config)
 
 Key: `ctrl + p`
 
