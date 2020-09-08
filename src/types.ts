@@ -1,6 +1,7 @@
 export interface IAppContext {
   dir: string;
   file: string | null;
+  version: string;
 }
 
 export interface IPlugin {

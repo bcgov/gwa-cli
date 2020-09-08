@@ -12,7 +12,7 @@ const history = createMemoryHistory();
 const args: ParsedArgs = minimist(process.argv.slice(2));
 const configFile: string | null = args._[0];
 
-main({ dir: args.dir, file: configFile });
+main({ dir: args.dir, file: configFile, version: args['app-version'] });
 
 function main(args: IAppContext) {
   if (args.file) {

@@ -8,7 +8,7 @@ import AppContext from '../../services/context';
 import FileDetails from './file-details';
 
 const StartView: React.FC<{}> = () => {
-  const { file } = useContext(AppContext);
+  const { file, version } = useContext(AppContext);
   const { push } = useHistory();
   const items = [
     {
@@ -44,7 +44,7 @@ const StartView: React.FC<{}> = () => {
         </Box>
         <Box alignItems="center" flexDirection="column">
           <Text bold>API Gateway Config</Text>
-          <Text>Version 1.0.0</Text>
+          <Text>Version {version}</Text>
         </Box>
         <Box alignItems="center" flexDirection="column" marginY={2}>
           {file && <FileDetails file={file} />}
