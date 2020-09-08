@@ -80,7 +80,7 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
         data={plugin.data.config}
         onSubmit={onSubmit}
       />
-      <Box justifyContent={saved ? 'space-between' : 'flex-end'}>
+      <Box justifyContent={saved ? 'space-between' : 'flex-end'} marginTop={2}>
         {saved && <Text color="greenBright">Settings Saved</Text>}
         <Box justifyContent="flex-end">
           <Text dimColor>Prev [ctrl+p] / Next [ctrl+n]</Text>

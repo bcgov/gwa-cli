@@ -26,7 +26,7 @@ const FieldSet: React.FC<FieldSetProps> = ({ children, error, index }) => {
           {error ? '!' : ' '}
         </Text>
       </Box>
-      <Box>
+      <Box flexGrow={1}>
         {cloneElement(children, {
           focused: isFocused,
         })}

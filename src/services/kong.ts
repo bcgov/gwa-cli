@@ -60,6 +60,7 @@ export function loadConfig(file: string) {
             [plugin.name]: {
               ...prev[plugin.name],
               data: merge(prev[plugin.name].data, plugin),
+              enabled: plugin.enabled,
             },
           };
         });

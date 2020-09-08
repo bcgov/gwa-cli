@@ -49,17 +49,12 @@ const TextField: React.FC<TextFieldProps> = ({
           {required && '*'}:
         </Text>
       </Box>
-      <Box flexGrow={1} width="50%">
+      <Box flexGrow={1}>
         {focused && (
           <TextInput value={value ? value : ''} onChange={changeHandler} />
         )}
         {!focused && <Text>{value === null ? 'null' : value}</Text>}
       </Box>
-      {hasError && (
-        <Box>
-          <Text color="red">{error}</Text>
-        </Box>
-      )}
     </Box>
   );
 };
