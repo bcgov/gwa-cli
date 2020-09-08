@@ -61,6 +61,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
       <StepHeader title="Configure Your Organization" />
       <PromptForm complete={valid} onSubmit={onSubmit}>
         <TextField
+          autoFocus
           required
           label="Organization Name"
           name="name"

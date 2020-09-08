@@ -6,6 +6,7 @@ import validUrl from 'valid-url';
 import { FormValue } from './types';
 
 interface TextFieldProps {
+  autoFocus: boolean;
   label: string;
   name: string;
   onChange: (key: string, value: string) => void;
@@ -16,6 +17,7 @@ interface TextFieldProps {
 }
 
 const TextField: React.FC<TextFieldProps> = ({
+  autoFocus = false,
   label,
   name,
   onEnter = () => false,
@@ -24,7 +26,7 @@ const TextField: React.FC<TextFieldProps> = ({
   required,
   type,
 }) => {
-  const { isFocused } = useFocus();
+  const { isFocused } = useFocus({ autoFocus });
   const [value, setValue] = useState<string>('');
   const [error, setError] = useState<string>('');
   const hasError = Boolean(error);
