@@ -44,6 +44,7 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
       },
     }));
     setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
   };
   const onToggleEnabled = (value: boolean) => {
     setPlugin((prev) => {
@@ -71,17 +72,19 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
 
   return (
     <Box flexDirection="column">
-      <Box marginY={1} justifyContent="space-between">
-        <Text>Form Header</Text>
+      <Box padding={1} marginY={1} justifyContent="space-between">
+        <Text>{plugin.description}</Text>
       </Box>
       <Form
         constraints={plugin.constraints}
         data={plugin.data.config}
         onSubmit={onSubmit}
       />
-      {saved && <Text color="greenBright">Settings Saved</Text>}
-      <Box justifyContent="flex-end">
-        <Text dimColor>Prev [ctrl+p] / Next [ctrl+n]</Text>
+      <Box justifyContent={saved ? 'space-between' : 'flex-end'}>
+        {saved && <Text color="greenBright">Settings Saved</Text>}
+        <Box justifyContent="flex-end">
+          <Text dimColor>Prev [ctrl+p] / Next [ctrl+n]</Text>
+        </Box>
       </Box>
     </Box>
   );

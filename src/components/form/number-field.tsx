@@ -25,7 +25,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
 }) => {
   const [error, setError] = React.useState<string>('');
   const hasError = Boolean(error);
-  const focusedColor = focused ? 'yellow' : '';
+  const focusedColor = focused ? 'yellow' : 'cyan';
   const labelColor = hasError ? 'red' : focusedColor;
   const handleChange = (value: string | number) => {
     const newValue = Number(value);
@@ -47,7 +47,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
   return (
     <Box>
       <Box marginRight={1}>
-        <Text bold color={labelColor}>
+        <Text color={labelColor}>
           {name}
           {required && '*'}:
         </Text>

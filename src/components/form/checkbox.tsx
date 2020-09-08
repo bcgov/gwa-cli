@@ -1,36 +1,45 @@
 import React from 'react';
-import { Box, Text, useFocus, useInput } from 'ink';
+import { Box, Text, useInput } from 'ink';
 
 interface CheckboxProps {
   autoFocus: boolean;
   checked: boolean;
-  label: string;
+  error: boolean;
+  focused: boolean;
   name: string;
-  onChange: (value: boolean) => void;
+  required: boolean;
+  onChange: (key: string, value: boolean) => void;
 }
 
 const Checkbox: React.FC<CheckboxProps> = ({
   autoFocus = false,
+  error,
+  focused,
   checked,
-  label,
   name,
+  required = false,
   onChange,
 }) => {
-  const { isFocused } = useFocus({ autoFocus });
+  const focusedColor = focused ? 'yellow' : 'cyan';
+  const hasError = Boolean(error);
+  const labelColor = hasError ? 'red' : focusedColor;
 
   useInput((input, key) => {
-    if (isFocused && key.return) {
-      onChange(!checked);
+    if (focused && key.return) {
+      onChange(name, !checked);
     }
   });
 
   return (
     <Box>
       <Box marginRight={1}>
-        <Text bold={isFocused}>[{checked ? 'X' : ' '}]</Text>
+        <Text color={labelColor}>
+          {name}
+          {required && '*'}:
+        </Text>
       </Box>
-      <Box marginRight={3}>
-        <Text>{label}</Text>
+      <Box marginRight={1}>
+        <Text bold={focused}>[{checked ? 'X' : ' '}]</Text>
       </Box>
       <Box>
         <Text italic color="grey">

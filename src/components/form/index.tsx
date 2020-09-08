@@ -9,6 +9,8 @@ import { Box, Text, useInput } from 'ink';
 import validate from 'validate.js';
 
 import ArrayField from './array-field';
+import Checkbox from './checkbox';
+import Errors from './errors';
 import FieldSet from './field-set';
 import TextField from './text-field';
 import NumberField from './number-field';
@@ -56,9 +58,12 @@ const getElement = ({
       );
     case 'boolean':
       return (
-        <Box>
-          <Text>{key} Boolean</Text>
-        </Box>
+        <Checkbox
+          required={!!field.precense}
+          name={key}
+          onChange={onChange}
+          checked={value}
+        />
       );
     default:
       return <Box />;
@@ -83,11 +88,12 @@ const Form: React.FC<FormProps> = ({
     setFormData((state: any) => ({ ...state, [key]: value }));
   };
   const onSubmitClick = useCallback(() => {
-    const errors = validate(formData, constraints, { format: 'flat' });
+    const errors = validate(formData, constraints);
 
     if (errors) {
       setErrors(errors);
     } else {
+      setErrors(null);
       onSubmit(formData);
     }
   }, [formData]);
@@ -99,7 +105,11 @@ const Form: React.FC<FormProps> = ({
 
     if (field) {
       elements.push(
-        <FieldSet error={errors?.length} key={key}>
+        <FieldSet
+          error={errors && errors.hasOwnProperty(key)}
+          key={key}
+          index={elements.length + 1}
+        >
           {el}
         </FieldSet>
       );
@@ -119,17 +129,9 @@ const Form: React.FC<FormProps> = ({
   });
 
   return (
-    <Box flexDirection="column" marginY={1}>
+    <Box flexDirection="column">
       <Box flexDirection="column">{elements}</Box>
-      {errors && (
-        <Box flexDirection="column" borderColor="redBright" borderStyle="round">
-          {errors.map((err) => (
-            <Box key={err}>
-              <Text color="red">- {err}</Text>
-            </Box>
-          ))}
-        </Box>
-      )}
+      {errors && <Errors errors={errors} />}
     </Box>
   );
 };

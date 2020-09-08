@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
 import TextInput from 'ink-text-input';
-import { Box, Text } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import validUrl from 'valid-url';
 
 interface ArrayFieldProps {
@@ -22,18 +22,27 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
   type,
   value,
 }) => {
+  const [isCommand, setIsCommand] = useState<boolean>(false);
   const hasError = Boolean(error);
-  const focusedColor = focused ? 'yellow' : '';
+  const focusedColor = focused ? 'yellow' : 'cyan';
   const labelColor = hasError ? 'red' : focusedColor;
   const valueString = value ? value.join(', ') : '';
   const changeHandler = (value: string) => {
-    onChange(name, value.split(', '));
+    if (!isCommand) {
+      onChange(name, value.split(/,\s+/g));
+    }
   };
+
+  useInput((input, key) => {
+    if (focused) {
+      setIsCommand(key.ctrl);
+    }
+  });
 
   return (
     <Box>
       <Box marginX={1}>
-        <Text bold color={labelColor}>
+        <Text color={labelColor}>
           {name}
           {required && '*'}:
         </Text>

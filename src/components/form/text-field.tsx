@@ -24,7 +24,7 @@ const TextField: React.FC<TextFieldProps> = ({
 }) => {
   const [isCommand, setIsCommand] = useState<boolean>(false);
   const hasError = Boolean(error);
-  const focusedColor = focused ? 'yellow' : '';
+  const focusedColor = focused ? 'yellow' : 'cyan';
   const labelColor = hasError ? 'red' : focusedColor;
   const changeHandler = useCallback(
     (value: string) => {
@@ -44,7 +44,7 @@ const TextField: React.FC<TextFieldProps> = ({
   return (
     <Box>
       <Box marginRight={1}>
-        <Text bold color={labelColor}>
+        <Text color={labelColor}>
           {name}
           {required && '*'}:
         </Text>
