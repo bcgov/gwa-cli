@@ -68,7 +68,7 @@ export function loadConfig(file: string) {
   });
 }
 
-export function buildSpec(dir: string) {
+export function buildSpec(dir: string, file?: string = 'spec.yaml'): void {
   const spec = specState.get();
   const plugins = pluginsState.get();
   const org = orgState.get();
@@ -83,5 +83,5 @@ export function buildSpec(dir: string) {
   const configRef = JSON.parse(JSON.stringify(spec)); //TODO This is lazy, replace with a proper clone
   configRef.services[0].plugins = enabledPlugins;
   const specFile = YAML.stringify(configRef);
-  fs.writeFileSync(resolve(dir + '/spec.yaml'), specFile);
+  fs.writeFileSync(resolve(`${dir}/${file}`), specFile);
 }

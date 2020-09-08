@@ -5,20 +5,29 @@ import AppContext from '../../services/context';
 import { buildSpec } from '../../services/kong';
 
 const Review: React.FC = () => {
-  const { dir } = useContext(AppContext);
+  const { dir, file } = useContext(AppContext);
   useEffect(() => {
-    buildSpec(dir);
-  }, []);
+    buildSpec(dir, file);
+  }, [dir, file]);
 
   return (
-    <Box flexDirection="column" justifyContent="center">
+    <Box
+      marginY={3}
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      width="100%"
+    >
       <Text bold>All Done!</Text>
       <Newline />
-      <Text>Your Kong config file has been generated to spec.yaml.</Text>
+      <Text>
+        Your Kong config file has been generated to{' '}
+        <Text inverse color="green">{`${file || 'spec.yaml'}`}</Text>.
+      </Text>
       <Newline />
       <Text>Commit and push this branch and make a PR to complete.</Text>
       <Newline />
-      <Text>Press [ CTRL + C ] to exit</Text>
+      <Text>Press [ ctrl + c ] to exit</Text>
     </Box>
   );
 };

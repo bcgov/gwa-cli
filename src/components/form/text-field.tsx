@@ -1,10 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import TextInput from 'ink-text-input';
-import { Box, Text, useFocus } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import validUrl from 'valid-url';
 
 interface TextFieldProps {
   error?: any | undefined;
+  focused: boolean;
   name: string;
   onChange: (key: string, value: string) => void;
   required?: boolean;
@@ -14,19 +15,31 @@ interface TextFieldProps {
 
 const TextField: React.FC<TextFieldProps> = ({
   error,
+  focused,
   onChange,
   name,
   required = false,
   type,
   value,
 }) => {
-  const { isFocused } = useFocus();
+  const [isCommand, setIsCommand] = useState<boolean>(false);
   const hasError = Boolean(error);
-  const focusedColor = isFocused ? 'green' : '';
+  const focusedColor = focused ? 'yellow' : '';
   const labelColor = hasError ? 'red' : focusedColor;
-  const changeHandler = (value: string) => {
-    onChange(name, value);
-  };
+  const changeHandler = useCallback(
+    (value: string) => {
+      if (!isCommand) {
+        onChange(name, value);
+      }
+    },
+    [focused, isCommand]
+  );
+
+  useInput((input, key) => {
+    if (focused) {
+      setIsCommand(key.ctrl);
+    }
+  });
 
   return (
     <Box>
@@ -37,10 +50,10 @@ const TextField: React.FC<TextFieldProps> = ({
         </Text>
       </Box>
       <Box flexGrow={1} width="50%">
-        {isFocused && (
-          <TextInput value={value ? value : 'null'} onChange={changeHandler} />
+        {focused && (
+          <TextInput value={value ? value : ''} onChange={changeHandler} />
         )}
-        {!isFocused && <Text>{value === null ? 'null' : value}</Text>}
+        {!focused && <Text>{value === null ? 'null' : value}</Text>}
       </Box>
       {hasError && (
         <Box>

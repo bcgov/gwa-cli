@@ -9,6 +9,7 @@ import { Box, Text, useInput } from 'ink';
 import validate from 'validate.js';
 
 import ArrayField from './array-field';
+import FieldSet from './field-set';
 import TextField from './text-field';
 import NumberField from './number-field';
 import Button from '../button';
@@ -29,7 +30,6 @@ const getElement = ({
     case 'array':
       return (
         <ArrayField
-          key={key}
           name={key}
           required={!!field.presence}
           onChange={onChange}
@@ -39,7 +39,6 @@ const getElement = ({
     case 'string':
       return (
         <TextField
-          key={key}
           name={key}
           required={!!field.presence}
           onChange={onChange}
@@ -49,15 +48,20 @@ const getElement = ({
     case 'number':
       return (
         <NumberField
-          key={key}
           name={key}
           onChange={onChange}
           required={!!field.presence}
           value={value}
         />
       );
+    case 'boolean':
+      return (
+        <Box>
+          <Text>{key} Boolean</Text>
+        </Box>
+      );
     default:
-      return <Box key={key} />;
+      return <Box />;
   }
 };
 
@@ -84,7 +88,6 @@ const Form: React.FC<FormProps> = ({
     if (errors) {
       setErrors(errors);
     } else {
-      1;
       onSubmit(formData);
     }
   }, [formData]);
@@ -92,7 +95,15 @@ const Form: React.FC<FormProps> = ({
   for (const key in constraints) {
     const field = constraints[key];
     const value = formData[key] || data[key];
-    elements.push(getElement({ key, field, value, onChange }));
+    const el = getElement({ key, field, value, onChange });
+
+    if (field) {
+      elements.push(
+        <FieldSet error={errors?.length} key={key}>
+          {el}
+        </FieldSet>
+      );
+    }
   }
 
   useEffect(() => {
@@ -108,7 +119,8 @@ const Form: React.FC<FormProps> = ({
   });
 
   return (
-    <Box flexDirection="column" margin={1}>
+    <Box flexDirection="column" marginY={1}>
+      <Box flexDirection="column">{elements}</Box>
       {errors && (
         <Box flexDirection="column" borderColor="redBright" borderStyle="round">
           {errors.map((err) => (
@@ -118,7 +130,6 @@ const Form: React.FC<FormProps> = ({
           ))}
         </Box>
       )}
-      <Box flexDirection="column">{elements}</Box>
     </Box>
   );
 };

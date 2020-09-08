@@ -1,8 +1,9 @@
 import * as React from 'react';
 import TextInput from 'ink-text-input';
-import { Box, Text, useFocus } from 'ink';
+import { Box, Text, useInput } from 'ink';
 
 interface NumberFieldProps {
+  focused: boolean;
   name: string;
   onChange: (key: string, value: number) => void;
   required?: boolean;
@@ -13,6 +14,7 @@ interface NumberFieldProps {
 }
 
 const NumberField: React.FC<NumberFieldProps> = ({
+  focused,
   onChange,
   max,
   min,
@@ -21,24 +23,26 @@ const NumberField: React.FC<NumberFieldProps> = ({
   step,
   value = 0,
 }) => {
-  const hasEntered = React.useRef<boolean>(false);
   const [error, setError] = React.useState<string>('');
-  const { isFocused } = useFocus();
-  const hasError = Boolean(error) && hasEntered.current;
-  const focusedColor = isFocused ? 'green' : '';
+  const hasError = Boolean(error);
+  const focusedColor = focused ? 'yellow' : '';
   const labelColor = hasError ? 'red' : focusedColor;
-  const handleChange = (value: string) => {
-    hasEntered.current = true;
-    onChange(name, Number(value));
+  const handleChange = (value: string | number) => {
+    const newValue = Number(value);
+    if (!Number.isNaN(newValue)) {
+      onChange(name, Number(value));
+    }
   };
 
-  /* React.useEffect(() => {
-   *   if (!isFocused && required && !value) {
-   *     setError('This field is required');
-   *   } else {
-   *     setError('');
-   *   }
-   * }, [isFocused, required, value]); */
+  useInput((input, key) => {
+    if (focused) {
+      if (key.upArrow) {
+        handleChange(value + 1);
+      } else if (key.downArrow) {
+        handleChange(value - 1);
+      }
+    }
+  });
 
   return (
     <Box>
@@ -49,16 +53,11 @@ const NumberField: React.FC<NumberFieldProps> = ({
         </Text>
       </Box>
       <Box flexGrow={1} width="50%">
-        {isFocused && (
-          <TextInput value={value.toString()} onChange={handleChange} />
+        {focused && (
+          <TextInput value={(value || 0).toString()} onChange={handleChange} />
         )}
-        {!isFocused && <Text>{value}</Text>}
+        {!focused && <Text>{value}</Text>}
       </Box>
-      {hasError && (
-        <Box>
-          <Text color="red">{error}</Text>
-        </Box>
-      )}
     </Box>
   );
 };

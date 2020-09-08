@@ -37,7 +37,9 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
         ...prev[plugin.id],
         data: {
           ...prev[plugin.id].data,
-          config: merge(prev[plugin.id].data.config, formData),
+          config: merge(prev[plugin.id].data.config, formData, {
+            arrayMerge: (destArr, srcArr) => srcArr,
+          }),
         },
       },
     }));
