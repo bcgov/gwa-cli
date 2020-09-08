@@ -15,9 +15,18 @@ A Github Package that can easily be installed like an npm package is coming soon
 
 ## Usage
 
+Create a new config file:
+
 ```bash
 $ cd /to/an/empty/dir
 $ gwa
+```
+
+Update an existing config
+
+```bash
+$ cd /to/a/config/dir
+$ gwa medications.yaml
 ```
 
 The `gwa` command will run the configuration wizard.
