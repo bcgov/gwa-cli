@@ -3,7 +3,7 @@ import TextInput from 'ink-text-input';
 import { Box, Text, useInput } from 'ink';
 
 interface NumberFieldProps {
-  focused: boolean;
+  focused?: boolean;
   name: string;
   onChange: (key: string, value: number) => void;
   required?: boolean;

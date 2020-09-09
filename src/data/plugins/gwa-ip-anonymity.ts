@@ -18,6 +18,7 @@ const plugin: IPlugin = {
   description:
     'A Kong plugin (current DataBC API Gateway) used for hide full or partial client IP to upstream services.',
   constraints,
+  encrypted: [],
   data: {
     name: 'gwa-ip-anonymity',
     enabled: false,

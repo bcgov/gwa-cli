@@ -51,9 +51,6 @@ const constraints = {
   redis_timeout: {
     type: 'number',
   },
-  protocols: {
-    type: 'array',
-  },
 };
 
 const plugin: IPlugin = {
@@ -62,6 +59,7 @@ const plugin: IPlugin = {
   description:
     'Rate limit how many HTTP requests can be made in a given period of seconds, minutes, hours, days, months, or years. If the underlying Service/Route (or deprecated API entity) has no authentication layer, the Client IP address will be used, otherwise the Consumer will be used if an authentication plugin has been configured.',
   constraints,
+  encrypted: [],
   data: {
     name: 'rate-limiting',
     enabled: false,
@@ -82,7 +80,6 @@ const plugin: IPlugin = {
       redis_password: null,
       redis_port: 6379,
       redis_timeout: 2000,
-      protocols: ['http', 'https'],
     },
   },
 };

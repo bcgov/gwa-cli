@@ -22,11 +22,13 @@ const getElement = ({
   field,
   value,
   onChange,
+  onEncrypt,
 }: {
   key: string;
   field: any;
   value: any;
   onChange: ChangeHandler;
+  onEncrypt: (key: string) => void;
 }) => {
   switch (field.type) {
     case 'array':
@@ -44,6 +46,7 @@ const getElement = ({
           name={key}
           required={!!field.presence}
           onChange={onChange}
+          onEncrypt={onEncrypt}
           value={value}
         />
       );
@@ -59,7 +62,7 @@ const getElement = ({
     case 'boolean':
       return (
         <Checkbox
-          required={!!field.precense}
+          required={!!field.presence}
           name={key}
           onChange={onChange}
           checked={value}
@@ -73,12 +76,16 @@ const getElement = ({
 interface FormProps {
   constraints: any;
   data: any;
+  encryptedFields: string[];
+  onEncrypt: (key: string) => void;
   onSubmit?: (data: any) => void;
 }
 
 const Form: React.FC<FormProps> = ({
   constraints,
   data,
+  encryptedFields,
+  onEncrypt,
   onSubmit = () => false,
 }) => {
   const [errors, setErrors] = useState<string[] | null>(null);
@@ -101,12 +108,13 @@ const Form: React.FC<FormProps> = ({
   for (const key in constraints) {
     const field = constraints[key];
     const value = formData[key] || data[key];
-    const el = getElement({ key, field, value, onChange });
+    const el = getElement({ key, field, value, onChange, onEncrypt });
 
     if (field) {
       elements.push(
         <FieldSet
-          error={errors && errors.hasOwnProperty(key)}
+          error={errors ? errors.hasOwnProperty(key) : false}
+          encrypted={encryptedFields.includes(key)}
           key={key}
           index={elements.length + 1}
         >

@@ -36,10 +36,7 @@ const App: React.FC<AppProps> = ({ args }) => {
   return (
     <AppContext.Provider value={args}>
       <Box flexDirection="column" width="100%">
-        <Route
-          path="/:any"
-          render={(props) => <AppBar {...props} file={args.file} />}
-        />
+        <Route path="/:any" component={AppBar} />
         <Box>
           <Switch>
             <Route exact path="/" component={Start} />

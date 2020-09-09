@@ -2,19 +2,17 @@ import React from 'react';
 import { Box, Text, useInput } from 'ink';
 
 interface CheckboxProps {
-  autoFocus: boolean;
-  checked: boolean;
-  error: boolean;
-  focused: boolean;
+  checked?: boolean;
+  error?: boolean;
+  focused?: boolean;
   name: string;
   required: boolean;
   onChange: (key: string, value: boolean) => void;
 }
 
 const Checkbox: React.FC<CheckboxProps> = ({
-  autoFocus = false,
-  error,
-  focused,
+  error = false,
+  focused = false,
   checked,
   name,
   required = false,

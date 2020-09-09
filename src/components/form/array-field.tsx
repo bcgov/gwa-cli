@@ -5,7 +5,7 @@ import validUrl from 'valid-url';
 
 interface ArrayFieldProps {
   error?: any | undefined;
-  focused: boolean;
+  focused?: boolean;
   name: string;
   onChange: (key: string, value: string[]) => void;
   required?: boolean;

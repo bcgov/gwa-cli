@@ -1,34 +1,40 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import TextInput from 'ink-text-input';
 import { Box, Text, useInput } from 'ink';
+import fetch from 'node-fetch';
+import TextInput from 'ink-text-input';
 import validUrl from 'valid-url';
 
 interface TextFieldProps {
+  encrypted: boolean;
   error?: any | undefined;
-  focused: boolean;
+  focused?: boolean;
   name: string;
   onChange: (key: string, value: string) => void;
+  onEncrypt: (key: string) => void;
   required?: boolean;
   type?: 'text' | 'url';
   value?: string | null;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
+  encrypted,
   error,
   focused,
   onChange,
+  onEncrypt,
   name,
   required = false,
   type,
   value,
 }) => {
   const [isCommand, setIsCommand] = useState<boolean>(false);
-  const hasError = Boolean(error);
   const focusedColor = focused ? 'yellow' : 'cyan';
-  const labelColor = hasError ? 'red' : focusedColor;
+  const labelColor = error ? 'red' : focusedColor;
   const changeHandler = useCallback(
     (value: string) => {
-      if (!isCommand) {
+      if (value.includes('~')) {
+        onEncrypt(name);
+      } else if (!isCommand) {
         onChange(name, value);
       }
     },

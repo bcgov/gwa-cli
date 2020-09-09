@@ -15,6 +15,7 @@ const plugin: IPlugin = {
   description:
     'This plugin will expose the OpenAPI Spec (OAS), Swagger, or other specification of auth protected API services fronted by the Kong gateway.',
   constraints,
+  encrypted: [],
   data: {
     name: 'kong-spec-expose',
     enabled: false,

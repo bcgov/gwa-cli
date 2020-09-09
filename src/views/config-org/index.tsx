@@ -6,14 +6,11 @@ import { useHistory } from 'react-router';
 import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
 import StepHeader from '../../components/step-header';
-import { orgState } from '../../state/org';
+import { orgState, OrgState } from '../../state/org';
 import { parseYaml } from '../../services/kong';
 import { specState } from '../../state/spec';
 
-type FormData = {
-  name: string;
-  specUrl: string;
-};
+type FormData = Omit<OrgState, 'host'>;
 
 interface ConfigOrgProps {}
 
@@ -25,6 +22,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   const [formData, setFormData] = React.useState<FormData>({
     name: '',
     specUrl: '',
+    file: '',
   });
   const [org, setOrg] = orgState.use();
   const [spec, setSpec] = specState.use();
@@ -38,7 +36,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   const onSubmit = async () => {
     setProcessing(true);
     try {
-      setOrg(formData);
+      setOrg((prev) => ({ ...prev, ...formData }));
       const config = await parseYaml(formData.specUrl, formData.name);
       setSpec(config);
       setProcessing(false);
@@ -61,7 +59,6 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
       <StepHeader title="Configure Your Organization" />
       <PromptForm complete={valid} onSubmit={onSubmit}>
         <TextField
-          autoFocus
           required
           label="Organization Name"
           name="name"
@@ -73,6 +70,14 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
           type="url"
           placeholder="URL should end with a .json"
           name="specUrl"
+          onChange={onChange}
+        />
+        <TextField
+          required
+          label="Config File Name"
+          type="text"
+          placeholder="Enter a name for the YAML config file"
+          name="file"
           onChange={onChange}
         />
       </PromptForm>

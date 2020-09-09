@@ -5,15 +5,13 @@ import { Route, Switch, RouteComponentProps } from 'react-router';
 import { orgState } from '../../state/org';
 import PluginStatus from '../plugins/status';
 
-interface AppBarProps extends RouteComponentProps {
-  file: string | null;
-}
+interface AppBarProps extends RouteComponentProps {}
 
-const AppBar: React.FC<AppBarProps> = ({ file, match }) => {
+const AppBar: React.FC<AppBarProps> = ({ match }) => {
   const { stdout } = useStdout();
   // const ref = useRef(null);
   const [fill, setFill] = useState<number>(0);
-  const { name } = orgState.useValue();
+  const { name, file } = orgState.useValue();
 
   /* stdout.on('resize', () => {
    *   const { width } = measureElement(ref.current);

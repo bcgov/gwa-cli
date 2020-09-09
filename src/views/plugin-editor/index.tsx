@@ -26,7 +26,7 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
   const ids = Object.keys(plugins);
   const plugin: IPlugin = plugins[match.params.plugin];
   const { focusNext } = useFocusManager();
-  const { isFocused } = useFocus();
+  // const { isFocused } = useFocus();
   const index = ids.indexOf(match.params.plugin);
   const total = ids.length;
 
@@ -60,6 +60,17 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
       };
     });
   };
+  const onEncrypt = (key: string) => {
+    setPlugin((prev) => ({
+      ...prev,
+      [plugin.id]: {
+        ...prev[plugin.id],
+        encrypted: prev[plugin.id].encrypted.includes(key)
+          ? prev[plugin.id].encrypted.filter((k) => k !== key)
+          : [...prev[plugin.id].encrypted, key],
+      },
+    }));
+  };
 
   useInput((input, key) => {
     if (input === 'e' && key.ctrl) {
@@ -76,8 +87,10 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
         <Text>{plugin.description}</Text>
       </Box>
       <Form
+        encryptedFields={plugin.encrypted}
         constraints={plugin.constraints}
         data={plugin.data.config}
+        onEncrypt={onEncrypt}
         onSubmit={onSubmit}
       />
       <Box justifyContent={saved ? 'space-between' : 'flex-end'} marginTop={2}>

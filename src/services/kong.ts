@@ -51,6 +51,7 @@ export function loadConfig(file: string) {
       ...prev,
       name,
       host,
+      file,
     }));
     plugins.forEach((plugin: any) => {
       if (pluginsState.get()[plugin.name]) {
@@ -69,7 +70,10 @@ export function loadConfig(file: string) {
   });
 }
 
-export function buildSpec(dir: string, file?: string = 'spec.yaml'): void {
+export function buildSpec(
+  dir: string,
+  file: string | null = 'spec.yaml'
+): void {
   const spec = specState.get();
   const plugins = pluginsState.get();
   const org = orgState.get();

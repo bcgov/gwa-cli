@@ -67,6 +67,7 @@ const plugin: IPlugin = {
   description:
     'kong-oidc is a plugin for Kong implementing the OpenID Connect Relying Party (RP) functionality.',
   constraints,
+  encrypted: [],
   data: {
     name: 'oidc',
     enabled: false,

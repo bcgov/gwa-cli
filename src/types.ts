@@ -9,6 +9,7 @@ export interface IPlugin {
   name: string;
   description: string;
   constraints: any;
+  encrypted: string[];
   data: {
     name: string;
     enabled: boolean;

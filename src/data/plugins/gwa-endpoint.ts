@@ -15,6 +15,7 @@ const plugin: IPlugin = {
   description:
     'Kong Plugin to process BC Government siteminder headers to apply kong consumers and acls (groups) to BC Government users.',
   constraints,
+  encrypted: [],
   data: {
     name: 'bcgov-gwa-endpoint',
     enabled: false,
