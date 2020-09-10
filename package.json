@@ -84,5 +84,8 @@
 		"rules": {
 			"react/prop-types": "off"
 		}
-	}
+	},
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com/"
+    }
 }
