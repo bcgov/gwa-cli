@@ -51,9 +51,13 @@ const AppBar: React.FC<AppBarProps> = ({ match }) => {
         </Box>
       </Box>
       <Box>
-        <Text inverse>{` ${name || '! [Service not configured]'} `}</Text>
-        <Text inverse color="gray">
-          {file ? ` [${file}] ` : ' [+] New configuration '}
+        <Text inverse>
+          {` ${name || '! [Service not configured]'} ${
+            file ? `[${file}] ` : ' [+] New configuration '
+          }`}
+        </Text>
+        <Text inverse color="green">
+          {'[P] Publish '}
         </Text>
       </Box>
     </Box>

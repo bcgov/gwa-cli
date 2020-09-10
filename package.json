@@ -21,7 +21,7 @@
 		"deepmerge": "^4.2.2",
 		"history": "^4.0.0",
 		"import-jsx": "^4.0.0",
-		"ink": "^3.0.3",
+		"ink": "^3.0.5",
 		"ink-big-text": "^1.2.0",
 		"ink-color-pipe": "^1.0.0",
 		"ink-confirm-input": "^2.0.0",
@@ -32,7 +32,7 @@
 		"ink-text-input": "^4.0.0",
 		"meow": "^7.0.1",
 		"minimist": "^1.2.5",
-		"node-fetch": "^2.6.0",
+		"node-fetch": "^2.6.1",
 		"openapi-2-kong": "^2.2.12",
 		"react": "^16.13.1",
 		"react-ridge-state": "^4.1.6",
@@ -85,7 +85,7 @@
 			"react/prop-types": "off"
 		}
 	},
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com/"
-    }
+	"publishConfig": {
+		"registry": "https://npm.pkg.github.com/"
+	}
 }

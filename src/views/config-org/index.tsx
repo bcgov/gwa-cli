@@ -56,7 +56,6 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
 
   return (
     <Box flexDirection="column">
-      <StepHeader title="Configure Your Organization" />
       <PromptForm complete={valid} onSubmit={onSubmit}>
         <TextField
           required

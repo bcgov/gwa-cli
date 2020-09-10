@@ -4,6 +4,7 @@ import { Route } from 'react-router';
 import { Tab, Tabs } from 'ink-tab';
 import { match, useHistory, useLocation } from 'react-router';
 
+import { appState } from '../../state/app';
 import { IPlugin } from '../../types';
 import { activePluginState, pluginsState } from '../../state/plugins';
 import PluginsList from './list';
@@ -17,6 +18,7 @@ interface PluginsProps {
 }
 
 const Plugins: React.FC<PluginsProps> = ({ match }) => {
+  const [app, setAppState] = appState.use();
   const history = useHistory();
   const { pathname } = useLocation();
   const [index, setIndex] = useState<number>(0);
@@ -27,15 +29,17 @@ const Plugins: React.FC<PluginsProps> = ({ match }) => {
   useInput((input, key) => {
     const idx = urls.indexOf(pathname);
 
-    if (input === 'n' && key.ctrl) {
-      const nextIndex = idx + 1;
-      const nextUrlCandidate = urls[nextIndex];
-      const nextUrl = nextUrlCandidate || urls[0];
-      history.push(nextUrl);
-    } else if (input === 'p' && key.ctrl) {
-      const prevIndex = idx - 1;
-      const prevUrl = prevIndex < 0 ? urls.slice(-1)[0] : urls[prevIndex];
-      history.push(prevUrl);
+    if (app.mode === 'view') {
+      if (input === 'n') {
+        const nextIndex = idx + 1;
+        const nextUrlCandidate = urls[nextIndex];
+        const nextUrl = nextUrlCandidate || urls[0];
+        history.push(nextUrl);
+      } else if (input === 'p') {
+        const prevIndex = idx - 1;
+        const prevUrl = prevIndex < 0 ? urls.slice(-1)[0] : urls[prevIndex];
+        history.push(prevUrl);
+      }
     }
   });
 

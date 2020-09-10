@@ -1,15 +1,27 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Box, Newline, Text } from 'ink';
+import { Box, Newline, Text, useInput } from 'ink';
+import { useHistory } from 'react-router';
 
 import AppContext from '../../services/context';
 import { buildSpec } from '../../services/kong';
+import { orgState } from '../../state/org';
 
 const Review: React.FC = () => {
+  const history = useHistory();
   const [error, setError] = useState<boolean>(false);
   const { dir, file } = useContext(AppContext);
+  const org = orgState.useValue();
+  const fileName = file || org.file;
+
+  useInput((input, key) => {
+    if (error && key.return) {
+      history.goBack();
+    }
+  });
+
   useEffect(() => {
     try {
-      buildSpec(dir, file);
+      buildSpec(dir, fileName);
     } catch (err) {
       setError(true);
     }
@@ -28,7 +40,7 @@ const Review: React.FC = () => {
           <Text bold color="red">
             Export Failed
           </Text>
-          <Text>[ ctrl + j ] to go back</Text>
+          <Text>[ Enter ] to go back</Text>
         </Box>
       )}
       {!error && (
@@ -36,8 +48,8 @@ const Review: React.FC = () => {
           <Text bold>All Done!</Text>
           <Newline />
           <Text>
-            Your Kong config file has been generated to{' '}
-            <Text inverse color="green">{`${file || 'spec.yaml'}`}</Text>.
+            Your Kong config file has been generated in{' '}
+            <Text inverse color="green">{`${fileName || 'spec.yaml'}`}</Text>.
           </Text>
           <Newline />
           <Text>Commit and push this branch and make a PR to complete.</Text>

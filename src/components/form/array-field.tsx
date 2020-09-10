@@ -4,6 +4,7 @@ import { Box, Text, useInput } from 'ink';
 import validUrl from 'valid-url';
 
 interface ArrayFieldProps {
+  enabled?: boolean;
   error?: any | undefined;
   focused?: boolean;
   name: string;
@@ -14,6 +15,7 @@ interface ArrayFieldProps {
 }
 
 const ArrayField: React.FC<ArrayFieldProps> = ({
+  enabled = false,
   error,
   focused,
   onChange,
@@ -22,34 +24,25 @@ const ArrayField: React.FC<ArrayFieldProps> = ({
   type,
   value,
 }) => {
-  const [isCommand, setIsCommand] = useState<boolean>(false);
   const hasError = Boolean(error);
   const focusedColor = focused ? 'yellow' : 'cyan';
   const labelColor = hasError ? 'red' : focusedColor;
   const valueString = value ? value.join(', ') : '';
   const changeHandler = (value: string) => {
-    if (!isCommand) {
-      onChange(name, value.split(/,\s+/g));
-    }
+    onChange(name, value.split(/,\s+/g));
   };
-
-  useInput((input, key) => {
-    if (focused) {
-      setIsCommand(key.ctrl);
-    }
-  });
 
   return (
     <Box>
       <Box marginX={1}>
-        <Text color={labelColor}>
-          {name}
-          {required && '*'}:
-        </Text>
+        <Text color={labelColor}>{name}</Text>
       </Box>
       <Box flexGrow={1} width="50%">
-        {focused && <TextInput value={valueString} onChange={changeHandler} />}
-        {!focused && <Text>{valueString}</Text>}
+        <TextInput
+          focus={focused && enabled}
+          value={valueString}
+          onChange={changeHandler}
+        />
       </Box>
       {hasError && (
         <Box>

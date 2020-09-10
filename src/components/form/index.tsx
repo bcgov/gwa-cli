@@ -76,6 +76,7 @@ const getElement = ({
 interface FormProps {
   constraints: any;
   data: any;
+  enabled: boolean;
   encryptedFields: string[];
   onEncrypt: (key: string) => void;
   onSubmit?: (data: any) => void;
@@ -84,10 +85,12 @@ interface FormProps {
 const Form: React.FC<FormProps> = ({
   constraints,
   data,
+  enabled,
   encryptedFields,
   onEncrypt,
   onSubmit = () => false,
 }) => {
+  const [tabIndex, setTabIndex] = useState<number>(0);
   const [errors, setErrors] = useState<string[] | null>(null);
   const [formData, setFormData] = useState<any>(data);
   const elements = [];
@@ -111,12 +114,17 @@ const Form: React.FC<FormProps> = ({
     const el = getElement({ key, field, value, onChange, onEncrypt });
 
     if (field) {
+      const fieldIndex = elements.length + 1;
       elements.push(
         <FieldSet
+          key={key}
+          focused={tabIndex === fieldIndex}
+          enabled={enabled}
           error={errors ? errors.hasOwnProperty(key) : false}
           encrypted={encryptedFields.includes(key)}
-          key={key}
-          index={elements.length + 1}
+          index={fieldIndex}
+          editing={enabled}
+          required={!!field.presence}
         >
           {el}
         </FieldSet>
@@ -130,9 +138,23 @@ const Form: React.FC<FormProps> = ({
     }
   }, [data]);
 
+  useEffect(() => {
+    return () => setTabIndex(0);
+  }, []);
+
   useInput((input, key) => {
-    if (input === 's' && key.ctrl) {
-      onSubmitClick();
+    if (enabled) {
+      if (key.escape) {
+        onSubmitClick();
+      }
+    } else {
+      if (key.tab) {
+        if (key.shift) {
+          setTabIndex(Math.max(tabIndex - 1, 0));
+        } else {
+          setTabIndex(Math.min(tabIndex + 1, elements.length));
+        }
+      }
     }
   });
 

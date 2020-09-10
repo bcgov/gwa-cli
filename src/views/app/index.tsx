@@ -3,6 +3,7 @@ import { Box, Text, useApp, useInput } from 'ink';
 import { Route, Switch, useLocation, useHistory } from 'react-router';
 
 import AppBar from './app-bar';
+import { appState } from '../../state/app';
 import AppContext from '../../services/context';
 import ConfigOrg from '../config-org';
 import { IAppContext } from '../../types';
@@ -15,6 +16,7 @@ interface AppProps {
 }
 
 const App: React.FC<AppProps> = ({ args }) => {
+  const [state, setAppState] = appState.use();
   const history = useHistory();
   const location = useLocation();
   const { exit } = useApp();
@@ -22,14 +24,24 @@ const App: React.FC<AppProps> = ({ args }) => {
   useInput((input, key) => {
     if (input === 'q' && key.ctrl) {
       exit();
-    } else if (input === 'l' && key.ctrl) {
-      history.push(location.pathname.replace(/\/([a-z0-9_-]*[\/]?)$/, ''));
-    } else if (input === 'k' && key.ctrl) {
-      history.goForward();
-    } else if (input === 'j' && key.ctrl) {
-      history.goBack();
-    } else if (input === 'y' && key.ctrl) {
-      history.push('/export');
+    }
+    if (state.mode === 'view') {
+      if (input === 'l' && key.ctrl) {
+        history.push(location.pathname.replace(/\/([a-z0-9_-]*[\/]?)$/, ''));
+      } else if (key.rightArrow) {
+        history.goForward();
+      } else if (key.leftArrow) {
+        history.goBack();
+      } else if (input === 'P') {
+        history.push('/export');
+      }
+    } else {
+      if (key.escape) {
+        setAppState((prev) => ({
+          ...prev,
+          mode: 'view',
+        }));
+      }
     }
   });
 

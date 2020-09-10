@@ -13,6 +13,7 @@ import { RouteComponentProps } from 'react-router';
 import TextInput from 'ink-text-input';
 import { ValidateJS } from 'validate.js';
 
+import { appState } from '../../state/app';
 import Checkbox from '../../components/form/checkbox';
 import Form from '../../components/form';
 import { IPlugin } from '../../types';
@@ -21,12 +22,13 @@ import { pluginsState } from '../../state/plugins';
 interface PluginEditorProps extends RouteComponentProps<{ plugin: string }> {}
 
 const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
+  const mode = appState.useSelector((state) => state.mode);
+  const [state, setAppState] = appState.use();
   const [plugins, setPlugin] = pluginsState.use();
   const [saved, setSaved] = useState<boolean>(false);
   const ids = Object.keys(plugins);
   const plugin: IPlugin = plugins[match.params.plugin];
   const { focusNext } = useFocusManager();
-  // const { isFocused } = useFocus();
   const index = ids.indexOf(match.params.plugin);
   const total = ids.length;
 
@@ -73,12 +75,15 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
   };
 
   useInput((input, key) => {
-    if (input === 'e' && key.ctrl) {
+    if (input === 'e') {
       onToggleEnabled(!plugin.data.enabled);
     }
-    /* if (!isFocused && key.return) {
-     *   focusNext();
-     * } */
+    if (key.return) {
+      setAppState((prev) => ({
+        ...prev,
+        mode: 'edit',
+      }));
+    }
   });
 
   return (
@@ -87,14 +92,21 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
         <Text>{plugin.description}</Text>
       </Box>
       <Form
+        enabled={state.mode === 'edit'}
         encryptedFields={plugin.encrypted}
         constraints={plugin.constraints}
         data={plugin.data.config}
         onEncrypt={onEncrypt}
         onSubmit={onSubmit}
       />
-      <Box justifyContent={saved ? 'space-between' : 'flex-end'} marginTop={2}>
-        {saved && <Text color="greenBright">Settings Saved</Text>}
+      <Box justifyContent="space-between" marginTop={2}>
+        <Box>
+          <Text inverse>{` Mode: `}</Text>
+          <Text inverse color="magenta">
+            {` ${mode} [${mode === 'edit' ? 'ESC' : 'Enter'}] `}
+          </Text>
+          {saved && <Text color="greenBright">{' Settings Saved '}</Text>}
+        </Box>
         <Box justifyContent="flex-end">
           <Text dimColor>Prev [ctrl+p] / Next [ctrl+n]</Text>
         </Box>
