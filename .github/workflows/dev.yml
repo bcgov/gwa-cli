@@ -25,12 +25,14 @@ jobs:
         fetch-depth: 0
 
     # install and publish new config
-    - name: NPM package
-      uses: actions/setup-node@v1
+    - uses: actions/setup-node@v1
       with:
-        node-version: 10
+        node-version: 12
+        registry-url: https://npm.pkg.github.com/
+        scope: '@bcgov'
         TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - run: |
+    - name: NPM package
+      run: |
         # GITHUB_REF=refs/heads/dev
         # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
         # GITHUB_RUN_ID=193633377
