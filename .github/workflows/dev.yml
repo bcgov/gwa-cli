@@ -24,46 +24,42 @@ jobs:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
 
-    # Setup .npmrc file to publish to npm
-    - uses: actions/setup-node@v1
-      with:
-        node-version: '10.x'
-        registry-url: 'https://registry.npmjs.org'
-    - run: npm install
-    # Publish to npm
-    - run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-    # Setup .npmrc file to publish to GitHub Packages
-    - uses: actions/setup-node@v1
-      with:
-        registry-url: 'https://npm.pkg.github.com'
-        # Defaults to the user or organization that owns the workflow file
-        scope: '@octocat'
-    # Publish to GitHub Packages
-    - run: npm publish
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    # # install and publish new config
+    # # Setup .npmrc file to publish to npm
     # - uses: actions/setup-node@v1
     #   with:
-    #     node-version: 12
-    #     registry-url: https://npm.pkg.github.com/
-    #     scope: '@bcgov'
-    #     TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     node-version: '10.x'
+    #     registry-url: 'https://registry.npmjs.org'
+    # - run: npm install
+    # # Publish to npm
+    # - run: npm publish --access public
     #   env:
-    #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
-    # - name: NPM package
-    #   run: |
-    #     # GITHUB_REF=refs/heads/dev
-    #     # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
-    #     # GITHUB_RUN_ID=193633377
-    #     echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+    #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    # # Setup .npmrc file to publish to GitHub Packages
+    # - uses: actions/setup-node@v1
+    #   with:
+    #     registry-url: 'https://npm.pkg.github.com'
+    #     # Defaults to the user or organization that owns the workflow file
+    #     scope: '@octocat'
+    # # Publish to GitHub Packages
+    # - run: npm publish
+    #   env:
+    #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                
+    # install and publish new config
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 12
+        registry-url: https://npm.pkg.github.com/
+        scope: '@bcgov'
+        TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: NPM package
+      run: |
+        # GITHUB_REF=refs/heads/dev
+        # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
+        # GITHUB_RUN_ID=193633377
+        echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
 
-    #     export TAG=`echo $GITHUB_SHA | cut -c1-7`
-    #     npm version "0.0.0-$TAG" --git-tag-version=false
-    #     npm install
-    #     npm publish --access public --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
-    #   env:
-    #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}        
+        export TAG=`echo $GITHUB_SHA | cut -c1-7`
+        npm version "0.0.0-$TAG" --git-tag-version=false
+        npm install
+        npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
