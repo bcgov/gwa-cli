@@ -17,12 +17,13 @@ import { appState } from '../../state/app';
 import Checkbox from '../../components/form/checkbox';
 import Form from '../../components/form';
 import { IPlugin } from '../../types';
-import { pluginsState } from '../../state/plugins';
+import { encryptedValues, pluginsState } from '../../state/plugins';
 
 interface PluginEditorProps extends RouteComponentProps<{ plugin: string }> {}
 
 const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
   const mode = appState.useSelector((state) => state.mode);
+  const [encrypted, setEncrypted] = encryptedValues.use();
   const [state, setAppState] = appState.use();
   const [plugins, setPlugin] = pluginsState.use();
   const [saved, setSaved] = useState<boolean>(false);
@@ -62,16 +63,13 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
       };
     });
   };
-  const onEncrypt = (key: string) => {
-    setPlugin((prev) => ({
-      ...prev,
-      [plugin.id]: {
-        ...prev[plugin.id],
-        encrypted: prev[plugin.id].encrypted.includes(key)
-          ? prev[plugin.id].encrypted.filter((k) => k !== key)
-          : [...prev[plugin.id].encrypted, key],
-      },
-    }));
+  const onEncrypt = (key: string, isEncrypted: boolean) => {
+    setEncrypted((prev) => {
+      if (isEncrypted) {
+        return [...prev, key];
+      }
+      return prev.filter((v) => v !== key);
+    });
   };
 
   useInput((input, key) => {
@@ -93,7 +91,7 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
       </Box>
       <Form
         enabled={state.mode === 'edit'}
-        encryptedFields={plugin.encrypted}
+        encryptedFields={encrypted}
         constraints={plugin.constraints}
         data={plugin.data.config}
         onEncrypt={onEncrypt}
@@ -101,14 +99,17 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
       />
       <Box justifyContent="space-between" marginTop={2}>
         <Box>
-          <Text inverse>{` Mode: `}</Text>
+          <Text bold inverse>
+            {' '}
+            {mode.toUpperCase()}{' '}
+          </Text>
           <Text inverse color="magenta">
-            {` ${mode} [${mode === 'edit' ? 'ESC' : 'Enter'}] `}
+            {` [${mode === 'edit' ? 'ESC to save' : 'ENTER to edit'}] `}
           </Text>
           {saved && <Text color="greenBright">{' Settings Saved '}</Text>}
         </Box>
         <Box justifyContent="flex-end">
-          <Text dimColor>Prev [ctrl+p] / Next [ctrl+n]</Text>
+          {mode === 'view' && <Text dimColor>[p] Prev / Next [n]</Text>}
         </Box>
       </Box>
     </Box>

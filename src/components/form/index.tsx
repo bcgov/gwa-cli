@@ -22,13 +22,11 @@ const getElement = ({
   field,
   value,
   onChange,
-  onEncrypt,
 }: {
   key: string;
   field: any;
   value: any;
   onChange: ChangeHandler;
-  onEncrypt: (key: string) => void;
 }) => {
   switch (field.type) {
     case 'array':
@@ -46,7 +44,6 @@ const getElement = ({
           name={key}
           required={!!field.presence}
           onChange={onChange}
-          onEncrypt={onEncrypt}
           value={value}
         />
       );
@@ -78,7 +75,7 @@ interface FormProps {
   data: any;
   enabled: boolean;
   encryptedFields: string[];
-  onEncrypt: (key: string) => void;
+  onEncrypt: (key: string, encrypted: boolean) => void;
   onSubmit?: (data: any) => void;
 }
 
@@ -111,19 +108,21 @@ const Form: React.FC<FormProps> = ({
   for (const key in constraints) {
     const field = constraints[key];
     const value = formData[key] || data[key];
-    const el = getElement({ key, field, value, onChange, onEncrypt });
+    const el = getElement({ key, field, value, onChange });
 
     if (field) {
       const fieldIndex = elements.length + 1;
       elements.push(
         <FieldSet
           key={key}
-          focused={tabIndex === fieldIndex}
+          focused={tabIndex === elements.length}
           enabled={enabled}
           error={errors ? errors.hasOwnProperty(key) : false}
           encrypted={encryptedFields.includes(key)}
           index={fieldIndex}
           editing={enabled}
+          name={key}
+          onEncrypt={onEncrypt}
           required={!!field.presence}
         >
           {el}
@@ -135,6 +134,8 @@ const Form: React.FC<FormProps> = ({
   useEffect(() => {
     if (data !== formData) {
       setFormData(data);
+      setTabIndex(0);
+      setErrors(null);
     }
   }, [data]);
 

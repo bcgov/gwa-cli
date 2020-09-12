@@ -54,10 +54,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
   return (
     <Box>
       <Box marginRight={1}>
-        <Text color={labelColor}>
-          {name}
-          {required && '*'}:
-        </Text>
+        <Text color={labelColor}>{name}</Text>
       </Box>
       <Box flexGrow={1} width="50%">
         <Text>{(!value ? 0 : value).toString()}</Text>

@@ -1,5 +1,5 @@
 import React, { cloneElement, useEffect } from 'react';
-import { Box, Text, useFocus } from 'ink';
+import { Box, Text, useInput } from 'ink';
 
 interface FieldSetProps {
   children: React.ReactElement | React.ReactElement[];
@@ -8,6 +8,8 @@ interface FieldSetProps {
   encrypted: boolean;
   error: boolean;
   focused: boolean;
+  onEncrypt: (name: string, encrypted: boolean) => void;
+  name: string;
   index: number;
   required: boolean;
 }
@@ -20,23 +22,30 @@ const FieldSet: React.FC<FieldSetProps> = ({
   encrypted,
   focused,
   index,
+  name,
+  onEncrypt,
   required,
 }) => {
-  const isFocused = false;
   const focusedColor = enabled ? 'cyan' : 'yellow';
+  const indicator = focused ? '>' : ' ';
   const requiredColumn = required ? '*' : ' ';
-  /* const { isFocused } = useFocus({
-   *   isActive: enabled,
-   * }); */
+
+  useInput((input) => {
+    if (focused && input === 'E') {
+      onEncrypt(name, !encrypted);
+    }
+  });
 
   return (
     <Box>
-      <Box width={4} justifyContent="flex-end">
+      <Box width={5}>
         <Text inverse={error || focused} color={error ? 'red' : focusedColor}>
-          {encrypted ? 'E' : ' '}
+          {indicator}
         </Text>
         <Text inverse={error || focused} color={error ? 'red' : focusedColor}>
-          {index < 10 && ' '} {index}
+          {encrypted ? 'E ' : '  '}
+          {index < 10 && ' '}
+          {index}
         </Text>
       </Box>
       <Box width={1} marginRight={1}>

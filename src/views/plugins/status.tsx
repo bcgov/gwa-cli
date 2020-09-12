@@ -20,7 +20,7 @@ const PluginStatus: React.FC<PluginStatusProps> = ({ match }) => {
         inverse
         color={plugin.data.enabled ? 'greenBright' : 'magentaBright'}
       >
-        {plugin.data.enabled ? ' Enabled ' : ' Disabled '}
+        {plugin.data.enabled ? ' [e] Enabled ' : ' [e] Disabled '}
       </Text>
     </Box>
   );

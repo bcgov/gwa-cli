@@ -11,7 +11,6 @@ interface TextFieldProps {
   focused?: boolean;
   name: string;
   onChange: (key: string, value: string) => void;
-  onEncrypt: (key: string) => void;
   required?: boolean;
   type?: 'text' | 'url';
   value?: string | null;
@@ -24,7 +23,6 @@ const TextField: React.FC<TextFieldProps> = ({
   error,
   focused,
   onChange,
-  onEncrypt,
   name,
   required = false,
   type,
@@ -34,11 +32,7 @@ const TextField: React.FC<TextFieldProps> = ({
   const labelColor = error ? 'red' : focusedColor;
   const changeHandler = useCallback(
     (value: string) => {
-      if (value.includes('~')) {
-        onEncrypt(name);
-      } else {
-        onChange(name, value);
-      }
+      onChange(name, value);
     },
     [focused]
   );

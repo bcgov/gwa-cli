@@ -8,3 +8,5 @@ export const pluginsState = newRidgeState<{ [prop: string]: IPlugin }>(
 );
 
 export const activePluginState = newRidgeState<string>('bcgov-gwa-endpoint');
+
+export const encryptedValues = newRidgeState<string[]>([]);

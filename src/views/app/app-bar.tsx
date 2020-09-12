@@ -8,7 +8,7 @@ import PluginStatus from '../plugins/status';
 interface AppBarProps extends RouteComponentProps {}
 
 const AppBar: React.FC<AppBarProps> = ({ match }) => {
-  const { stdout } = useStdout();
+  // const { stdout } = useStdout();
   // const ref = useRef(null);
   const [fill, setFill] = useState<number>(0);
   const { name, file } = orgState.useValue();
@@ -52,12 +52,7 @@ const AppBar: React.FC<AppBarProps> = ({ match }) => {
       </Box>
       <Box>
         <Text inverse>
-          {` ${name || '! [Service not configured]'} ${
-            file ? `[${file}] ` : ' [+] New configuration '
-          }`}
-        </Text>
-        <Text inverse color="green">
-          {'[P] Publish '}
+          {` ${name || ''} ${file ? `[${file}] ` : ' [+] New configuration '}`}
         </Text>
       </Box>
     </Box>
