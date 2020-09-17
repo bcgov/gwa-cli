@@ -43,11 +43,15 @@ const constraints = {
   },
   client_id: {
     type: 'string',
-    presence: true,
+    presence: {
+      allowEmpty: false,
+    },
   },
   client_secret: {
     type: 'string',
-    presence: true,
+    presence: {
+      allowEmpty: false,
+    },
   },
   discovery: {
     type: 'string',

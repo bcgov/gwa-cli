@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Box, measureElement, Text, useStdout } from 'ink';
+import React, { useState } from 'react';
+import { Box, /* measureElement,*/ Text /* useStdout*/ } from 'ink';
 import { Route, Switch, RouteComponentProps } from 'react-router';
 
 import { orgState } from '../../state/org';
@@ -10,7 +10,7 @@ interface AppBarProps extends RouteComponentProps {}
 const AppBar: React.FC<AppBarProps> = ({ match }) => {
   // const { stdout } = useStdout();
   // const ref = useRef(null);
-  const [fill, setFill] = useState<number>(0);
+  // const [fill, setFill] = useState<number>(0);
   const { name, file } = orgState.useValue();
 
   /* stdout.on('resize', () => {

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Text, useApp, useInput } from 'ink';
+import { Box, useApp, useInput } from 'ink';
 import { Route, Switch, useLocation, useHistory } from 'react-router';
 
 import AppBar from './app-bar';

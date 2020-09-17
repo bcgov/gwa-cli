@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Box, Newline, Text, useInput } from 'ink';
 import { useHistory } from 'react-router';
 
@@ -8,24 +8,26 @@ import { orgState } from '../../state/org';
 
 const Review: React.FC = () => {
   const history = useHistory();
+  const [done, setDone] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const { dir, file } = useContext(AppContext);
   const org = orgState.useValue();
   const fileName = file || org.file;
 
   useInput((input, key) => {
-    if (error && key.return) {
-      history.goBack();
+    if (key.return) {
+      if (error) {
+        history.goBack();
+      } else {
+        try {
+          buildSpec(dir, fileName);
+          setDone(true);
+        } catch (err) {
+          setError(true);
+        }
+      }
     }
   });
-
-  useEffect(() => {
-    try {
-      buildSpec(dir, fileName);
-    } catch (err) {
-      setError(true);
-    }
-  }, [dir, file]);
 
   return (
     <Box
@@ -45,14 +47,18 @@ const Review: React.FC = () => {
       )}
       {!error && (
         <>
-          <Text bold>All Done!</Text>
+          <Text bold>Export</Text>
           <Newline />
           <Text>
-            Your Kong config file has been generated in{' '}
+            Hit [ENTER] to export your changes to{' '}
             <Text inverse color="green">{`${fileName || 'spec.yaml'}`}</Text>.
+            {done && (
+              <Text bold color="green">
+                {' '}
+                Saved!
+              </Text>
+            )}
           </Text>
-          <Newline />
-          <Text>Commit and push this branch and make a PR to complete.</Text>
           <Newline />
           <Text>Press [ ctrl + c ] to exit</Text>
         </>

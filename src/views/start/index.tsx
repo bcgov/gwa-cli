@@ -21,6 +21,11 @@ const StartView: React.FC<{}> = () => {
       value: '/editor',
       enabled: true,
     },
+    {
+      label: 'Export',
+      value: '/export',
+      enabled: !!file,
+    },
   ];
   const onSelect = (item: any) => {
     push(item.value);

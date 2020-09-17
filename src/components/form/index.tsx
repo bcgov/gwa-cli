@@ -14,7 +14,6 @@ import Errors from './errors';
 import FieldSet from './field-set';
 import TextField from './text-field';
 import NumberField from './number-field';
-import Button from '../button';
 
 type ChangeHandler = (key: string, value: any) => void;
 const getElement = ({
@@ -22,19 +21,21 @@ const getElement = ({
   field,
   value,
   onChange,
+  onSubmit,
 }: {
   key: string;
   field: any;
   value: any;
   onChange: ChangeHandler;
+  onSubmit: () => void;
 }) => {
   switch (field.type) {
     case 'array':
       return (
         <ArrayField
           name={key}
-          required={!!field.presence}
           onChange={onChange}
+          onSubmit={onSubmit}
           value={value}
         />
       );
@@ -42,8 +43,8 @@ const getElement = ({
       return (
         <TextField
           name={key}
-          required={!!field.presence}
           onChange={onChange}
+          onSubmit={onSubmit}
           value={value}
         />
       );
@@ -52,19 +53,12 @@ const getElement = ({
         <NumberField
           name={key}
           onChange={onChange}
-          required={!!field.presence}
+          onSubmit={onSubmit}
           value={value}
         />
       );
     case 'boolean':
-      return (
-        <Checkbox
-          required={!!field.presence}
-          name={key}
-          onChange={onChange}
-          checked={value}
-        />
-      );
+      return <Checkbox name={key} onChange={onChange} checked={value} />;
     default:
       return <Box />;
   }
@@ -104,11 +98,14 @@ const Form: React.FC<FormProps> = ({
       onSubmit(formData);
     }
   }, [formData]);
+  const focusNext = () => {
+    setTabIndex(Math.min(tabIndex + 1, elements.length));
+  };
 
   for (const key in constraints) {
     const field = constraints[key];
     const value = formData[key] || data[key];
-    const el = getElement({ key, field, value, onChange });
+    const el = getElement({ key, field, value, onChange, onSubmit: focusNext });
 
     if (field) {
       const fieldIndex = elements.length + 1;
@@ -148,13 +145,13 @@ const Form: React.FC<FormProps> = ({
       if (key.escape) {
         onSubmitClick();
       }
-    } else {
-      if (key.tab) {
-        if (key.shift) {
-          setTabIndex(Math.max(tabIndex - 1, 0));
-        } else {
-          setTabIndex(Math.min(tabIndex + 1, elements.length));
-        }
+    }
+
+    if (key.tab && elements.length > 1) {
+      if (key.shift) {
+        setTabIndex(Math.max(tabIndex - 1, 0));
+      } else {
+        setTabIndex(Math.min(tabIndex + 1, elements.length));
       }
     }
   });

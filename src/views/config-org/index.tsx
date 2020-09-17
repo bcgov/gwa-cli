@@ -1,14 +1,14 @@
-import * as React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import { useHistory } from 'react-router';
 
+import { appState } from '../../state/app';
 import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
-import StepHeader from '../../components/step-header';
 import { orgState, OrgState } from '../../state/org';
-import { parseYaml } from '../../services/kong';
 import { specState } from '../../state/spec';
+import { parseYaml } from '../../services/kong';
 
 type FormData = Omit<OrgState, 'host'>;
 
@@ -16,16 +16,17 @@ interface ConfigOrgProps {}
 
 const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   const history = useHistory();
-  const [isProcessing, setProcessing] = React.useState<boolean>(false);
-  const [processError, setProcessError] = React.useState<string | null>(null);
-  const [valid, setValid] = React.useState<boolean>(false);
-  const [formData, setFormData] = React.useState<FormData>({
+  const [org, setOrg] = orgState.use();
+  const [app, setAppState] = appState.use();
+  const [spec, setSpec] = specState.use();
+  const [isProcessing, setProcessing] = useState<boolean>(false);
+  const [processError, setProcessError] = useState<string | null>(null);
+  const [valid, setValid] = useState<boolean>(false);
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     specUrl: '',
     file: '',
   });
-  const [org, setOrg] = orgState.use();
-  const [spec, setSpec] = specState.use();
 
   const onChange = (name: string, value: string) => {
     setFormData((prev) => ({
@@ -49,13 +50,18 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   };
 
   useInput((input, key) => {
-    if (valid && input === 'n' && key.ctrl) {
+    if (valid && key.return) {
       history.push('/editor');
     }
   });
 
+  useEffect(() => {
+    setAppState({ mode: 'edit' });
+    return () => setAppState({ mode: 'view' });
+  }, []);
+
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" marginTop={2}>
       <PromptForm complete={valid} onSubmit={onSubmit}>
         <TextField
           required
@@ -95,7 +101,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
       {valid && (
         <Box borderColor="greenBright" borderStyle="round" marginY={1}>
           <Text color="greenBright">
-            Group config saved! Press ctrl + n to configure plugins.
+            Group config saved! Press [ENTER] to configure plugins.
           </Text>
         </Box>
       )}

@@ -5,37 +5,31 @@ import validUrl from 'valid-url';
 
 interface TextFieldProps {
   enabled?: boolean;
-  editing?: boolean;
-  encrypted?: boolean;
   error?: any | undefined;
   focused?: boolean;
   name: string;
   onChange: (key: string, value: string) => void;
-  required?: boolean;
+  onSubmit: () => void;
   type?: 'text' | 'url';
-  value?: string | null;
+  value: string;
 }
 
 const TextField: React.FC<TextFieldProps> = ({
   enabled,
-  editing,
-  encrypted = false,
   error,
   focused,
   onChange,
+  onSubmit,
   name,
-  required = false,
   type,
   value,
 }) => {
   const focusedColor = focused ? 'yellow' : 'cyan';
   const labelColor = error ? 'red' : focusedColor;
-  const changeHandler = useCallback(
-    (value: string) => {
-      onChange(name, value);
-    },
-    [focused]
-  );
+  const changeHandler = (v: string) => {
+    onChange(name, v);
+  };
+  const valueString = value ? value : '';
 
   return (
     <Box>
@@ -45,8 +39,9 @@ const TextField: React.FC<TextFieldProps> = ({
       <Box flexGrow={1}>
         <TextInput
           focus={focused && enabled}
-          value={value ? value : ''}
+          value={valueString}
           onChange={changeHandler}
+          onSubmit={onSubmit}
         />
       </Box>
     </Box>

@@ -23,15 +23,10 @@ const Errors: React.FC<ErrorsProps> = ({ errors }) => {
   }
 
   return (
-    <Box
-      flexDirection="column"
-      borderColor="redBright"
-      borderStyle="single"
-      padding={1}
-    >
+    <Box flexDirection="column" borderColor="redBright" borderStyle="single">
       <Box>
-        <Text bold inverse color="red">
-          {` Errors (${elements.length}) `}
+        <Text bold color="red">
+          {`Errors (${elements.length}) `}
         </Text>
       </Box>
       {elements}

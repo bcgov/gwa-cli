@@ -6,7 +6,7 @@ interface NumberFieldProps {
   focused?: boolean;
   name: string;
   onChange: (key: string, value: number) => void;
-  required?: boolean;
+  onSubmit: () => void;
   step?: number;
   min?: number;
   max?: number;
@@ -17,10 +17,10 @@ const NumberField: React.FC<NumberFieldProps> = ({
   enabled = false,
   focused,
   onChange,
+  onSubmit,
   max,
-  min,
+  min = 0,
   name,
-  required = false,
   step,
   value = 0,
 }) => {
@@ -33,7 +33,9 @@ const NumberField: React.FC<NumberFieldProps> = ({
     const newValue = Number(val);
 
     if (!Number.isNaN(newValue)) {
-      onChange(name, newValue);
+      if (!Number.isNaN(min) && newValue >= min) {
+        onChange(name, newValue);
+      }
     }
   }, []);
 
@@ -45,6 +47,8 @@ const NumberField: React.FC<NumberFieldProps> = ({
         handleChange(value - 1);
       } else if (key.delete) {
         handleChange(stringValue.slice(0, stringValue.length - 1));
+      } else if (key.return) {
+        onSubmit();
       } else if (!Number.isNaN(input)) {
         handleChange(stringValue + input);
       }
@@ -57,7 +61,9 @@ const NumberField: React.FC<NumberFieldProps> = ({
         <Text color={labelColor}>{name}</Text>
       </Box>
       <Box flexGrow={1} width="50%">
-        <Text>{(!value ? 0 : value).toString()}</Text>
+        <Text inverse={focused && enabled}>
+          {(!value ? 0 : value).toString()}
+        </Text>
       </Box>
     </Box>
   );

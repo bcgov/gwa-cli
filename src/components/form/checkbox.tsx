@@ -6,7 +6,6 @@ interface CheckboxProps {
   error?: boolean;
   focused?: boolean;
   name: string;
-  required: boolean;
   onChange: (key: string, value: boolean) => void;
 }
 
@@ -15,7 +14,6 @@ const Checkbox: React.FC<CheckboxProps> = ({
   focused = false,
   checked,
   name,
-  required = false,
   onChange,
 }) => {
   const focusedColor = focused ? 'yellow' : 'cyan';
@@ -31,10 +29,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
   return (
     <Box>
       <Box marginRight={1}>
-        <Text color={labelColor}>
-          {name}
-          {required && '*'}:
-        </Text>
+        <Text color={labelColor}>{name}</Text>
       </Box>
       <Box marginRight={1}>
         <Text bold={focused}>[{checked ? 'X' : ' '}]</Text>

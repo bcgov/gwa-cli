@@ -4,7 +4,9 @@ import { ISpecExpose } from './types';
 const constraints = {
   spec_url: {
     type: 'string',
-    presence: true,
+    presence: {
+      allowempty: false,
+    },
     url: true,
   },
 };

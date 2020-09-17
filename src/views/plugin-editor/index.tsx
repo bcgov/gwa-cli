@@ -1,20 +1,9 @@
 import React, { useState } from 'react';
-import {
-  Box,
-  Text,
-  Transform,
-  Newline,
-  useFocus,
-  useFocusManager,
-  useInput,
-} from 'ink';
+import { Box, Text, useFocusManager, useInput } from 'ink';
 import merge from 'deepmerge';
 import { RouteComponentProps } from 'react-router';
-import TextInput from 'ink-text-input';
-import { ValidateJS } from 'validate.js';
 
 import { appState } from '../../state/app';
-import Checkbox from '../../components/form/checkbox';
 import Form from '../../components/form';
 import { IPlugin } from '../../types';
 import { encryptedValues, pluginsState } from '../../state/plugins';
@@ -27,11 +16,7 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
   const [state, setAppState] = appState.use();
   const [plugins, setPlugin] = pluginsState.use();
   const [saved, setSaved] = useState<boolean>(false);
-  const ids = Object.keys(plugins);
   const plugin: IPlugin = plugins[match.params.plugin];
-  const { focusNext } = useFocusManager();
-  const index = ids.indexOf(match.params.plugin);
-  const total = ids.length;
 
   const onSubmit = (formData: any) => {
     setPlugin((prev) => ({
@@ -41,7 +26,7 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
         data: {
           ...prev[plugin.id].data,
           config: merge(prev[plugin.id].data.config, formData, {
-            arrayMerge: (destArr, srcArr) => srcArr,
+            arrayMerge: (_, srcArr) => srcArr,
           }),
         },
       },
@@ -73,14 +58,16 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
   };
 
   useInput((input, key) => {
-    if (input === 'e') {
-      onToggleEnabled(!plugin.data.enabled);
-    }
-    if (key.return) {
-      setAppState((prev) => ({
-        ...prev,
-        mode: 'edit',
-      }));
+    if (state.mode === 'view') {
+      if (input === 'e') {
+        onToggleEnabled(!plugin.data.enabled);
+      }
+      if (key.return) {
+        setAppState((prev) => ({
+          ...prev,
+          mode: 'edit',
+        }));
+      }
     }
   });
 

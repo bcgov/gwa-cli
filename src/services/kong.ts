@@ -1,22 +1,22 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 import merge from 'deepmerge';
+import mapValues from 'lodash/mapValues';
 import { resolve } from 'path';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import YAML from 'yaml';
-const o2k = require('openapi-2-kong');
+import * as o2k from 'openapi-2-kong';
 
 import { specState } from '../state/spec';
-import { pluginsState } from '../state/plugins';
+import { pluginsState, encryptedValues } from '../state/plugins';
 import { orgState } from '../state/org';
-import { IPlugin } from 'src/types';
 
 export async function parseYaml(url: string, tag: string) {
   const res = await fetch(url);
   const json = await res.json();
-  const api = await SwaggerParser.validate(json);
+  await SwaggerParser.validate(json);
   let cache: any = [];
-  const str = JSON.stringify(json, (key, value) => {
+  const str = JSON.stringify(json, (_, value) => {
     if (typeof value === 'object' && value !== null) {
       if (cache.indexOf(value) !== -1) {
         // Circular reference found, discard key
@@ -70,6 +70,18 @@ export function loadConfig(file: string) {
   });
 }
 
+export async function encryptValue(value: string) {
+  try {
+    const req = await fetch(
+      `https://gwa-qwzrwc-dev.pathfinder.gov.bc.ca/encrypt?v=${value}`
+    );
+    const text = await req.text();
+    return text;
+  } catch (err) {
+    throw err;
+  }
+}
+
 export function buildSpec(
   dir: string,
   file: string | null = 'spec.yaml'
@@ -83,7 +95,7 @@ export function buildSpec(
       name: p.data.name,
       tags: [org.name],
       enabled: true,
-      config: p.data.config,
+      config: mapValues(p.data.config, (v, k) => v),
     }));
   const configRef = JSON.parse(JSON.stringify(spec)); //TODO This is lazy, replace with a proper clone
   configRef.services[0].plugins = enabledPlugins;

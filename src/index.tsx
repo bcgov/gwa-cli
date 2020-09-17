@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { render } from 'ink';
 import minimist, { ParsedArgs } from 'minimist';
-import { Router, Route, useHistory } from 'react-router';
+import { Router } from 'react-router';
 import { createMemoryHistory } from 'history';
 
 import { IAppContext } from './types';
