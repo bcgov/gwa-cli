@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import BigText from 'ink-big-text';
 import { Box, Text } from 'ink';
+import isEmpty from 'lodash/isEmpty';
 import SelectInput, { Item } from 'ink-select-input';
 import { useHistory } from 'react-router';
 
@@ -52,7 +53,7 @@ const StartView: React.FC<{}> = () => {
           <Text>Version {version}</Text>
         </Box>
         <Box alignItems="center" flexDirection="column" marginY={2}>
-          {file && <FileDetails file={file} />}
+          {!isEmpty(file) && <FileDetails file={file} />}
           <SelectInput
             items={items.filter((d) => d.enabled)}
             onSelect={onSelect}

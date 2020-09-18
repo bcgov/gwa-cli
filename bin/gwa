@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 const { spawnSync } = require('child_process');
 const { resolve } = require('path');
-const { version } = require(  '../package.json' );
-
 
 const args = process.argv.splice(2).join(' ');
-const cmd = `node --no-warnings ${resolve(__dirname, "../dist/index.js")} ${args} --dir=${process.cwd()} --app-version=${version}`;
+const cmd = `node --no-warnings ${resolve(
+  __dirname,
+  '../dist/index.js'
+)} ${args} --dir=${process.cwd()}`;
 process.stdout.write('\033c');
-spawnSync(cmd, { stdio: "inherit", shell: true });
+spawnSync(cmd, { stdio: 'inherit', shell: true });

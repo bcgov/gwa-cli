@@ -4,7 +4,7 @@ import { Box, Text, Newline } from 'ink';
 import { orgState } from '../../state/org';
 
 interface FileDetailsProps {
-  file: string;
+  file: string | unknown;
 }
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
