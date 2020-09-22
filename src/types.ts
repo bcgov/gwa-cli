@@ -1,6 +1,6 @@
 export interface IAppContext {
   dir: string;
-  file: string;
+  file?: string;
   version: string;
 }
 

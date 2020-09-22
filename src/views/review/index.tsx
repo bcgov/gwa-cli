@@ -20,8 +20,10 @@ const Review: React.FC = () => {
         history.goBack();
       } else {
         try {
-          buildSpec(dir, fileName);
-          setDone(true);
+          if (fileName) {
+            buildSpec(dir, fileName);
+            setDone(true);
+          }
         } catch (err) {
           setError(true);
         }

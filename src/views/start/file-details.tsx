@@ -33,8 +33,6 @@ const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
             <Text bold color="green">
               {`✓ ${file} `}
             </Text>
-            <Newline />
-            Hit [Enter] to edit.
           </Text>
         </Box>
       </Box>

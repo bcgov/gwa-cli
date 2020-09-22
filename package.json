@@ -40,6 +40,7 @@
 		"react": "^16.13.1",
 		"react-ridge-state": "^4.1.6",
 		"react-router": "^5.2.0",
+		"react-uid": "^2.3.0",
 		"valid-url": "^1.0.9",
 		"validate.js": "^0.13.1",
 		"yaml": "^1.10.0",

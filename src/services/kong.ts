@@ -11,6 +11,17 @@ import { specState } from '../state/spec';
 import { pluginsState, encryptedValues } from '../state/plugins';
 import { orgState } from '../state/org';
 
+export async function parseLocalFile(
+  filePath: string,
+  tag: string,
+  outFile: string
+) {
+  const result = await o2k.generate(filePath, 'kong-declarative-config', [tag]);
+  const [yamlDocs] = result.documents.map((d: any) => YAML.stringify(d));
+
+  fs.writeFileSync(resolve(outFile), yamlDocs);
+}
+
 export async function parseYaml(url: string, tag: string) {
   const res = await fetch(url);
   const json = await res.json();
@@ -44,7 +55,7 @@ export function loadConfig(file: string) {
 
     const result = YAML.parse(data);
     const name = result.services[0].tags.slice(-1)[0];
-    const host = result.services[0].host;
+    const host = result.services[0].host || result.services[0].url;
     const plugins = result.services[0].plugins;
     specState.set(result);
     orgState.set((prev) => ({
