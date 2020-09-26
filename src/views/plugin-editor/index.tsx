@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text, useFocusManager, useInput } from 'ink';
 import merge from 'deepmerge';
 import { RouteComponentProps } from 'react-router';
+import { clearTimeout, setTimeout } from 'timers';
 
 import { appState } from '../../state/app';
 import Form from '../../components/form';
@@ -32,8 +33,8 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
       },
     }));
     setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
   };
+
   const onToggleEnabled = (value: boolean) => {
     setPlugin((prev) => {
       return {
@@ -70,6 +71,20 @@ const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
       }
     }
   });
+
+  useEffect(() => {
+    let timer: NodeJS.Timer;
+
+    if (saved) {
+      timer = setTimeout(() => {
+        setSaved(false);
+      }, 1500);
+    }
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [saved]);
 
   return (
     <Box flexDirection="column">

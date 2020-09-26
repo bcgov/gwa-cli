@@ -26,7 +26,7 @@ const Plugins: React.FC<PluginsProps> = ({ match }) => {
   const plugins: IPlugin[] = Object.values(state);
   const urls = plugins.map((plugin) => `/editor/${plugin.id}`);
 
-  useInput((input, key) => {
+  useInput((input) => {
     const idx = urls.indexOf(pathname);
 
     if (app.mode === 'view') {

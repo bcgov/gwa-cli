@@ -6,6 +6,6 @@ const args = process.argv.splice(2).join(' ');
 const cmd = `node --no-warnings ${resolve(
   __dirname,
   '../dist/index.js'
-)} ${args} --dir=${process.cwd()}`;
+)} ${args}`;
 process.stdout.write('\033c');
 spawnSync(cmd, { stdio: 'inherit', shell: true });

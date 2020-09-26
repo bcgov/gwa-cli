@@ -1,0 +1,22 @@
+name: "CORS"
+url: "https://docs.konghq.com/hub/kong-inc/cors/"
+bcgov: false
+description: |
+  Add Cross-origin resource sharing (CORS) to a Service and a Route by enabling this plugin.
+---
+origins: []
+methods: 
+ - "GET"
+ - "HEAD"
+ - "PUT"
+ - "PATCH"
+ - "POST"
+ - "DELETE"
+ - "OPTIONS"
+ - "TRACE"
+ - "CONNECT"
+headers: null
+exposed_headers: null
+credentials: false
+max_age: null
+preflight_continue: false

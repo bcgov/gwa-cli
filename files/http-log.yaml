@@ -1,0 +1,10 @@
+name: "HTTP Log"
+url: "https://docs.konghq.com/hub/kong-inc/http-log/"
+bcgov: false
+description: |
+  Send request and response logs to an HTTP server.
+---
+http_endpoint: ""
+config_method: "POST"
+timeout: 10000
+keepalive: 60000

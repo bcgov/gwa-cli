@@ -10,9 +10,5 @@ export interface IPlugin {
   description: string;
   constraints: any;
   encrypted: string[];
-  data: {
-    name: string;
-    enabled: boolean;
-    config: any;
-  };
+  data: IPluginConfig;
 }

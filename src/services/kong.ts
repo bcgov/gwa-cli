@@ -8,7 +8,7 @@ import YAML from 'yaml';
 import * as o2k from 'openapi-2-kong';
 
 import { specState } from '../state/spec';
-import { pluginsState, encryptedValues } from '../state/plugins';
+import { pluginsState } from '../state/plugins';
 import { orgState } from '../state/org';
 
 export async function parseLocalFile(

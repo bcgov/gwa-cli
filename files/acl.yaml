@@ -1,0 +1,9 @@
+name: "ACL"
+url: "https://docs.konghq.com/hub/kong-inc/acl/"
+bcgov: false
+description: |
+  Restrict access to a Service or a Route by adding Consumers to allowed or denied lists using arbitrary ACL group names. This plugin requires an authentication plugin (such as Basic Authentication, Key Authentication, OAuth 2.0, and OpenID Connect) to have been already enabled on the Service or Route.
+---
+allow: null
+deny: null
+hide_groups_header: false

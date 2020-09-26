@@ -1,55 +1,48 @@
-import has from 'lodash/has';
-import head from 'lodash/head';
-import minimist, { ParsedArgs } from 'minimist';
 import path from 'path';
+import { program } from 'commander';
 
-import { IAppContext } from './types';
-import { loadConfig } from './services/kong';
-import init from './views/init';
-import render from './ui';
-import help from './views/help';
-import validate from './views/validate';
+//import { IAppContext } from './types';
+//import { loadConfig } from './services/kong';
+//import init from './views/init';
+//import render from './ui';
+//import update from './services/update';
+//import validate from './views/validate';
+import plugins from './domains/plugins';
 
-const p = require('../package.json');
+const pkg = require('../package.json');
 
-const commands = ['edit', 'validate', 'init'];
-const args: ParsedArgs = minimist(process.argv.slice(2));
-const check = (args: ParsedArgs) => (...keys: string[]): boolean => {
-  return keys.some((key) => has(args, key));
+const main = () => {
+  program
+    .command('new')
+    .description('Initialize a config file in the current directory');
+
+  program.command('edit <input>').description('Edit a config file');
+
+  program
+    .command('update <input>')
+    .description('Update a config with new OpenAPI specs')
+    .option('-u, --url <url>', 'The URL of a OpenAPI spec JSON file')
+    .option(
+      '-f, --file <file>',
+      'An OpenAPI spec JSON file on your local machine'
+    )
+    .action((input, options) => {
+      console.log(input, options.url, options.file);
+    });
+
+  program
+    .command('validate <input>')
+    .description('Validate a config file')
+    .action((input) => console.log('input', input));
+
+  program
+    .command('list')
+    .alias('ls')
+    .description('List all available plugins')
+    .action((cmd, options) => plugins(path.resolve(__dirname, '../files')));
+
+  program.version(pkg.version, '-v, --version');
+  program.parse(process.argv);
 };
 
-main(args);
-
-function main(args: ParsedArgs) {
-  const c = check(args);
-  const version: string = p.version;
-  const [command, ...rest] = args._;
-
-  if (c('v', 'version')) {
-    console.log(version);
-    process.exit(1);
-  }
-
-  switch (command) {
-    case 'edit':
-      const file = rest[0];
-      loadConfig(file);
-      const config: IAppContext = {
-        dir: args.dir,
-        file,
-        version,
-      };
-      render(config);
-      break;
-    case 'init':
-      init(args);
-      break;
-    case 'validate':
-      validate(rest[0]);
-      break;
-    default:
-      help();
-      process.exit(1);
-      break;
-  }
-}
+main();
