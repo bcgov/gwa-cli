@@ -26,14 +26,14 @@ const PluginsList: React.FC<PluginsListProps> = ({
     }
 
     if (key.return) {
-      history.push(`${match.url}/${data[index].id}`);
+      history.push(`${match.url}/${data[index].meta.id}`);
     }
   });
 
   return (
     <Box margin={1} flexDirection="column">
       {data.map((plugin: IPlugin, pluginIdx: number) => (
-        <Box key={plugin.id} flexDirection="column" marginBottom={1}>
+        <Box key={plugin.meta.name} flexDirection="column" marginBottom={1}>
           <Box>
             <Box width={1}>
               {index === pluginIdx && <Text color="yellowBright">▋</Text>}
@@ -46,14 +46,14 @@ const PluginsList: React.FC<PluginsListProps> = ({
                 bold
                 inverse={pluginIdx === index}
                 color={
-                  plugin.data.enabled || pluginIdx === index ? 'white' : 'grey'
+                  plugin.meta.enabled || pluginIdx === index ? 'white' : 'grey'
                 }
               >
-                {plugin.name}
+                {plugin.meta.name}
               </Text>
             </Box>
             <Box marginLeft={2}>
-              {plugin.data.enabled ? (
+              {plugin.meta.enabled ? (
                 <Text color="greenBright">[Enabled]</Text>
               ) : (
                 <Text dimColor color="red">
@@ -66,10 +66,10 @@ const PluginsList: React.FC<PluginsListProps> = ({
             <Text
               bold={false}
               color={
-                plugin.data.enabled || pluginIdx === index ? 'white' : 'grey'
+                plugin.meta.enabled || pluginIdx === index ? 'white' : 'grey'
               }
             >
-              {plugin.description}
+              {plugin.meta.description}
             </Text>
           </Box>
         </Box>

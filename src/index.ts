@@ -16,7 +16,9 @@ const main = async () => {
       '-o, --outfile <output>',
       'An OpenAPI spec JSON file on your local machine'
     )
-    .description('Initialize a config file in the current directory')
+    .description(
+      'Initialize a config file in the current directory. The input file must be an OpenAPI JSON file'
+    )
     .action((input, options) => run(init, input, options));
 
   program

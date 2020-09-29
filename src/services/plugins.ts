@@ -27,7 +27,10 @@ export async function loadPlugins(path: string): Promise<PluginsResult> {
         // Files are divided into 2 documents, the meta and the config fields
         const [meta, config] = file.split('---').map((d) => YAML.parse(d));
         result[id] = {
-          meta,
+          meta: {
+            id,
+            ...meta,
+          },
           config,
         };
       }

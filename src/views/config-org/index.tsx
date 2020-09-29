@@ -3,11 +3,10 @@ import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import { useHistory } from 'react-router';
 
-import { appState } from '../../state/app';
+import { useAppState, toggleMode } from '../../state/app';
 import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
-import { orgState, OrgState } from '../../state/org';
-import { specState } from '../../state/spec';
+import { useTeamState } from '../../state/team';
 import { parseYaml } from '../../services/kong';
 
 type FormData = Omit<OrgState, 'host'>;
@@ -16,9 +15,8 @@ interface ConfigOrgProps {}
 
 const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   const history = useHistory();
-  const [org, setOrg] = orgState.use();
-  const [app, setAppState] = appState.use();
-  const [spec, setSpec] = specState.use();
+  const team = useTeamState();
+  const toggleMode = useAppState((state) => state.toggleMode);
   const [isProcessing, setProcessing] = useState<boolean>(false);
   const [processError, setProcessError] = useState<string | null>(null);
   const [valid, setValid] = useState<boolean>(false);
@@ -34,19 +32,18 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
       [name]: value,
     }));
   };
-  const onSubmit = async () => {
+  const onSubmit = () => {
     setProcessing(true);
-    try {
-      setOrg((prev) => ({ ...prev, ...formData }));
-      const config = await parseYaml(formData.specUrl, formData.name);
-      setSpec(config);
-      setProcessing(false);
-      setValid(true);
-    } catch (err) {
-      setValid(true);
-      setProcessing(false);
-      setProcessError(err.message);
-    }
+    //try {
+    //  setOrg((prev) => ({ ...prev, ...formData }));
+    //  const config = await parseYaml(formData.specUrl, formData.name);
+    //  setProcessing(false);
+    //  setValid(true);
+    //} catch (err) {
+    //  setValid(true);
+    //  setProcessing(false);
+    //  setProcessError(err.message);
+    //}
   };
 
   useInput((input, key) => {
@@ -56,8 +53,8 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   });
 
   useEffect(() => {
-    setAppState({ mode: 'edit' });
-    return () => setAppState({ mode: 'view' });
+    toggleMode();
+    return () => toggleMode();
   }, []);
 
   return (

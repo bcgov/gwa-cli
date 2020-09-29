@@ -18,10 +18,16 @@ export const loadPlugins = (data: any[]) => {
   );
 };
 
-export const set = (id: string, key: string, value: unknown) =>
+export const toggleEnabled = (id: string, enabled: boolean) =>
   store.setState(
     produce((draft) => {
-      draft.data[id].config[key] = value;
+      draft.data[id].meta.enabled = enabled;
+    })
+  );
+export const set = (id: string, value: unknown) =>
+  store.setState(
+    produce((draft) => {
+      draft.data[id].config = value;
     })
   );
 

@@ -3,6 +3,7 @@ import validate from 'validate.js';
 
 import { exportConfig } from '../services/app';
 import { fetchSpec, importSpec } from '../services/openapi';
+import ui from '../ui';
 
 export default async function (input: string, options: any) {
   const cwd = process.cwd();
@@ -19,9 +20,9 @@ export default async function (input: string, options: any) {
         output = await fetchSpec(input, options.team);
       }
       await exportConfig(output, options.outfile);
-      console.log('File generated');
+      console.log(`[DONE]: File ${options.outfile} generated`);
     } else {
-      console.log('render APP');
+      ui();
     }
   } catch (err) {
     console.error(err);
