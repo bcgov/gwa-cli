@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { IAppContext } from '../types';
+import { AppContext } from '../types';
 
-const AppContext = React.createContext<IAppContext>({
+const AppContext = React.createContext<AppContext>({
   dir: '',
   file: '',
   version: '',

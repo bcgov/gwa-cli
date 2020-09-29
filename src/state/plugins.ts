@@ -1,12 +1,17 @@
-import { newRidgeState } from 'react-ridge-state';
+import create from 'zustand/vanilla';
+import produce from 'immer';
 
-import { IPlugin } from '../types';
-import data from '../data';
+import type { PluginsResult } from '../types';
 
-export const pluginsState = newRidgeState<{ [prop: string]: IPlugin }>(
-  data.plugins
-);
+const store = create<PluginsResult>(() => ({}));
 
-export const activePluginState = newRidgeState<string>('bcgov-gwa-endpoint');
+export const initPluginsState = (data: PluginsResult) => store.setState(data);
 
-export const encryptedValues = newRidgeState<string[]>([]);
+export const set = (id: string, key: string, value: unknown) =>
+  store.setState(
+    produce((draft) => {
+      draft.data[id].config[key] = value;
+    })
+  );
+
+export default store;

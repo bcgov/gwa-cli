@@ -1,22 +1,26 @@
-import path from 'path';
 import { program } from 'commander';
 
-//import { IAppContext } from './types';
-//import { loadConfig } from './services/kong';
-//import init from './views/init';
-//import render from './ui';
-//import update from './services/update';
-//import validate from './views/validate';
-import plugins from './domains/plugins';
+import run from './run';
+import plugins from './commands/plugins';
+import init from './commands/init';
 
 const pkg = require('../package.json');
 
-const main = () => {
+const main = async () => {
   program
-    .command('new')
-    .description('Initialize a config file in the current directory');
+    .command('new [input]')
+    .option('-t, --team <team>', 'The team you wish to register')
+    .option(
+      '-o, --outfile <output>',
+      'An OpenAPI spec JSON file on your local machine'
+    )
+    .description('Initialize a config file in the current directory')
+    .action((input, options) => run(init, input, options));
 
-  program.command('edit <input>').description('Edit a config file');
+  program
+    .command('edit <input>')
+    .description('Edit a config file')
+    .action(() => run('edit'));
 
   program
     .command('update <input>')
@@ -26,23 +30,20 @@ const main = () => {
       '-f, --file <file>',
       'An OpenAPI spec JSON file on your local machine'
     )
-    .action((input, options) => {
-      console.log(input, options.url, options.file);
-    });
+    .action(() => run('update'));
 
   program
     .command('validate <input>')
     .description('Validate a config file')
-    .action((input) => console.log('input', input));
+    .action(() => run('validate'));
 
   program
-    .command('list')
-    .alias('ls')
+    .command('plugins [input]')
     .description('List all available plugins')
-    .action((cmd, options) => plugins(path.resolve(__dirname, '../files')));
+    .action((...args) => run(plugins, ...args));
 
   program.version(pkg.version, '-v, --version');
-  program.parse(process.argv);
+  await program.parseAsync(process.argv);
 };
 
 main();
