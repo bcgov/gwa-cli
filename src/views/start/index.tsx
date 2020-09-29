@@ -5,17 +5,17 @@ import isEmpty from 'lodash/isEmpty';
 import SelectInput, { Item } from 'ink-select-input';
 import { useHistory } from 'react-router';
 
-import AppContext from '../../services/context';
+import { useAppState } from '../../state/app';
 import FileDetails from './file-details';
 
 const StartView: React.FC<{}> = () => {
-  const { file, version } = useContext(AppContext);
+  const input = useAppState((state) => state.input);
   const { push } = useHistory();
   const items = [
     {
       label: 'Configure Group',
       value: '/org',
-      enabled: !file,
+      enabled: !input,
     },
     {
       label: 'Plugin Editor',
@@ -25,7 +25,7 @@ const StartView: React.FC<{}> = () => {
     {
       label: 'Export',
       value: '/export',
-      enabled: !!file,
+      enabled: !!input,
     },
   ];
   const onSelect = (item: any) => {
@@ -50,10 +50,10 @@ const StartView: React.FC<{}> = () => {
         </Box>
         <Box alignItems="center" flexDirection="column">
           <Text bold>API Gateway Config</Text>
-          <Text>Version {version}</Text>
+          <Text>Version 1.0.0</Text>
         </Box>
         <Box alignItems="center" flexDirection="column" marginY={2}>
-          {!isEmpty(file) && <FileDetails file={file} />}
+          {!isEmpty(input) && <FileDetails file={input} />}
           <SelectInput
             items={items.filter((d) => d.enabled)}
             onSelect={onSelect}

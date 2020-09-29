@@ -1,28 +1,34 @@
 import React from 'react';
 import { Box, Text, Newline } from 'ink';
 
-import { orgState } from '../../state/org';
+import { useTeamState } from '../../state/team';
 
 interface FileDetailsProps {
   file: string | unknown;
 }
 
 const FileDetails: React.FC<FileDetailsProps> = ({ file }) => {
-  const org = orgState.useValue();
+  const { name, team, host } = useTeamState();
 
   return (
     <Box paddingX={3} flexDirection="column" marginBottom={1}>
       <Box>
         <Box width={10} marginRight={2} justifyContent="flex-end">
-          <Text bold>Group:</Text>
+          <Text bold>Name:</Text>
         </Box>
-        <Text>{org.name}</Text>
+        <Text>{name}</Text>
+      </Box>
+      <Box>
+        <Box width={10} marginRight={2} justifyContent="flex-end">
+          <Text bold>Team:</Text>
+        </Box>
+        <Text>{team}</Text>
       </Box>
       <Box>
         <Box width={10} marginRight={2} justifyContent="flex-end">
           <Text bold>Host:</Text>
         </Box>
-        <Text>{org.host}</Text>
+        <Text>{host}</Text>
       </Box>
       <Box>
         <Box width={10} marginRight={2} justifyContent="flex-end">

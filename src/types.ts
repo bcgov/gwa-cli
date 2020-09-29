@@ -1,14 +1,26 @@
-export interface IAppContext {
+export interface AppContext {
   dir: string;
   file?: string;
   version: string;
 }
 
-export interface IPlugin {
-  id: string;
+export interface PluginMeta {
   name: string;
+  url: string;
+  bcgov: boolean;
   description: string;
-  constraints: any;
-  encrypted: string[];
-  data: IPluginConfig;
+}
+
+export interface PluginConfig {
+  name: string;
+  enabled: boolean;
+  tags: string[];
+  config: any;
+}
+
+export interface PluginsResult {
+  [id: string]: {
+    meta: PluginMeta;
+    config: PluginConfig;
+  };
 }

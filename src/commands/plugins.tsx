@@ -1,6 +1,5 @@
-//import { render } from 'ink';
-import pluginsState from '../state/plugins';
+import render from '../views/plugins-list';
 
 export default function (...args) {
-  console.log('plugins loaded', pluginsState.getState());
+  render();
 }

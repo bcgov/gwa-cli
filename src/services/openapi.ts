@@ -9,6 +9,18 @@ function extract(result: any) {
   return doc;
 }
 
+export async function validateConfig(file: string): Promise<any> {
+  try {
+    const contents = await fs.promises.readFile(file, 'utf8');
+    const json = YAML.parse(contents);
+    // TODO: find a way to validate routes after converted to kong
+    // await SwaggerParser.validate(json);
+    return json;
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
 export async function importSpec(file: string, tag: string) {
   try {
     const contents = await fs.promises.readFile(file, 'utf8');

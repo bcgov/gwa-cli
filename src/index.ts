@@ -3,6 +3,8 @@ import { program } from 'commander';
 import run from './run';
 import plugins from './commands/plugins';
 import init from './commands/init';
+import edit from './commands/edit';
+import validate from './commands/validate';
 
 const pkg = require('../package.json');
 
@@ -20,7 +22,7 @@ const main = async () => {
   program
     .command('edit <input>')
     .description('Edit a config file')
-    .action(() => run('edit'));
+    .action((input) => run(edit, input));
 
   program
     .command('update <input>')
@@ -35,12 +37,12 @@ const main = async () => {
   program
     .command('validate <input>')
     .description('Validate a config file')
-    .action(() => run('validate'));
+    .action((input) => run(validate, input));
 
   program
     .command('plugins [input]')
     .description('List all available plugins')
-    .action((...args) => run(plugins, ...args));
+    .action((input) => run(plugins, input));
 
   program.version(pkg.version, '-v, --version');
   await program.parseAsync(process.argv);
