@@ -1,6 +1,6 @@
 name: "Referrer Restriction"
 url: "https://github.com/eyolas/kong-plugin-referer"
-bcgov: false
+author: eyolas
 description: |
   Easily add referer access to your API by enabling this plugin.
 

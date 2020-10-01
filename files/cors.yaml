@@ -1,6 +1,6 @@
 name: "CORS"
 url: "https://docs.konghq.com/hub/kong-inc/cors/"
-bcgov: false
+author: Kong Inc
 description: |
   Add Cross-origin resource sharing (CORS) to a Service and a Route by enabling this plugin.
 ---

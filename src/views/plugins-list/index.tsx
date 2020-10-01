@@ -12,17 +12,19 @@ const PluginsList: React.FC = () => {
     const data = plugins[plugin];
 
     elements.push(
-      <Box key={uid(plugin)} flexDirection="column" paddingX={4}>
+      <Box key={uid(plugin)} flexDirection="column" marginBottom={1}>
         <Box justifyContent="space-between">
-          <Text>
+          <Box>
             <Text bold>{data.meta.name}</Text>
-            {data.meta.bcgov && '*'}
-          </Text>
+            <Box marginLeft={2}>
+              <Text dimColor>{data.meta.author}</Text>
+            </Box>
+          </Box>
           <Text dimColor underline>
             {data.meta.url}
           </Text>
         </Box>
-        <Box>
+        <Box paddingX={4}>
           <Text>{data.meta.description}</Text>
         </Box>
       </Box>

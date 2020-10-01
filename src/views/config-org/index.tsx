@@ -3,11 +3,10 @@ import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import { useHistory } from 'react-router';
 
-import { useAppState, toggleMode } from '../../state/app';
+import { useAppState } from '../../state/app';
 import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
 import { useTeamState } from '../../state/team';
-import { parseYaml } from '../../services/kong';
 
 type FormData = Omit<OrgState, 'host'>;
 

@@ -1,6 +1,6 @@
 name: "HTTP Log"
 url: "https://docs.konghq.com/hub/kong-inc/http-log/"
-bcgov: false
+author: Kong Inc
 description: |
   Send request and response logs to an HTTP server.
 ---

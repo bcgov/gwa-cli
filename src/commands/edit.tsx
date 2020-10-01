@@ -1,6 +1,3 @@
-import React from 'react';
-import { render } from 'ink';
-
 import ui from '../ui';
 import { loadConfig, parseConfig } from '../services/app';
 import { initTeamState } from '../state/team';

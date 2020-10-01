@@ -7,7 +7,7 @@ import App from './views/app';
 
 const history = createMemoryHistory();
 
-export default function (redirect?: string = '/') {
+export default function (redirect: string = '/') {
   render(
     <Router history={history}>
       {redirect && <Redirect from="/" to={redirect} />}

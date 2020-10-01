@@ -58,6 +58,6 @@ export async function fetchSpec(url: string, tag: string) {
     );
     return extract(result);
   } catch (err) {
-    console.error(err);
+    throw new Error(err);
   }
 }

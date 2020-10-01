@@ -3,7 +3,7 @@ import { Box, Newline, Text, useInput } from 'ink';
 import { useHistory } from 'react-router';
 
 import AppContext from '../../services/context';
-import { buildSpec } from '../../services/kong';
+//import { buildSpec } from '../../services/kong';
 import { orgState } from '../../state/org';
 
 const Review: React.FC = () => {
@@ -21,7 +21,7 @@ const Review: React.FC = () => {
       } else {
         try {
           if (fileName) {
-            buildSpec(dir, fileName);
+            //buildSpec(dir, fileName);
             setDone(true);
           }
         } catch (err) {

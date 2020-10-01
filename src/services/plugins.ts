@@ -2,7 +2,7 @@ import fs from 'fs';
 import { basename, extname, resolve } from 'path';
 import YAML from 'yaml';
 
-import { PluginsResult } from '../domains/plugins/types';
+import { PluginsResult } from '../types';
 
 /**
  * Crawls a directory for YAML config files and outputs a dictionary of results

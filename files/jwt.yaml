@@ -1,6 +1,6 @@
 name: "JWT"
 url: "https://docs.konghq.com/hub/kong-inc/jwt/"
-bcgov: false
+author: Kong Inc
 description: |
   Verify requests containing HS256 or RS256 signed JSON Web Tokens (as specified in RFC 7519). Each of your Consumers will have JWT credentials (public and secret keys) which must be used to sign their JWTs. A token can then be passed through:
 

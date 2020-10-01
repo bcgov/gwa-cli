@@ -1,5 +1,5 @@
 import render from '../views/plugins-list';
 
-export default function (...args) {
+export default function () {
   render();
 }

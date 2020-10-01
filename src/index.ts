@@ -33,8 +33,8 @@ const main = async () => {
     .option(
       '-f, --file <file>',
       'An OpenAPI spec JSON file on your local machine'
-    )
-    .action(() => run('update'));
+    );
+  //.action(() => run('update'));
 
   program
     .command('validate <input>')

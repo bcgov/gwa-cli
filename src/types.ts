@@ -7,8 +7,10 @@ export interface AppContext {
 export interface PluginMeta {
   name: string;
   url: string;
-  bcgov: boolean;
+  id: string;
+  author: string;
   description: string;
+  enabled: boolean;
 }
 
 export interface PluginConfig {
@@ -18,9 +20,11 @@ export interface PluginConfig {
   config: any;
 }
 
+export interface PluginObject {
+  meta: PluginMeta;
+  config: PluginConfig;
+}
+
 export interface PluginsResult {
-  [id: string]: {
-    meta: PluginMeta;
-    config: PluginConfig;
-  };
+  [id: string]: PluginObject;
 }

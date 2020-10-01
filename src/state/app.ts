@@ -8,6 +8,7 @@ export type AppState = {
   input?: string | null;
   output?: string | null;
   mode: 'view' | 'edit';
+  team: string;
   toggleMode: () => void;
 };
 
@@ -16,6 +17,7 @@ const store = create<AppState>((set) => ({
   dir: __dirname,
   input: null,
   output: null,
+  team: '',
   mode: 'view',
   toggleMode: () =>
     set(
@@ -25,9 +27,8 @@ const store = create<AppState>((set) => ({
     ),
 }));
 
-export const initAppState = (
-  data: Omit<AppState, 'toggleMode' | 'mode' | 'cwd' | 'dir'>
-) => store.setState(data);
+export const initAppState = (data: Pick<AppState, 'input' | 'output'>) =>
+  store.setState(data);
 
 export const useAppState = createStore(store);
 

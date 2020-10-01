@@ -1,6 +1,6 @@
 name: "Kong Spec Expose"
 url: "https://docs.konghq.com/hub/optum/kong-spec-expose/"
-bcgov: false
+author: Optum
 description: |
   Will expose the OpenAPI Spec (OAS), Swagger, or other specification of auth protected API services fronted by the Kong gateway.
 ---

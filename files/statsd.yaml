@@ -1,6 +1,6 @@
 name: "StatsD"
 url: "https://docs.konghq.com/hub/kong-inc/statsd/"
-bcgov: false
+author: Kong Inc
 description: |
   Log metrics for a Service, Route to a StatsD server. It can also be used to log metrics on Collectd daemon by enabling its Statsd plugin.
 ---

@@ -59,9 +59,6 @@ const StartView: React.FC<{}> = () => {
             onSelect={onSelect}
           />
         </Box>
-        <Box justifyContent="center">
-          <Text>Help/Legend coming soon</Text>
-        </Box>
       </Box>
     </Box>
   );

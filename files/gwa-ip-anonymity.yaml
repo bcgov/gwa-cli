@@ -1,6 +1,6 @@
 name: "GWA IP Anonymity"
 url: "https://github.com/bcgov/gwa-ip-anonymity"
-bcgov: true
+author: BC Gov
 description: |
   Implementing the OpenID Connect Relying Party (RP) functionality. 
   Used for hide full or partial client IP to upstream services. Currently used by DataBC API Gateway

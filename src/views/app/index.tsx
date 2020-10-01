@@ -4,7 +4,7 @@ import { Route, Switch, useLocation, useHistory } from 'react-router';
 
 import AppBar from './app-bar';
 import { useAppState } from '../../state/app';
-import ConfigOrg from '../config-org';
+import Setup from '../setup';
 import Plugins from '../plugins';
 import Review from '../review';
 import Start from '../start';
@@ -42,8 +42,8 @@ const App: React.FC<{}> = () => {
       <Box>
         <Switch>
           <Route exact path="/" component={Start} />
-          <Route exact path="/org">
-            <ConfigOrg />
+          <Route exact path="/setup">
+            <Setup />
           </Route>
           <Route path="/editor" component={Plugins} />
           <Route exact path="/export">

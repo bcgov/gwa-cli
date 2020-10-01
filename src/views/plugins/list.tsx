@@ -1,10 +1,10 @@
 import React from 'react';
 import { Box, Text, useInput } from 'ink';
-import { IPlugin } from '../../types';
 import { match, useHistory } from 'react-router';
+import type { PluginObject } from '../../types';
 
 interface PluginsListProps {
-  data: IPlugin[];
+  data: PluginObject[];
   index: number;
   match: match;
   onChange: (index: number) => void;
@@ -31,46 +31,47 @@ const PluginsList: React.FC<PluginsListProps> = ({
   });
 
   return (
-    <Box margin={1} flexDirection="column">
-      {data.map((plugin: IPlugin, pluginIdx: number) => (
-        <Box key={plugin.meta.name} flexDirection="column" marginBottom={1}>
-          <Box>
-            <Box width={1}>
-              {index === pluginIdx && <Text color="yellowBright">▋</Text>}
-            </Box>
-            <Box marginRight={1} width={4} justifyContent="flex-end">
-              <Text>{`${(pluginIdx + 1).toString()}.`}</Text>
-            </Box>
-            <Box>
-              <Text
-                bold
-                inverse={pluginIdx === index}
-                color={
-                  plugin.meta.enabled || pluginIdx === index ? 'white' : 'grey'
-                }
-              >
-                {plugin.meta.name}
-              </Text>
-            </Box>
-            <Box marginLeft={2}>
-              {plugin.meta.enabled ? (
-                <Text color="greenBright">[Enabled]</Text>
-              ) : (
-                <Text dimColor color="red">
-                  [Disabled]
-                </Text>
-              )}
-            </Box>
+    <Box marginY={1} flexDirection="column">
+      <Box marginBottom={1}>
+        <Box width={3} />
+        <Box width={4} justifyContent="center">
+          <Text underline>✓</Text>
+        </Box>
+        <Box width={40}>
+          <Text bold underline>
+            Plugin
+          </Text>
+        </Box>
+        <Box width={20}>
+          <Text bold underline>
+            Author
+          </Text>
+        </Box>
+      </Box>
+      {data.map((plugin: PluginObject, pluginIdx: number) => (
+        <Box key={plugin.meta.name}>
+          <Box width={3} justifyContent="center">
+            <Text>{pluginIdx === index ? '>' : ''}</Text>
           </Box>
-          <Box marginLeft={6}>
+          <Box width={3} marginRight={1} justifyContent="center">
+            {plugin.meta.enabled ? (
+              <Text color="greenBright">✓</Text>
+            ) : (
+              <Text dimColor color="yellow">
+                -
+              </Text>
+            )}
+          </Box>
+          <Box width={40}>
             <Text
-              bold={false}
-              color={
-                plugin.meta.enabled || pluginIdx === index ? 'white' : 'grey'
-              }
+              inverse={pluginIdx === index}
+              color={plugin.meta.enabled ? 'green' : 'white'}
             >
-              {plugin.meta.description}
+              {plugin.meta.name}
             </Text>
+          </Box>
+          <Box width={20}>
+            <Text color="yellow">{plugin.meta.author}</Text>
           </Box>
         </Box>
       ))}

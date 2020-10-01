@@ -1,6 +1,6 @@
 name: "OIDC"
 url: "https://github.com/nokia/kong-oidc"
-bcgov: false
+author: Nokia
 description: |
   Implementing the OpenID Connect Relying Party (RP) functionality.
 ---

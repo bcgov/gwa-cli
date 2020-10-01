@@ -1,6 +1,6 @@
 name: "Response Transformer"
 url: "https://docs.konghq.com/hub/kong-inc/response-transformer/"
-bcgov: false
+author: Kong Inc
 description: |
   Transform the response sent by the upstream server on the fly on Kong, before returning the response to the client.
 ---
