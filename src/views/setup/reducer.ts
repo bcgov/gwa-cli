@@ -27,8 +27,9 @@ const prompts = [
 export const initialState = {
   step: 0,
   error: undefined,
+  status: 'idle',
   value: '',
-  data: [],
+  data: {},
   prompts,
 };
 
@@ -50,7 +51,7 @@ function reducer(state, action) {
     case 'next':
       return {
         ...state,
-        data: [...state.data, action.payload],
+        data: { ...state.data, ...action.payload },
         step: state.step + 1,
         value: '',
       };
@@ -60,6 +61,23 @@ function reducer(state, action) {
         ...state,
         value: '',
         error: undefined,
+      };
+    case 'spec/loading':
+      return {
+        ...state,
+        status: 'loading',
+      };
+    case 'spec/success':
+      return {
+        ...state,
+        status: 'success',
+      };
+
+    case 'spec/failed':
+      return {
+        ...state,
+        status: 'failed',
+        specError: action.payload,
       };
 
     default:
