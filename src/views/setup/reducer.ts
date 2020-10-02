@@ -15,8 +15,13 @@ const prompts = [
     },
   },
   {
+    label: 'Starter plugins',
+    key: 'plugins',
+    constraint: {},
+  },
+  {
     label: 'Output file name (.yaml)',
-    key: 'outpfile',
+    key: 'outfile',
     constraint: {
       presence: { allowEmpty: false },
       format: /^[\w,\s-]+\.(yaml|yml)/,
@@ -30,6 +35,7 @@ export const initialState = {
   status: 'idle',
   value: '',
   data: {},
+  done: false,
   prompts,
 };
 
@@ -78,6 +84,12 @@ function reducer(state, action) {
         ...state,
         status: 'failed',
         specError: action.payload,
+      };
+
+    case 'spec/written':
+      return {
+        ...state,
+        done: true,
       };
 
     default:

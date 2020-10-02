@@ -41,5 +41,3 @@ export async function loadPlugins(path: string): Promise<PluginsResult> {
 
   return result;
 }
-
-export function convert(config: any): string {}

@@ -13,6 +13,10 @@ const main = async () => {
     .command('new [input]')
     .option('-t, --team <team>', 'The team you wish to register')
     .option(
+      '-p, --plugins [plugins...]',
+      'Any starter plugins you would like to include'
+    )
+    .option(
       '-o, --outfile <output>',
       'An OpenAPI spec JSON file on your local machine'
     )

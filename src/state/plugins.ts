@@ -1,6 +1,10 @@
 import create from 'zustand/vanilla';
 import createHook from 'zustand';
+import has from 'lodash/has';
+import compact from 'lodash/compact';
+import flow from 'lodash/flow';
 import produce from 'immer';
+import uniq from 'lodash/uniq';
 
 import type { PluginsResult } from '../types';
 
@@ -30,6 +34,25 @@ export const set = (id: string, value: unknown) =>
       draft.data[id].config = value;
     })
   );
+
+export const generatePluginTemplates = (
+  names: string[],
+  team: string
+): any[] => {
+  const plugins = store.getState();
+  const validate = flow(
+    (value: string[]) => compact(value),
+    (value: string[]) => uniq(value),
+    (value: string[]) => value.filter((name: string) => has(plugins, name))
+  );
+
+  return validate(names).map((name) => ({
+    name,
+    tags: [team],
+    enabled: true,
+    config: plugins[name].config,
+  }));
+};
 
 export const usePluginsState = createHook(store);
 

@@ -38,13 +38,8 @@ export async function exportConfig(
   const cwd = process.cwd();
 
   try {
-    const specFile = YAML.stringify(output);
-    await fs.promises.writeFile(
-      path.resolve(cwd, outfile),
-      specFile.replace('|', '')
-    );
+    await fs.promises.writeFile(path.resolve(cwd, outfile), output);
   } catch (err) {
     console.error(err);
   }
 }
-
