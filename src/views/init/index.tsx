@@ -6,7 +6,7 @@ import path from 'path';
 import AppContext from '../../services/context';
 import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
-import { parseLocalFile, parseYaml } from '../../services/kong';
+// import { parseLocalFile, parseYaml } from '../../services/kong';
 
 type FormData = {
   name: string;
@@ -35,14 +35,14 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({ source }) => {
       [name]: value,
     }));
   };
-  const onSubmit = async () => {
+  const onSubmit = () => {
     setProcessing(true);
     try {
-      await parseLocalFile(
-        formData.specUrl || path.resolve(dir, source),
-        formData.name,
-        dir + formData.file
-      );
+      //await parseLocalFile(
+      //  formData.specUrl || path.resolve(dir, source),
+      //  formData.name,
+      //  dir + formData.file
+      //);
       setProcessing(false);
       setValid(true);
     } catch (err) {

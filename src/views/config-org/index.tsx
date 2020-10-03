@@ -8,8 +8,7 @@ import PromptForm from '../../components/prompt-form';
 import TextField from '../../components/prompt-form/text-field';
 import { useTeamState } from '../../state/team';
 
-type FormData = Omit<OrgState, 'host'>;
-
+type FormData = any;
 interface ConfigOrgProps {}
 
 const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
@@ -26,7 +25,7 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   });
 
   const onChange = (name: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [name]: value,
     }));

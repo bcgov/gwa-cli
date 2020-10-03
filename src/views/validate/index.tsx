@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { Box, Text, render } from 'ink';
 import { uid } from 'react-uid';
 
@@ -26,21 +26,25 @@ const Validate: React.FC<ValidateProps> = ({ errors }) => {
         <Box key={uid(err)} marginY={2} flexDirection="column">
           <Box marginBottom={1}>
             <Text dimColor underline>
-              {err.plugin}
+              {`Plugin: ${err.plugin} [${
+                Object.keys(err.error).length
+              } incorrect fields]`}
             </Text>
           </Box>
-          <Box>
+          <Box flexDirection="column">
             {Object.keys(err.error).map((key) => (
-              <Fragment key={uid(key)}>
-                <Box marginX={4}>
-                  <Text color="red">{key}</Text>
+              <Box key={uid(key)}>
+                <Box marginRight={2}>
+                  <Text bold color="red">
+                    {`× ${key}`}
+                  </Text>
                 </Box>
                 <Box>
-                  {err.error[key].map((text) => (
+                  {err.error[key].map((text: string) => (
                     <Text key={uid(text)}>{text}</Text>
                   ))}
                 </Box>
-              </Fragment>
+              </Box>
             ))}
           </Box>
         </Box>

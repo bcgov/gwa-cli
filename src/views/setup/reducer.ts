@@ -1,4 +1,7 @@
-const prompts = [
+import produce, { Draft } from 'immer';
+import type { Prompt, SetupAction, SetupState } from './types';
+
+const prompts: Prompt[] = [
   {
     label: 'API Ownership Team',
     key: 'team',
@@ -29,7 +32,7 @@ const prompts = [
   },
 ];
 
-export const initialState = {
+export const initialState: SetupState = {
   step: 0,
   error: undefined,
   status: 'idle',
@@ -37,64 +40,51 @@ export const initialState = {
   data: {},
   done: false,
   prompts,
+  specError: '',
 };
 
-function reducer(state, action) {
+const reducer = produce((draft: Draft<SetupState>, action: SetupAction) => {
   switch (action.type) {
     case 'change':
-      return {
-        ...state,
-        value: action.payload,
-        error: undefined,
-      };
+      draft.value = action.payload;
+      draft.error = undefined;
+      break;
 
     case 'error':
-      return {
-        ...state,
-        error: action.payload,
-      };
+      draft.error = action.payload;
+      break;
 
     case 'next':
-      return {
-        ...state,
-        data: { ...state.data, ...action.payload },
-        step: state.step + 1,
-        value: '',
-      };
+      draft.data = { ...draft.data, ...action.payload };
+      draft.step = draft.step + 1;
+      draft.value = '';
+      break;
 
     case 'reset':
-      return {
-        ...state,
-        value: '',
-        error: undefined,
-      };
+      draft.value = '';
+      draft.error = undefined;
+      break;
+
     case 'spec/loading':
-      return {
-        ...state,
-        status: 'loading',
-      };
+      draft.status = 'loading';
+      break;
+
     case 'spec/success':
-      return {
-        ...state,
-        status: 'success',
-      };
+      draft.status = 'success';
+      break;
 
     case 'spec/failed':
-      return {
-        ...state,
-        status: 'failed',
-        specError: action.payload,
-      };
+      draft.status = 'failed';
+      draft.specError = action.payload;
+      break;
 
     case 'spec/written':
-      return {
-        ...state,
-        done: true,
-      };
+      draft.done = true;
+      break;
 
     default:
       throw new Error();
   }
-}
+}, initialState);
 
 export default reducer;
