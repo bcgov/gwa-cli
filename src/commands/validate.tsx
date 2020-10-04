@@ -1,3 +1,4 @@
+import get from 'lodash/get';
 import path from 'path';
 import validate from 'validate.js';
 
@@ -15,7 +16,7 @@ export default async function (input: string) {
     const serviceErrors = validConfig.services.map((service: any) => {
       return service.plugins
         .map((plugin: any) => {
-          const constraint: any | undefined = constraints[plugin.name];
+          const constraint: any | undefined = get(constraints, plugin.name);
 
           if (constraint) {
             const err = validate(plugin.config, constraint);

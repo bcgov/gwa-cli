@@ -23,7 +23,7 @@ export default async function (input: string, options: any) {
       if (isNotURL) {
         const file = path.resolve(cwd, input);
         const result = await importSpec(file);
-        output = convertFile(result, options.team, plugins);
+        output = await convertRemote(result, options.team, plugins);
       } else {
         console.log('Fetching spec...');
         const result = await fetchSpec(input);

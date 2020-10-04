@@ -4,6 +4,7 @@ import run from './run';
 import plugins from './commands/plugins';
 import init from './commands/init';
 import edit from './commands/edit';
+import update from './commands/update';
 import validate from './commands/validate';
 
 const pkg = require('../package.json');
@@ -33,12 +34,13 @@ const main = async () => {
   program
     .command('update <input>')
     .description('Update a config with new OpenAPI specs')
-    .option('-u, --url <url>', 'The URL of a OpenAPI spec JSON file')
+    .option('-t, --team <team>', 'You must declare the team for this spec')
+    .option('-u, --url [url]', 'The URL of a OpenAPI spec JSON file')
     .option(
-      '-f, --file <file>',
+      '-f, --file [file]',
       'An OpenAPI spec JSON file on your local machine'
-    );
-  //.action(() => run('update'));
+    )
+    .action((input, options) => run(update, input, options));
 
   program
     .command('validate <input>')

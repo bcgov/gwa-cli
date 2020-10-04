@@ -21,9 +21,10 @@ export async function importSpec(file: string) {
     const contents = await fs.promises.readFile(file, 'utf8');
     const json = JSON.parse(contents);
     await SwaggerParser.validate(json);
-    return json;
+    const result = parser(json);
+    return result;
   } catch (err) {
-    console.error(err);
+    throw new Error(err);
   }
 }
 
@@ -33,22 +34,27 @@ export async function fetchSpec(url: string) {
     const res = await fetch(url);
     const json = await res.json();
     await SwaggerParser.validate(json);
-    let cache: any = [];
-    // Need to remove any circular references
-    const result = JSON.stringify(json, (_, value) => {
-      if (typeof value === 'object' && value !== null) {
-        if (cache.indexOf(value) !== -1) {
-          // Circular reference found, discard key
-          return;
-        }
-        // Store value in our collection
-        cache.push(value);
-      }
-      return value;
-    });
-    cache = null;
+    const result = parser(json);
     return result;
   } catch (err) {
     throw new Error(err);
   }
+}
+
+function parser(json: any) {
+  let cache: any = [];
+  // Need to remove any circular references
+  const result = JSON.stringify(json, (_, value) => {
+    if (typeof value === 'object' && value !== null) {
+      if (cache.indexOf(value) !== -1) {
+        // Circular reference found, discard key
+        return;
+      }
+      // Store value in our collection
+      cache.push(value);
+    }
+    return value;
+  });
+  cache = null;
+  return result;
 }

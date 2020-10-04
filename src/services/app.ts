@@ -2,7 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
 
-//TODO: Add any importing or exporting of the config files in this module
 export async function loadConfig(input: string): Promise<any> {
   const cwd = process.cwd();
 
