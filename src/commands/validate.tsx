@@ -2,7 +2,7 @@ import get from 'lodash/get';
 import path from 'path';
 import validate from 'validate.js';
 
-import constraints from '../data';
+import constraints from '../validators';
 import { validateConfig } from '../services/openapi';
 import render from '../views/validate';
 

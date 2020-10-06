@@ -1,5 +1,5 @@
 export default {
-  allow: {
+  api_owners: {
     type: 'array',
     presence: {
       allowEmpty: false,

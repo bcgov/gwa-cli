@@ -7,7 +7,7 @@ import { clearTimeout, setTimeout } from 'timers';
 import { useAppState } from '../../state/app';
 import Form from '../../components/form';
 import { usePluginsState, set, toggleEnabled } from '../../state/plugins';
-import constraints from '../../data';
+import constraints from '../../validators';
 
 interface PluginEditorProps extends RouteComponentProps<{ plugin: string }> {}
 
