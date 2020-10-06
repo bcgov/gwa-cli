@@ -1,8 +1,7 @@
-export default {
-  api_owners: {
-    type: 'array',
-    presence: {
-      allowEmpty: false,
-    },
-  },
-};
+import * as Joi from 'joi';
+
+const refererSchema = Joi.object({
+  referers: Joi.string().required(),
+});
+
+export default refererSchema;
