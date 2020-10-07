@@ -26,23 +26,16 @@ const Validate: React.FC<ValidateProps> = ({ errors }) => {
         <Box key={uid(err)} marginY={2} flexDirection="column">
           <Box marginBottom={1}>
             <Text dimColor underline>
-              {`Plugin: ${err.plugin} [${
-                Object.keys(err.error).length
-              } incorrect fields]`}
+              {`Plugin: ${err.plugin} [${err.error.details.length} incorrect fields]`}
             </Text>
           </Box>
           <Box flexDirection="column">
-            {Object.keys(err.error).map((key) => (
-              <Box key={uid(key)}>
+            {err.error.details.map((detail: any) => (
+              <Box key={uid(detail)}>
                 <Box marginRight={2}>
                   <Text bold color="red">
-                    {`× ${key}`}
+                    {`× ${detail.message}`}
                   </Text>
-                </Box>
-                <Box>
-                  {err.error[key].map((text: string) => (
-                    <Text key={uid(text)}>{text}</Text>
-                  ))}
                 </Box>
               </Box>
             ))}

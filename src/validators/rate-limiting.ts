@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 const rateLimitingSchema = Joi.object({
   fault_tolerant: Joi.boolean().optional(),

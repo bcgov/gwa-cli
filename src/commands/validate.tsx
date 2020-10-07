@@ -1,8 +1,7 @@
 import get from 'lodash/get';
 import path from 'path';
-import validate from 'validate.js';
 
-import constraints from '../validators';
+import schemas from '../validators';
 import { validateConfig } from '../services/openapi';
 import render from '../views/validate';
 
@@ -13,18 +12,19 @@ export default async function (input: string) {
     const file = path.resolve(cwd, input);
     const validConfig = await validateConfig(file);
 
-    const serviceErrors = validConfig.services.map((service: any) => {
+    const serviceErrors: any[] = validConfig.services.map((service: any) => {
       return service.plugins
         .map((plugin: any) => {
-          const constraint: any | undefined = get(constraints, plugin.name);
+          const schema: any | undefined = get(schemas, plugin.name);
 
-          if (constraint) {
-            const err = validate(plugin.config, constraint);
+          if (schema) {
+            const { error, value } = schema.validate(plugin.config);
 
-            if (err) {
+            if (error) {
               return {
                 plugin: plugin.name,
-                error: err,
+                error,
+                value,
               };
             }
           }

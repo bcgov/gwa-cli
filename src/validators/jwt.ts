@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 const jwtSchema = Joi.object({
   uri_param_names: Joi.array().items(Joi.string().required()).optional(),

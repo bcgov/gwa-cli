@@ -4,6 +4,7 @@ import run from './run';
 import plugins from './commands/plugins';
 import init from './commands/init';
 import edit from './commands/edit';
+import publish from './commands/publish';
 import update from './commands/update';
 import validate from './commands/validate';
 
@@ -51,6 +52,13 @@ const main = async () => {
     .command('plugins [input]')
     .description('List all available plugins')
     .action((input) => run(plugins, input));
+
+  program
+    .command('publish-gateway <config>')
+    .alias('pg')
+    .description('Publish gateway config')
+    .option('--dry-run', 'Enable dry run')
+    .action((input, options) => run(publish, input, options));
 
   program.version(pkg.version, '-v, --version');
   await program.parseAsync(process.argv);

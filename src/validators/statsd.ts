@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 const statsdSchema = Joi.object({
   host: Joi.string().ip().optional(),

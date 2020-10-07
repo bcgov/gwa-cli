@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 const keyAuthSchema = Joi.object({
   key_names: Joi.array()

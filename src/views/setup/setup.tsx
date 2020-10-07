@@ -32,15 +32,10 @@ const SetupView: React.FC<SetupViewProps> = () => {
         payload: errors,
       });
     } else {
-      let fieldValue: string | string[] = value;
-      if (prompt.key === 'plugins') {
-        fieldValue = value.split(', ');
-      }
-
       dispatch({
         type: 'next',
         payload: {
-          [prompt.key]: fieldValue,
+          [prompt.key]: value,
         },
       });
     }
@@ -51,7 +46,10 @@ const SetupView: React.FC<SetupViewProps> = () => {
       dispatch({ type: 'spec/loading' });
       try {
         const json = await fetchSpec(data.url);
-        const plugins = generatePluginTemplates(data.plugins, data.team);
+        const plugins = generatePluginTemplates(
+          data.plugins.split(', '),
+          data.team
+        );
         const result = await convertRemote(json, data.team, plugins);
         dispatch({ type: 'spec/success', payload: result });
         await exportConfig(result, data.outfile);

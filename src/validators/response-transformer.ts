@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 const responseTransformerSchema = Joi.object({
   http_method: Joi.string().empty('').optional(),

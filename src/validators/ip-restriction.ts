@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 const ipRestrictionSchema = Joi.object({
   allow: Joi.array().items(Joi.string().ip()),

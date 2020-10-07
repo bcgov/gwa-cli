@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 
 const requestTerminationSchema = Joi.object({
   status_code: Joi.number().optional(),
