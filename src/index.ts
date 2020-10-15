@@ -1,6 +1,7 @@
 import { program } from 'commander';
 
 import run from './run';
+import acl from './commands/acl';
 import plugins from './commands/plugins';
 import init from './commands/init';
 import edit from './commands/edit';
@@ -58,8 +59,16 @@ const main = async () => {
     .command('publish-gateway <config>')
     .alias('pg')
     .description('Publish gateway config')
+    .option('-n, --namespace <namespace>', 'The namespace you want to update')
     .option('--dry-run', 'Enable dry run')
     .action((input, options) => run(publish, input, options));
+
+  program
+    .command('acl')
+    .description('Update the full membership')
+    .option('-n, --namespace <namespace>', 'The namespace')
+    .option('-u, --users <users>', 'Users to add')
+    .action((options) => run(acl, null, options));
 
   program.version(pkg.version, '-v, --version');
   await program.parseAsync(process.argv);

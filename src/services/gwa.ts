@@ -1,15 +1,16 @@
+import compact from 'lodash/compact';
 import fetch from 'node-fetch';
 import fs from 'fs';
 import request from 'request';
 import { URLSearchParams } from 'url';
-import FormData from '@postman/form-data';
+//import FormData from '@postman/form-data';
 import path from 'path';
 
 import {
+  apiHost,
   authorizationEndpoint,
   clientId,
   clientSecret,
-  publishEndpoint,
 } from '../config';
 
 export async function getToken(): Promise<string> {
@@ -35,9 +36,10 @@ export async function getToken(): Promise<string> {
   }
 }
 
-type Publish = {
+type PublishParams = {
   configFile: string;
   dryRun: string;
+  namespace: string;
   token: string;
 };
 
@@ -50,12 +52,13 @@ type PublishResponse = {
 export function publish({
   configFile,
   dryRun,
+  namespace,
   token,
-}: Publish): Promise<PublishResponse> {
+}: PublishParams): Promise<PublishResponse> {
   const filePath = path.resolve(process.cwd(), configFile);
   const options = {
     method: 'PUT',
-    url: publishEndpoint,
+    url: `${apiHost}/namespaces/${namespace}/gateway`,
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -73,8 +76,49 @@ export function publish({
 
   return new Promise((resolve, reject) => {
     request(options, (error: Error, response: any) => {
-      if (error) reject(error);
-      resolve(JSON.parse(response.body));
+      if (error) {
+        reject(error);
+      }
+      const body = JSON.parse(response.body);
+
+      if (response.statusCode >= 400) {
+        reject({
+          message: body.results || body.error,
+        });
+      }
+
+      resolve(body);
     });
   });
+}
+
+type AddMembersParams = {
+  namespace: string;
+  users: string;
+};
+
+export async function addMembers({
+  namespace,
+  users,
+}: AddMembersParams): Promise<any> {
+  try {
+    const token = await getToken();
+    const body = compact(users.split(',')).map((user) => ({ username: user }));
+    const res = await fetch(`${apiHost}/namespaces/${namespace}/membership`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+    const json = await res.json();
+
+    if (res.ok) {
+      return json;
+    } else {
+      throw new Error(json.error);
+    }
+  } catch (err) {
+    throw new Error(err);
+  }
 }

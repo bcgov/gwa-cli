@@ -4,7 +4,7 @@ import { initAppState } from './state/app';
 import { initPluginsState } from './state/plugins';
 import { loadPlugins } from './services/plugins';
 
-const run = async (fn: any, input: string, options?: any) => {
+const run = async (fn: any, input: string | null, options?: any) => {
   try {
     const data = await loadPlugins(path.resolve(__dirname, '../files'));
     initAppState({
