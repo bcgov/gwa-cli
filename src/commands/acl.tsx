@@ -19,7 +19,6 @@ type ACLResponse = {
 interface ACLProps {
   options: {
     env: string;
-    namespace: string;
     users: string;
   };
 }
@@ -29,7 +28,6 @@ const ACL = ({ options }: ACLProps) => {
     async () =>
       await addMembers({
         env: options.env,
-        namespace: options.namespace,
         users: options.users,
       })
   );
