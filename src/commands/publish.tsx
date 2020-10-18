@@ -25,6 +25,7 @@ const Publish: React.FC<PublishProps> = ({ input, options }) => {
     return await publish({
       configFile: input,
       namespace: options.namespace,
+      env: options.env,
       dryRun: Boolean(options.dryRun).toString(),
       token,
     });

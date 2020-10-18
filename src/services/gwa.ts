@@ -7,14 +7,16 @@ import { URLSearchParams } from 'url';
 import path from 'path';
 
 import {
-  apiHost,
-  authorizationEndpoint,
   clientId,
   clientSecret,
+  getApiHost,
+  getAuthorizationEndpoint,
+  namespace,
 } from '../config';
 
 export async function getToken(): Promise<string> {
   try {
+    const authorizationEndpoint = getAuthorizationEndpoint();
     const body = new URLSearchParams();
     body.append('client_id', clientId);
     body.append('client_secret', clientSecret);
@@ -39,7 +41,7 @@ export async function getToken(): Promise<string> {
 type PublishParams = {
   configFile: string;
   dryRun: string;
-  namespace: string;
+  env: string;
   token: string;
 };
 
@@ -52,9 +54,10 @@ type PublishResponse = {
 export function publish({
   configFile,
   dryRun,
-  namespace,
+  env,
   token,
 }: PublishParams): Promise<PublishResponse> {
+  const apiHost = getApiHost(env);
   const filePath = path.resolve(process.cwd(), configFile);
   const options = {
     method: 'PUT',
@@ -93,15 +96,16 @@ export function publish({
 }
 
 type AddMembersParams = {
-  namespace: string;
+  env: string;
   users: string;
 };
 
 export async function addMembers({
-  namespace,
+  env,
   users,
 }: AddMembersParams): Promise<any> {
   try {
+    const apiHost = getApiHost(env);
     const token = await getToken();
     const body = compact(users.split(',')).map((user) => ({ username: user }));
     const res = await fetch(`${apiHost}/namespaces/${namespace}/membership`, {

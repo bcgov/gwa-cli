@@ -1,4 +1,5 @@
 import path from 'path';
+import pick from 'lodash/pick';
 
 import { initAppState } from './state/app';
 import { initPluginsState } from './state/plugins';
@@ -12,7 +13,10 @@ const run = async (fn: any, input: string | null, options?: any) => {
       output: options?.output,
     });
     initPluginsState(data);
-    return fn(input, options);
+    const envFlags = pick(options, ['dev', 'prod', 'test']);
+    const keys = Object.keys(envFlags);
+
+    return fn(input, { ...options, env: keys[0] || 'dev' });
   } catch (err) {
     console.error(err);
   }

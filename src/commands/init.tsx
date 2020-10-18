@@ -1,43 +1,66 @@
-import * as React from 'react';
-import isString from 'lodash/isString';
-import path from 'path';
-import { render } from 'ink';
-import validate from 'validate.js';
+import React, { Suspense } from 'react';
+import { Box, Text, render } from 'ink';
+import { ErrorBoundary } from 'react-error-boundary';
+import fs from 'fs';
 
-import ErrorView from '../views/error';
-import { exportConfig } from '../services/app';
-import { fetchSpec, importSpec } from '../services/openapi';
-import { convertFile, convertRemote } from '../services/kong';
-import { generatePluginTemplates } from '../state/plugins';
-import ui from '../ui';
+import Failed from '../components/failed';
+import Loading from '../components/loading';
+import Success from '../components/success';
+import makeRequest from '../hooks/use-request';
 
-export default async function (input: string, options: any) {
-  const cwd = process.cwd();
+const useMakeEnv = makeRequest<string>();
 
-  try {
-    if (input) {
-      const isNotURL = validate.single(input, { url: true });
-      const plugins = generatePluginTemplates(options.plugins, options.team);
-      let output = null;
+type InitOptions = {
+  namespace: string;
+  service: string;
+  clientId: string;
+  clientSecret: string;
+};
 
-      if (isNotURL) {
-        const file = path.resolve(cwd, input);
-        const result = await importSpec(file);
-        output = await convertRemote(result, options.team, plugins);
-      } else {
-        console.log('Fetching spec...');
-        const result = await fetchSpec(input);
-        output = await convertRemote(result, options.team, plugins);
+function makeEnvFile(options: InitOptions): Promise<string> {
+  return new Promise((resolve, reject) => {
+    fs.exists('.env', (exists) => {
+      if (exists) {
+        reject(
+          new Error('You already have initiated a GWA workspace in this dir')
+        );
       }
+    });
 
-      if (isString(output)) {
-        await exportConfig(output, options.outfile);
-        console.log(`[DONE]: File ${options.outfile} generated`);
+    const data = `GWA_NAMESPACE=${options.namespace}
+GWA_SERVICE_NAME=${options.service}
+CLIENT_ID=${options.clientId}
+CLIENT_SECRET=${options.clientSecret}
+`;
+    fs.writeFile('.env', data, (err) => {
+      if (err) {
+        reject(new Error(`Unable to write file ${err}`));
       }
-    } else {
-      ui('/setup');
-    }
-  } catch (err) {
-    render(<ErrorView text={err.message} title="New Config Failed" />);
-  }
+      resolve('.env file successfully generated');
+    });
+  });
+}
+
+interface InitProps {
+  options: InitOptions;
+}
+
+const Init: React.FC<InitProps> = ({ options }) => {
+  const text = useMakeEnv(async () => await makeEnvFile(options));
+
+  return (
+    <Success>
+      <Text>{text}</Text>
+    </Success>
+  );
+};
+
+export default function init(input: string, options: InitOptions) {
+  render(
+    <ErrorBoundary FallbackComponent={Failed}>
+      <Suspense fallback={<Loading>Uploading config...</Loading>}>
+        <Init options={options} />
+      </Suspense>
+    </ErrorBoundary>
+  );
 }
