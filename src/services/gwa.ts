@@ -7,16 +7,18 @@ import { URLSearchParams } from 'url';
 import path from 'path';
 
 import {
-  clientId,
-  clientSecret,
+  clientKeys,
   getApiHost,
   getAuthorizationEndpoint,
   namespace,
 } from '../config';
+import type { Envs } from '../types';
 
-export async function getToken(): Promise<string> {
+export async function getToken(env: Envs): Promise<string> {
   try {
     const authorizationEndpoint = getAuthorizationEndpoint();
+    const clientId = clientKeys[env].clientId;
+    const clientSecret = clientKeys[env].clientSecret;
     const body = new URLSearchParams();
     body.append('client_id', clientId);
     body.append('client_secret', clientSecret);
@@ -59,6 +61,7 @@ export function publish({
 }: PublishParams): Promise<PublishResponse> {
   const apiHost = getApiHost(env);
   const filePath = path.resolve(process.cwd(), configFile);
+  console.log(apiHost, token, namespace);
   const options = {
     method: 'PUT',
     url: `${apiHost}/namespaces/${namespace}/gateway`,
@@ -96,18 +99,28 @@ export function publish({
 }
 
 type AddMembersParams = {
-  env: string;
-  users: string;
+  env: Envs;
+  users: string[] | undefined;
+  managers: string[] | undefined;
 };
 
 export async function addMembers({
   env,
-  users,
+  users = [],
+  managers = [],
 }: AddMembersParams): Promise<any> {
   try {
     const apiHost = getApiHost(env);
-    const token = await getToken();
-    const body = compact(users.split(',')).map((user) => ({ username: user }));
+    const token = await getToken(env);
+    const usersToAdd = users.map((username: string) => ({
+      username,
+      roles: ['viewer'],
+    }));
+    const managersToAdd = managers.map((username: string) => ({
+      username,
+      roles: ['admin'],
+    }));
+    const body = compact([...managersToAdd, ...usersToAdd]);
     const res = await fetch(`${apiHost}/namespaces/${namespace}/membership`, {
       method: 'PUT',
       headers: {

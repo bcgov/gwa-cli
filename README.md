@@ -31,47 +31,39 @@ $ gwa medications.yaml
 
 The `gwa` command will run the configuration wizard.
 
-
 ## Commands
 
-##### Quit
+### `gwa init`
 
-Key: `ctrl + c`
+Generates a `.env` file in the current working directory.
 
-This works the same as any command-line runtime
+### `gwa new <input file>`
 
-##### Export
+Initialize a config file in the current directory. The input file must be an OpenAPI JSON file or URL
 
-Key: `ctrl + y`
+### `gwa validate <input file>`
 
-This command will try to export the config as is.
+Validate a configuration file
 
-##### Go Forward (if in history)
+### `gwa update <input file>`
 
-Key: `ctrl + k`
+Update a config with new OpenAPI specs
 
-##### Go Back
+### `gwa plugins`
 
-Key: `ctrl + j`
+List all available plugins
 
-#### Editor commands
+### `gwa publish-gateway <config file>` Alias `pg`
 
-##### Enable/Disable plugin
+Publish all YAML config files in current directory. Make sure your `.env` file is configured correctly.
 
-Key: `ctrl + e`
+### `gwa acl`
 
-##### Save plugin config
+Update the full membership. Note that this command will overwrite the remote list of users, use with caution
 
-Key: `ctrl + s`
+## Help
 
-##### Go to Next Plugin Config (when viewing config)
-
-Key: `ctrl + n`
-
-##### Go to Previous Plugin Config (when viewing config)
-
-Key: `ctrl + p`
-
+Run `$ gwa --help` to see all available commands, `$ gwa <command> --help` to view an individual command's help content.
 
 ## Development
 

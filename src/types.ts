@@ -1,3 +1,5 @@
+export type Envs = 'dev' | 'prod' | 'test';
+
 export interface AppContext {
   dir: string;
   file?: string;

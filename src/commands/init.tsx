@@ -12,31 +12,39 @@ const useMakeEnv = makeRequest<string>();
 
 type InitOptions = {
   namespace: string;
-  service: string;
-  clientId: string;
-  clientSecret: string;
+  devClientId: string | undefined;
+  devClientSecret: string | undefined;
+  testClientId: string | undefined;
+  testClientSecret: string | undefined;
+  prodClientId: string | undefined;
+  prodClientSecret: string | undefined;
 };
 
 function makeEnvFile(options: InitOptions): Promise<string> {
   return new Promise((resolve, reject) => {
     fs.exists('.env', (exists) => {
       if (exists) {
-        reject(
-          new Error('You already have initiated a GWA workspace in this dir')
+        return reject(
+          new Error(
+            'You already have initiated a GWA workspace in this dir. You can edit the .env file to make changes'
+          )
         );
-      }
-    });
-
-    const data = `GWA_NAMESPACE=${options.namespace}
-GWA_SERVICE_NAME=${options.service}
-CLIENT_ID=${options.clientId}
-CLIENT_SECRET=${options.clientSecret}
+      } else {
+        const data = `GWA_NAMESPACE=${options.namespace}
+DEV_CLIENT_ID=${options.devClientId || ''}
+DEV_CLIENT_SECRET=${options.devClientSecret || ''}
+TEST_CLIENT_ID=${options.testClientId || ''}
+TEST_CLIENT_SECRET=${options.testClientSecret || ''}
+PROD_CLIENT_ID=${options.prodClientId || ''}
+PROD_CLIENT_SECRET=${options.prodClientSecret || ''}
 `;
-    fs.writeFile('.env', data, (err) => {
-      if (err) {
-        reject(new Error(`Unable to write file ${err}`));
+        fs.writeFile('.env', data, (err) => {
+          if (err) {
+            reject(new Error(`Unable to write file ${err}`));
+          }
+          resolve('.env file successfully generated');
+        });
       }
-      resolve('.env file successfully generated');
     });
   });
 }

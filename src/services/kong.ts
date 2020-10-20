@@ -8,11 +8,13 @@ function extract(result: any): string {
 
 export async function convertFile(
   file: string,
-  team: string,
+  namespace: string,
   plugins?: string[]
 ): Promise<string> {
   try {
-    const result = await o2k.generate(file, 'kong-declarative-config', [team]);
+    const result = await o2k.generate(file, 'kong-declarative-config', [
+      `ns.${namespace}`,
+    ]);
     const document = extract(result);
 
     if (plugins && plugins.length > 0) {
@@ -27,14 +29,14 @@ export async function convertFile(
 
 export async function convertRemote(
   input: string,
-  team: string,
+  namespace: string,
   plugins?: string[]
 ): Promise<string> {
   try {
     const result = await o2k.generateFromString(
       input,
       'kong-declarative-config',
-      [team]
+      [`ns.${namespace}`]
     );
     const document = extract(result);
 

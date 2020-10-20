@@ -7,6 +7,7 @@ import Failed from '../components/failed';
 import Loading from '../components/loading';
 import Success from '../components/success';
 import makeRequest from '../hooks/use-request';
+import type { Envs } from '../types';
 
 const useApi = makeRequest<ACLResponse>();
 
@@ -18,8 +19,9 @@ type ACLResponse = {
 
 interface ACLProps {
   options: {
-    env: string;
-    users: string;
+    env: Envs;
+    users: string[] | undefined;
+    managers: string[] | undefined;
   };
 }
 
@@ -29,6 +31,7 @@ const ACL = ({ options }: ACLProps) => {
       await addMembers({
         env: options.env,
         users: options.users,
+        managers: options.managers,
       })
   );
 

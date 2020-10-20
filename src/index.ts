@@ -20,14 +20,20 @@ const main = async () => {
       '--namespace <namespace>',
       'Represents a collections of Kong Services and Routes'
     )
-    .option('--service <service>', "The service's name")
-    .option('--client-id <clientId>', "The service's name")
-    .option('--client-secret <clientSecret>', "The service's name")
+    .option('--dev-client-id [devClientId]', 'DEV Client ID')
+    .option('--dev-client-secret [devClientSecret]', 'DEV Client Secret')
+    .option('--prod-client-id [prodClientId]', 'PROD Client ID')
+    .option('--prod-client-secret [prodClientSecret]', 'PROD Client Secret')
+    .option('--test-client-id [testClientId]', 'TEST Client ID')
+    .option('--test-client-secret [testClientSecret]', 'TEST Client Secret')
     .action((options) => run(init, null, options));
 
   program
     .command('new [input]')
-    .option('-t, --team <team>', 'The team you wish to register')
+    .option('--service <service>', "The service's name")
+    .option('-D, --dev', 'Dev environment')
+    .option('-P, --prod', 'Production environment')
+    .option('-T, --test', 'Testing environment')
     .option(
       '-p, --plugins [plugins...]',
       'Any starter plugins you would like to include'
@@ -49,7 +55,6 @@ const main = async () => {
   program
     .command('update <input>')
     .description('Update a config with new OpenAPI specs')
-    .option('-t, --team <team>', 'You must declare the team for this spec')
     .option('-u, --url [url]', 'The URL of a OpenAPI spec JSON file')
     .option(
       '-f, --file [file]',
@@ -73,17 +78,20 @@ const main = async () => {
     .description('Publish gateway config')
     .option('-D, --dev', 'Dev environment')
     .option('-P, --prod', 'Production environment')
-    .option('-T, --testing', 'Testing environment')
+    .option('-T, --test', 'Testing environment')
     .option('--dry-run', 'Enable dry run')
     .action((input, options) => run(publish, input, options));
 
   program
     .command('acl')
-    .description('Update the full membership')
+    .description(
+      'Update the full membership. Note that this command will overwrite the remote list of users, use with caution'
+    )
     .option('-D, --dev', 'Dev environment')
     .option('-P, --prod', 'Production environment')
-    .option('-T, --testing', 'Testing environment')
-    .option('-u, --users <users>', 'Users to add')
+    .option('-T, --test', 'Testing environment')
+    .option('-u, --users <users...>', 'Users to add')
+    .option('-m, --managers <managers...>', 'Managers to add')
     .action((options) => run(acl, null, options));
 
   program.version(pkg.version, '-v, --version');
