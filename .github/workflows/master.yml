@@ -21,6 +21,11 @@ jobs:
           echo "Got tag name ${{ steps.release.outputs.tag_name }}"
           echo "Got release version ${{ steps.release.outputs.version }}"
 
+      - uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+          
       # install and publish new config
       - name: NPM package containing Terraform configuration
         uses: actions/setup-node@v1
