@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Box, Text, render } from 'ink';
+import { Text, render } from 'ink';
 import { ErrorBoundary } from 'react-error-boundary';
 import fs from 'fs';
 
@@ -7,17 +7,15 @@ import Failed from '../components/failed';
 import Loading from '../components/loading';
 import Success from '../components/success';
 import makeRequest from '../hooks/use-request';
+import type { Envs } from '../types';
 
 const useMakeEnv = makeRequest<string>();
 
 type InitOptions = {
   namespace: string;
-  devClientId: string | undefined;
-  devClientSecret: string | undefined;
-  testClientId: string | undefined;
-  testClientSecret: string | undefined;
-  prodClientId: string | undefined;
-  prodClientSecret: string | undefined;
+  clientId: string;
+  clientSecret: string;
+  env: Envs;
 };
 
 function makeEnvFile(options: InitOptions): Promise<string> {
@@ -31,12 +29,9 @@ function makeEnvFile(options: InitOptions): Promise<string> {
         );
       } else {
         const data = `GWA_NAMESPACE=${options.namespace}
-DEV_CLIENT_ID=${options.devClientId || ''}
-DEV_CLIENT_SECRET=${options.devClientSecret || ''}
-TEST_CLIENT_ID=${options.testClientId || ''}
-TEST_CLIENT_SECRET=${options.testClientSecret || ''}
-PROD_CLIENT_ID=${options.prodClientId || ''}
-PROD_CLIENT_SECRET=${options.prodClientSecret || ''}
+CLIENT_ID=${options.clientId}
+CLIENT_SECRET=${options.clientSecret}
+GWA_ENV=${options.env}
 `;
         fs.writeFile('.env', data, (err) => {
           if (err) {

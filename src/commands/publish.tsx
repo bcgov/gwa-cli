@@ -7,7 +7,6 @@ import Failed from '../components/failed';
 import Loading from '../components/loading';
 import Success from '../components/success';
 import makeRequest from '../hooks/use-request';
-import type { Envs } from '../types';
 
 type PublishResponse = {
   message: string;
@@ -18,17 +17,15 @@ const useApi = makeRequest<PublishResponse>();
 interface PublishProps {
   input: string;
   options: {
-    env: Envs;
     dryRun: boolean;
   };
 }
 
 const Publish: React.FC<PublishProps> = ({ input, options }) => {
   const json = useApi(async () => {
-    const token = await getToken(options.env);
+    const token = await getToken();
     return await publish({
       configFile: input,
-      env: options.env,
       dryRun: Boolean(options.dryRun).toString(),
       token,
     });

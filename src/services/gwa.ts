@@ -4,21 +4,18 @@ import fs from 'fs';
 import request from 'request';
 import { URLSearchParams } from 'url';
 //import FormData from '@postman/form-data';
-import path from 'path';
+import { basename, extname, resolve } from 'path';
 
 import {
-  clientKeys,
-  getApiHost,
-  getAuthorizationEndpoint,
+  clientId,
+  clientSecret,
+  apiHost,
+  authorizationEndpoint,
   namespace,
 } from '../config';
-import type { Envs } from '../types';
 
-export async function getToken(env: Envs): Promise<string> {
+export async function getToken(): Promise<string> {
   try {
-    const authorizationEndpoint = getAuthorizationEndpoint();
-    const clientId = clientKeys[env].clientId;
-    const clientSecret = clientKeys[env].clientSecret;
     const body = new URLSearchParams();
     body.append('client_id', clientId);
     body.append('client_secret', clientSecret);
@@ -40,10 +37,54 @@ export async function getToken(env: Envs): Promise<string> {
   }
 }
 
+const TEMP_FILE: string = '.temp.yaml';
+
+export async function mergeConfigs() {
+  const current = process.cwd();
+
+  try {
+    const dir = await fs.promises.opendir(current);
+    const files = [];
+    const separator = '\n---\n';
+
+    for await (const dirent of dir) {
+      const extension = extname(dirent.name);
+
+      if (/\.(yaml|yml)/.test(extension)) {
+        const file = await fs.promises.readFile(
+          resolve(current, dirent.name),
+          'utf8'
+        );
+        files.push(file);
+      }
+    }
+    const result = await fs.promises.writeFile(
+      TEMP_FILE,
+      files.join(separator)
+    );
+    return result;
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
+async function bundleFiles(configFile: string | undefined) {
+  try {
+    if (!configFile) {
+      await mergeConfigs();
+    }
+    const filename = configFile || TEMP_FILE;
+    const filePath = resolve(process.cwd(), filename);
+
+    return fs.createReadStream(filePath);
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
 type PublishParams = {
-  configFile: string;
+  configFile: string | undefined;
   dryRun: string;
-  env: string;
   token: string;
 };
 
@@ -53,14 +94,12 @@ type PublishResponse = {
 };
 
 // Temporarily using request due to an issue with FormData and save actions
-export function publish({
+export async function publish({
   configFile,
   dryRun,
-  env,
   token,
 }: PublishParams): Promise<PublishResponse> {
-  const apiHost = getApiHost(env);
-  const filePath = path.resolve(process.cwd(), configFile);
+  const value = await bundleFiles(configFile);
   const options = {
     method: 'PUT',
     url: `${apiHost}/namespaces/${namespace}/gateway`,
@@ -69,7 +108,7 @@ export function publish({
     },
     formData: {
       configFile: {
-        value: fs.createReadStream(filePath),
+        value,
         options: {
           filename: configFile,
           contentType: null,
@@ -92,25 +131,26 @@ export function publish({
         });
       }
 
+      if (fs.existsSync(TEMP_FILE)) {
+        fs.unlinkSync(TEMP_FILE);
+      }
+
       resolve(body);
     });
   });
 }
 
 type AddMembersParams = {
-  env: Envs;
   users: string[] | undefined;
   managers: string[] | undefined;
 };
 
 export async function addMembers({
-  env,
   users = [],
   managers = [],
 }: AddMembersParams): Promise<any> {
   try {
-    const apiHost = getApiHost(env);
-    const token = await getToken(env);
+    const token = await getToken();
     const usersToAdd = users.map((username: string) => ({
       username,
       roles: ['viewer'],

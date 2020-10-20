@@ -20,20 +20,16 @@ const main = async () => {
       '--namespace <namespace>',
       'Represents a collections of Kong Services and Routes'
     )
-    .option('--dev-client-id [devClientId]', 'DEV Client ID')
-    .option('--dev-client-secret [devClientSecret]', 'DEV Client Secret')
-    .option('--prod-client-id [prodClientId]', 'PROD Client ID')
-    .option('--prod-client-secret [prodClientSecret]', 'PROD Client Secret')
-    .option('--test-client-id [testClientId]', 'TEST Client ID')
-    .option('--test-client-secret [testClientSecret]', 'TEST Client Secret')
+    .option('-D, --dev', 'Dev environment (default)')
+    .option('-P, --prod', 'Production environment')
+    .option('-T, --test', 'Testing environment')
+    .option('--client-id <clientId>', 'Authentication Client ID')
+    .option('--client-secret <clientSecret>', 'Authentication Client Secret')
     .action((options) => run(init, null, options));
 
   program
     .command('new [input]')
     .option('--service <service>', "The service's name")
-    .option('-D, --dev', 'Dev environment')
-    .option('-P, --prod', 'Production environment')
-    .option('-T, --test', 'Testing environment')
     .option(
       '-p, --plugins [plugins...]',
       'Any starter plugins you would like to include'
@@ -73,12 +69,9 @@ const main = async () => {
     .action((input) => run(plugins, input));
 
   program
-    .command('publish-gateway <config>')
+    .command('publish-gateway [config]')
     .alias('pg')
     .description('Publish gateway config')
-    .option('-D, --dev', 'Dev environment')
-    .option('-P, --prod', 'Production environment')
-    .option('-T, --test', 'Testing environment')
     .option('--dry-run', 'Enable dry run')
     .action((input, options) => run(publish, input, options));
 
@@ -87,9 +80,6 @@ const main = async () => {
     .description(
       'Update the full membership. Note that this command will overwrite the remote list of users, use with caution'
     )
-    .option('-D, --dev', 'Dev environment')
-    .option('-P, --prod', 'Production environment')
-    .option('-T, --test', 'Testing environment')
     .option('-u, --users <users...>', 'Users to add')
     .option('-m, --managers <managers...>', 'Managers to add')
     .action((options) => run(acl, null, options));
