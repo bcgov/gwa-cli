@@ -1,0 +1,43 @@
+name: Release from master
+
+on: 
+  push:
+    branches:
+      - master
+
+jobs:
+  release-on-push:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - id: release
+        uses: rymndhng/release-on-push-action@v0.15.0
+        with:
+          bump_version_scheme: patch
+
+      - name: Check Output Parameters
+        run: |
+          echo "Got tag name ${{ steps.release.outputs.tag_name }}"
+          echo "Got release version ${{ steps.release.outputs.version }}"
+
+      - uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+
+      # install and publish new config
+      - name: NPM package containing Terraform configuration
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          # GITHUB_REF=refs/heads/dev
+          # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
+          # GITHUB_RUN_ID=193633377
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+
+          npm version "${{ steps.release.outputs.version }}" --git-tag-version=false
+          npm install
+          npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
