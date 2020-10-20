@@ -61,7 +61,6 @@ export function publish({
 }: PublishParams): Promise<PublishResponse> {
   const apiHost = getApiHost(env);
   const filePath = path.resolve(process.cwd(), configFile);
-  console.log(apiHost, token, namespace);
   const options = {
     method: 'PUT',
     url: `${apiHost}/namespaces/${namespace}/gateway`,

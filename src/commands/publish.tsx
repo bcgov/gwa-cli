@@ -26,7 +26,6 @@ interface PublishProps {
 const Publish: React.FC<PublishProps> = ({ input, options }) => {
   const json = useApi(async () => {
     const token = await getToken(options.env);
-    console.log(options.env);
     return await publish({
       configFile: input,
       env: options.env,
