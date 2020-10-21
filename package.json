@@ -11,7 +11,8 @@
 	"scripts": {
 		"build": "tsc",
 		"start": "tsc -w",
-		"test": "xo && ava"
+		"test": "jest --coverage",
+		"test:watch": "jest --watch --coverage"
 	},
 	"files": [
 		"dist/**/*",
@@ -40,7 +41,7 @@
 		"lodash-es": "^4.17.15",
 		"meow": "^7.0.1",
 		"node-fetch": "^2.6.1",
-		"openapi-2-kong": "^2.2.12",
+		"openapi-2-kong": "^2.2.24",
 		"react": "^16.13.1",
 		"react-error-boundary": "^3.0.2",
 		"react-ridge-state": "^4.1.6",
@@ -55,11 +56,13 @@
 	"devDependencies": {
 		"@apidevtools/swagger-parser": "^10.0.1",
 		"@ava/babel": "^1.0.1",
-		"@babel/preset-env": "^7.11.0",
+		"@babel/preset-env": "^7.12.1",
 		"@babel/preset-react": "^7.10.4",
+		"@babel/preset-typescript": "^7.12.1",
 		"@babel/register": "^7.10.5",
 		"@types/dotenv": "^8.2.0",
 		"@types/history": "^4.7.7",
+		"@types/jest": "^26.0.15",
 		"@types/lodash-es": "^4.17.3",
 		"@types/minimist": "^1.2.0",
 		"@types/node-fetch": "^2.5.7",
@@ -70,34 +73,40 @@
 		"@types/validate.js": "^0.11.0",
 		"@typescript-eslint/eslint-plugin": "^4.0.1",
 		"@typescript-eslint/parser": "^4.0.1",
-		"ava": "^3.11.1",
 		"chalk": "^4.1.0",
 		"eslint": "^7.7.0",
-		"eslint-config-xo-react": "^0.23.0",
+		"eslint-config-prettier": "^6.13.0",
 		"eslint-plugin-react": "^7.20.5",
 		"eslint-plugin-react-hooks": "^4.0.8",
 		"ink-testing-library": "^2.0.1",
+		"jest": "^26.6.0",
 		"prettier": "^2.0.5",
-		"typescript": "^3.9.7",
-		"xo": "^0.32.1"
-	},
-	"ava": {
-		"babel": true,
-		"require": [
-			"@babel/register"
-		]
+		"typescript": "^3.9.7"
 	},
 	"babel": {
 		"presets": [
 			"@babel/preset-env",
-			"@babel/preset-react"
+			"@babel/preset-react",
+			"@babel/preset-typescript"
 		]
 	},
-	"xo": {
-		"extends": "xo-react",
-		"rules": {
-			"react/prop-types": "off"
-		}
+	"jest": {
+		"verbose": true,
+		"testMatch": [
+			"**/?(*.)+(test.{ts,tsx})"
+		],
+		"collectCoverageFrom": [
+			"src/**/*.{ts,tsx}"
+		],
+		"coveragePathIgnorePatterns": [
+			".*/__mocks__/.*",
+			".*/@types/.*"
+		],
+		"coverageDirectory": "__coverage__",
+		"coverageReporters": [
+			"lcov",
+			"text-summary"
+		]
 	},
 	"publishConfig": {
 		"registry": "https://npm.pkg.github.com/"

@@ -48,7 +48,7 @@ const Publish: React.FC<PublishProps> = ({ input, options }) => {
   );
 };
 
-export default function app(input: string, options: any) {
+export default function (input: string, options: any) {
   render(
     <ErrorBoundary FallbackComponent={Failed}>
       <Suspense fallback={<Loading>Uploading config...</Loading>}>

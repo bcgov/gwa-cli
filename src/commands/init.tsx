@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { Text, render } from 'ink';
 import { ErrorBoundary } from 'react-error-boundary';
+import pick from 'lodash/pick';
 import fs from 'fs';
 
 import Failed from '../components/failed';
@@ -28,10 +29,12 @@ function makeEnvFile(options: InitOptions): Promise<string> {
           )
         );
       } else {
+        const envArgs = pick(options, ['dev', 'test', 'prod']);
+        const env = Object.keys(envArgs)[0] ?? 'dev';
         const data = `GWA_NAMESPACE=${options.namespace}
-CLIENT_ID=${options.clientId}
-CLIENT_SECRET=${options.clientSecret}
-GWA_ENV=${options.env}
+CLIENT_ID=${options.clientId ?? ''}
+CLIENT_SECRET=${options.clientSecret ?? ''}
+GWA_ENV=${env}
 `;
         fs.writeFile('.env', data, (err) => {
           if (err) {

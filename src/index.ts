@@ -10,7 +10,6 @@ import publish from './commands/publish';
 import update from './commands/update';
 import validate from './commands/validate';
 
-// @ts-ignore
 const pkg = require('../package.json');
 
 const main = async () => {
