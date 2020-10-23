@@ -1,4 +1,4 @@
-import * as o2k from 'openapi-2-kong';
+import * as o2k from '../lib/openapi-2-kong';
 import YAML from 'yaml';
 
 function extract(result: any): string {

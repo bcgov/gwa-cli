@@ -37,6 +37,17 @@ The `gwa` command will run the configuration wizard.
 
 Generates a `.env` file in the current working directory.
 
+A `.env` file should have the following key/values
+
+```
+GWA_NAMESPACE=<your namespace>
+CLIENT_ID=<gwa client id>
+CLIENT_SECRET=<gwa client secret>
+GWA_ENV=<dev, prod or test>
+```
+
+To create and work with configurations you don't require `CLIENT_ID` or `CLIENT_SECRET`, but to make any API requests you will.
+
 ### `gwa new <input file>`
 
 Initialize a config file in the current directory. The input file must be an OpenAPI JSON file or URL
