@@ -3,13 +3,6 @@ import type { Prompt, SetupAction, SetupState } from './types';
 
 const prompts: Prompt[] = [
   {
-    label: 'API Ownership Team',
-    key: 'team',
-    constraint: {
-      presence: { allowEmpty: false },
-    },
-  },
-  {
     label: 'OpenAPI JSON URL',
     key: 'url',
     constraint: {

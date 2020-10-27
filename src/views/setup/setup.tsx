@@ -11,6 +11,7 @@ import { exportConfig } from '../../services/app';
 import { fetchSpec } from '../../services/openapi';
 import { generatePluginTemplates } from '../../state/plugins';
 import reducer, { initialState } from './reducer';
+import { namespace } from '../../config';
 
 interface SetupViewProps {}
 
@@ -48,9 +49,9 @@ const SetupView: React.FC<SetupViewProps> = () => {
         const json = await fetchSpec(data.url);
         const plugins = generatePluginTemplates(
           data.plugins.split(', '),
-          data.team
+          `ns.${namespace}`
         );
-        const result = await convertRemote(json, data.team, plugins);
+        const result = await convertRemote(json, namespace, plugins);
         dispatch({ type: 'spec/success', payload: result });
         await exportConfig(result, data.outfile);
         dispatch({ type: 'spec/written', payload: result });
@@ -62,7 +63,7 @@ const SetupView: React.FC<SetupViewProps> = () => {
     if (!prompt) {
       loadSpec();
     }
-  }, [data.team, data.url, fetchSpec, prompt, dispatch]);
+  }, [namespace, data.url, fetchSpec, prompt, dispatch]);
 
   React.useEffect(() => {
     if (done) {

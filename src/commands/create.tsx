@@ -5,10 +5,12 @@ import { render } from 'ink';
 import validate from 'validate.js';
 
 import ErrorView from '../views/error';
+import { convertFile, convertRemote } from '../services/kong';
 import { exportConfig } from '../services/app';
 import { fetchSpec, importSpec } from '../services/openapi';
-import { convertFile, convertRemote } from '../services/kong';
+import { loadPlugins } from '../services/plugins';
 import { generatePluginTemplates } from '../state/plugins';
+import { initPluginsState } from '../state/plugins';
 import { namespace } from '../config';
 import ui from '../ui';
 
@@ -36,6 +38,8 @@ export default async function (input: string, options: any) {
         console.log(`[DONE]: File ${options.outfile} generated`);
       }
     } else {
+      const data = await loadPlugins(path.resolve(__dirname, '../../files'));
+      initPluginsState(data);
       ui('/setup');
     }
   } catch (err) {

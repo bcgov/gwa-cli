@@ -37,7 +37,7 @@ export const set = (id: string, value: unknown) =>
 
 export const generatePluginTemplates = (
   names: string[],
-  team: string
+  namespace: string
 ): any[] => {
   const plugins = store.getState();
   const validate = flow(
@@ -48,7 +48,7 @@ export const generatePluginTemplates = (
 
   return validate(names).map((name) => ({
     name,
-    tags: [team],
+    tags: [namespace],
     enabled: true,
     config: plugins[name].config,
   }));

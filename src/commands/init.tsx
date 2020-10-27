@@ -29,6 +29,9 @@ function makeEnvFile(options: InitOptions): Promise<string> {
           )
         );
       } else {
+        if (!options.namespace) {
+          return reject(new Error('--namespace is required'));
+        }
         const envArgs = pick(options, ['dev', 'test', 'prod']);
         const env = Object.keys(envArgs)[0] ?? 'dev';
         const data = `GWA_NAMESPACE=${options.namespace}
