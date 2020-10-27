@@ -15,17 +15,24 @@ const PluginsList: React.FC = () => {
       <Box key={uid(plugin)} flexDirection="column" marginBottom={1}>
         <Box justifyContent="space-between">
           <Box>
-            <Text bold>{data.meta.name}</Text>
+            <Text bold color="yellow">
+              {data.meta.name}
+            </Text>
             <Box marginLeft={2}>
               <Text dimColor>{data.meta.author}</Text>
             </Box>
           </Box>
-          <Text dimColor underline>
-            {data.meta.url}
+          <Text>
+            <Text bold>Plugin ID:</Text> <Text underline>{plugin}</Text>
           </Text>
         </Box>
-        <Box paddingX={4}>
+        <Box flexDirection="column" paddingX={4}>
           <Text>{data.meta.description}</Text>
+          <Box>
+            <Text dimColor underline>
+              {data.meta.url}
+            </Text>
+          </Box>
         </Box>
       </Box>
     );
