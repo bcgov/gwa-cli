@@ -68,6 +68,9 @@ If successful the shell will print a success message. Next you can add admins an
 
 ```shell
 $ gwa acl --managers=acope@idir --users=jjones@idir
+
+// Add multiple managers or users by space-separating
+$ gwa acl --managers=acope@idir jjones@idir manager@idir
 ```
 
 A success message will return added, removed and missing users. Also note that `acl` will replace the remote admin/user's list, not append.
