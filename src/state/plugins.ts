@@ -48,7 +48,7 @@ export const generatePluginTemplates = (
 
   return validate(names).map((name) => ({
     name,
-    tags: [namespace],
+    tags: [`ns.${namespace}`],
     enabled: true,
     config: plugins[name].config,
   }));
