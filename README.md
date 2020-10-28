@@ -6,8 +6,15 @@ GWA CLI is a tool for composing, validating and generating Kong Gateway configur
 
 ## Installation
 
+This package isn't available on npm yet, so for now install like so:
+
 ```shell
-$ npm install -g @bcgov/gwa-cli
+$ git clone https://github.com/bcgov/gwa-cli.git
+$ cd gwa-cli/
+$ npm install
+$ npm run build
+$ npm link
+$ which gwa # confirm it works
 ```
 
 #### Prerequisites
@@ -132,7 +139,7 @@ Initialize a config file in the current directory. The input file must be an Ope
 
 ```shell
 --service    Name of the service
---plugins    Space separated list of plugin IDs 
+--plugins    Space separated list of plugin IDs
                 (dash separated, see plugins command)
 --outfile    The file to write to write output to
 ```
@@ -147,7 +154,7 @@ Validate a configuration file
 
 ```shell
 --url        URL of OpenAPI/Swagger JSON to update
---file       Local file of OpenAPI/Swagger JSON to update. 
+--file       Local file of OpenAPI/Swagger JSON to update.
                Not required if --url is set
 ```
 

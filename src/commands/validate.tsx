@@ -35,7 +35,8 @@ export default async function (input: string) {
     });
 
     render(serviceErrors[0]);
+    process.exit(0);
   } catch (err) {
-    console.error(err);
+    throw new Error(err);
   }
 }
