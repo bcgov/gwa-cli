@@ -39,6 +39,6 @@ export async function exportConfig(
   try {
     await fs.promises.writeFile(path.resolve(cwd, outfile), output);
   } catch (err) {
-    console.error(err);
+    throw new Error(err);
   }
 }

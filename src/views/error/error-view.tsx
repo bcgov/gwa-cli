@@ -8,7 +8,7 @@ interface ErrorViewProps {
 
 const ErrorView: React.FC<ErrorViewProps> = ({ text, title = 'Error' }) => {
   return (
-    <Box borderColor="red" borderStyle="round" margin={1} paddingX={2}>
+    <Box>
       <Box flexDirection="column">
         <Box marginBottom={1}>
           <Text underline bold color="red">

@@ -48,12 +48,10 @@ const Publish: React.FC<PublishProps> = ({ input, options }) => {
   );
 };
 
-export default function (input: string, options: any) {
+export default async function (input: string, options: any) {
   render(
-    <ErrorBoundary FallbackComponent={Failed}>
-      <Suspense fallback={<Loading>Uploading config...</Loading>}>
-        <Publish input={input} options={options} />
-      </Suspense>
-    </ErrorBoundary>
+    <Suspense fallback={<Loading>Uploading config...</Loading>}>
+      <Publish input={input} options={options} />
+    </Suspense>
   );
 }

@@ -71,10 +71,8 @@ const ACL = ({ options }: ACLProps) => {
 
 export default function acl(input: string, options: any) {
   render(
-    <ErrorBoundary FallbackComponent={Failed}>
-      <Suspense fallback={<Loading>Publishing membership changes...</Loading>}>
-        <ACL options={options} />
-      </Suspense>
-    </ErrorBoundary>
+    <Suspense fallback={<Loading>Publishing membership changes...</Loading>}>
+      <ACL options={options} />
+    </Suspense>
   );
 }

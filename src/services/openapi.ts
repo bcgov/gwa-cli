@@ -1,6 +1,7 @@
 import fetch from 'node-fetch';
 import fs from 'fs';
 import SwaggerParser from '@apidevtools/swagger-parser';
+import path from 'path';
 import YAML from 'yaml';
 
 export async function validateConfig(file: string): Promise<any> {
@@ -18,8 +19,10 @@ export async function validateConfig(file: string): Promise<any> {
 // Read and validate a local OpenAPI JSON file
 export async function importSpec(file: string) {
   try {
+    const fileType = path.extname(file);
     const contents = await fs.promises.readFile(file, 'utf8');
-    const json = JSON.parse(contents);
+    const json =
+      fileType === '.yaml' ? YAML.parse(contents) : JSON.parse(contents);
     await SwaggerParser.validate(json);
     const result = parser(json);
     return result;
@@ -32,7 +35,13 @@ export async function importSpec(file: string) {
 export async function fetchSpec(url: string) {
   try {
     const res = await fetch(url);
-    const json = await res.json();
+    let json;
+    if (/\.yaml$/.test(url)) {
+      const yamlResponse = await res.text();
+      json = YAML.parse(yamlResponse);
+    } else {
+      json = await res.json();
+    }
     await SwaggerParser.validate(json);
     const result = parser(json);
     return result;

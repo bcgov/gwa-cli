@@ -1,10 +1,16 @@
 import * as React from 'react';
-import { Box, Text } from 'ink';
+import { Box, Text, useApp } from 'ink';
 import type { FallbackProps } from 'react-error-boundary';
 
 interface FailedProps extends FallbackProps {}
 
 const Failed: React.FC<FailedProps> = ({ error }) => {
+  const { exit } = useApp();
+
+  React.useEffect(() => {
+    exit(error);
+  });
+
   return (
     <Box>
       <Box flexDirection="column">

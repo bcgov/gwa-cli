@@ -44,5 +44,6 @@ export default async function (input: string, options: any) {
     }
   } catch (err) {
     render(<ErrorView text={err.message} title="New Config Failed" />);
+    process.exit(0);
   }
 }

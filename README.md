@@ -39,13 +39,13 @@ For the following usage example we'll use a demonstration namespace of `sampler`
         |- other-service-config.yaml
     /namespace-folder-2
         |- .env
+    /new-namespace-folder
 ```
 
 Initialize a new configuration
 
 ```shell
-$ cd /to/project/dir
-$ mkdir configs && cd configs
+$ cd new-namespace-folder
 $ gwa init --namespace=sampler --client-id=<CLIENT ID> --client-secret=<CLIENT SECRET>
 ```
 
