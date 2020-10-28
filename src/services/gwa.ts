@@ -14,6 +14,10 @@ import {
   namespace,
 } from '../config';
 
+const TEMP_FILE: string = '.temp.yaml';
+const NAMESPACE_ERROR: string =
+  'You do not have a namespace set. Check your .env file in this directory or run gwa init';
+
 export async function getToken(): Promise<string> {
   try {
     const body = new URLSearchParams();
@@ -30,14 +34,12 @@ export async function getToken(): Promise<string> {
       const json = await res.json();
       return json.access_token;
     } else {
-      throw new Error(res.statusText);
+      throw res.statusText;
     }
   } catch (err) {
     throw new Error(err);
   }
 }
-
-const TEMP_FILE: string = '.temp.yaml';
 
 export async function mergeConfigs() {
   const current = process.cwd();
@@ -119,6 +121,10 @@ export async function publish({
   };
 
   return new Promise((resolve, reject) => {
+    if (!namespace) {
+      return reject(NAMESPACE_ERROR);
+    }
+
     request(options, (error: Error, response: any) => {
       if (error) {
         reject(error);
@@ -150,6 +156,10 @@ export async function addMembers({
   managers = [],
 }: AddMembersParams): Promise<any> {
   try {
+    if (!namespace) {
+      throw NAMESPACE_ERROR;
+    }
+
     const token = await getToken();
     const usersToAdd = users.map((username: string) => ({
       username,
@@ -172,7 +182,7 @@ export async function addMembers({
     if (res.ok) {
       return json;
     } else {
-      throw new Error(json.error);
+      throw json.error;
     }
   } catch (err) {
     throw new Error(err);

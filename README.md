@@ -29,7 +29,17 @@ While in the [API Services Portal](https://gwa-qwzrwc-test.pathfinder.gov.bc.ca/
 
 ## Usage
 
-For the following usage example we'll use a demonstration namespace of `sampler`, and an OpenAPI spec available at https://website/swagger.json
+For the following usage example we'll use a demonstration namespace of `sampler`, and an OpenAPI spec available at https://website/swagger.json. Your local machine structure will ideally follow this structure:
+
+```
+/project-dir
+    /namespace-folder-1
+        |- .env
+        |- service-config.yaml
+        |- other-service-config.yaml
+    /namespace-folder-2
+        |- .env
+```
 
 Initialize a new configuration
 
@@ -89,6 +99,10 @@ You can re-validate and publish your gateway with the updated routes.
 
 Generates a `.env` file in the current working directory.
 
+> Running `$ gwa init` without options will launch the interactive CLI form
+
+##### Options
+
 ```shell
 --namespace        The namespace of you routes collection
 --client-id        Namespace's Client ID from API Services Portal
@@ -110,11 +124,16 @@ Note you can copy this output above and paste the env keys from the sources ment
 
 ### `gwa new <input file or URL>`
 
-Initialize a config file in the current directory. The input file must be an OpenAPI JSON file or URL
+Initialize a config file in the current directory. The input file must be an OpenAPI JSON file or URL.
+
+> Running `$ gwa new` without options will launch the interactive CLI form
+
+##### Options
 
 ```shell
 --service    Name of the service
---plugins    Space separated list of plugin IDs (dash separated, see plugins command)
+--plugins    Space separated list of plugin IDs 
+                (dash separated, see plugins command)
 --outfile    The file to write to write output to
 ```
 
@@ -124,9 +143,12 @@ Validate a configuration file
 
 ### `gwa update <input file>`
 
+##### Options
+
 ```shell
 --url        URL of OpenAPI/Swagger JSON to update
---file       Local file of OpenAPI/Swagger JSON to update. Not required if --url is set
+--file       Local file of OpenAPI/Swagger JSON to update. 
+               Not required if --url is set
 ```
 
 Update a config with new OpenAPI specs
@@ -139,6 +161,8 @@ List all available plugins
 
 Publish all YAML config files in current directory. Make sure your `.env` file is configured correctly.
 
+##### Options
+
 ```shell
 --dry-run    true/false    Publish as a dry run only
 ```
@@ -146,6 +170,8 @@ Publish all YAML config files in current directory. Make sure your `.env` file i
 ### `gwa acl`
 
 Update the full membership. Note that this command will overwrite the remote list of users, use with caution
+
+##### Options
 
 ```shell
 --managers    A list of IDs to be giving admin roles

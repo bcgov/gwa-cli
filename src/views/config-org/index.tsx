@@ -5,7 +5,7 @@ import { useHistory } from 'react-router';
 
 import { useAppState } from '../../state/app';
 import PromptForm from '../../components/prompt-form';
-import TextField from '../../components/prompt-form/text-field';
+// import TextField from '../../components/prompt-form/text-field';
 import { useTeamState } from '../../state/team';
 
 type FormData = any;
@@ -57,30 +57,6 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
 
   return (
     <Box flexDirection="column" marginTop={2}>
-      <PromptForm complete={valid} onSubmit={onSubmit}>
-        <TextField
-          required
-          label="Organization Name"
-          name="name"
-          onChange={onChange}
-        />
-        <TextField
-          required
-          label="Swagger Docs URL"
-          type="url"
-          placeholder="URL should end with a .json"
-          name="specUrl"
-          onChange={onChange}
-        />
-        <TextField
-          required
-          label="Config File Name"
-          type="text"
-          placeholder="Enter a name for the YAML config file"
-          name="file"
-          onChange={onChange}
-        />
-      </PromptForm>
       {isProcessing && (
         <Box>
           <Text>

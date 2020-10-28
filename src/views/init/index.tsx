@@ -4,8 +4,8 @@ import Spinner from 'ink-spinner';
 import path from 'path';
 
 import AppContext from '../../services/context';
-import PromptForm from '../../components/prompt-form';
-import TextField from '../../components/prompt-form/text-field';
+// import PromptForm from '../../components/prompt-form';
+// import TextField from '../../components/prompt-form/text-field';
 // import { parseLocalFile, parseYaml } from '../../services/kong';
 
 type FormData = {
@@ -57,22 +57,6 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({ source }) => {
       <Box marginBottom={1}>
         <Text>Follow the prompts to generate a config file</Text>
       </Box>
-      <PromptForm complete={valid} onSubmit={onSubmit}>
-        <TextField
-          required
-          label="Organization Name"
-          name="name"
-          onChange={onChange}
-        />
-        <TextField
-          required
-          label="Config File Name"
-          type="text"
-          placeholder="Enter a name for the YAML config file"
-          name="file"
-          onChange={onChange}
-        />
-      </PromptForm>
       {isProcessing && (
         <Box>
           <Text>

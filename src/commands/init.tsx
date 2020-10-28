@@ -1,16 +1,50 @@
 import React, { Suspense } from 'react';
-import { Text, render } from 'ink';
 import { ErrorBoundary } from 'react-error-boundary';
-import pick from 'lodash/pick';
 import fs from 'fs';
+import isEmpty from 'lodash/isEmpty';
+import pick from 'lodash/pick';
+import { Text, render } from 'ink';
 
 import Failed from '../components/failed';
 import Loading from '../components/loading';
 import Success from '../components/success';
 import makeRequest from '../hooks/use-request';
 import type { Envs } from '../types';
+import PromptForm from '../components/prompt-form';
+import { Prompt } from '../components/prompt-form/types';
 
 const useMakeEnv = makeRequest<string>();
+
+const prompts: Prompt[] = [
+  {
+    label: 'Namespace',
+    key: 'namespace',
+    constraint: {
+      presence: { allowEmpty: false },
+      length: { minimum: 5, maximum: 10 },
+      format: {
+        pattern: '[a-z0-9]+',
+        flags: 'i',
+        message: 'can only contain a-z and 0-9',
+      },
+    },
+  },
+  {
+    label: 'Client ID',
+    key: 'clientId',
+    constraint: {
+      presence: { allowEmpty: false },
+    },
+  },
+  {
+    label: 'Client Secret',
+    key: 'clientSecret',
+    secret: true,
+    constraint: {
+      presence: { allowEmpty: false },
+    },
+  },
+];
 
 type InitOptions = {
   namespace: string;
@@ -33,7 +67,7 @@ function makeEnvFile(options: InitOptions): Promise<string> {
           return reject(new Error('--namespace is required'));
         }
         const envArgs = pick(options, ['dev', 'test', 'prod']);
-        const env = Object.keys(envArgs)[0] ?? 'dev';
+        const env = Object.keys(envArgs)[0] ?? 'test';
         const data = `GWA_NAMESPACE=${options.namespace}
 CLIENT_ID=${options.clientId ?? ''}
 CLIENT_SECRET=${options.clientSecret ?? ''}
@@ -64,12 +98,29 @@ const Init: React.FC<InitProps> = ({ options }) => {
   );
 };
 
-export default function init(input: string, options: InitOptions) {
-  render(
-    <ErrorBoundary FallbackComponent={Failed}>
-      <Suspense fallback={<Loading>Uploading config...</Loading>}>
-        <Init options={options} />
-      </Suspense>
-    </ErrorBoundary>
-  );
+export default function init(_: string, options: InitOptions) {
+  if (isEmpty(pick(options, ['namespace', 'clientId', 'clientSecret']))) {
+    render(
+      <PromptForm
+        options={prompts}
+        title="Configure this folder's environment variables"
+      >
+        {({ data }) => (
+          <ErrorBoundary FallbackComponent={Failed}>
+            <Suspense fallback={<Loading>Writing .env file</Loading>}>
+              <Init options={data} />
+            </Suspense>
+          </ErrorBoundary>
+        )}
+      </PromptForm>
+    );
+  } else {
+    render(
+      <ErrorBoundary FallbackComponent={Failed}>
+        <Suspense fallback={<Loading>Writing .env file</Loading>}>
+          <Init options={options} />
+        </Suspense>
+      </ErrorBoundary>
+    );
+  }
 }
