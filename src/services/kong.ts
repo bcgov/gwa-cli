@@ -27,16 +27,23 @@ export async function convertFile(
   }
 }
 
+export type ImportOptions = {
+  routeHost: string;
+  serviceUrl: string;
+};
+
 export async function convertRemote(
   input: string,
   namespace: string,
-  plugins?: string[]
+  plugins?: string[],
+  options?: ImportOptions
 ): Promise<string> {
   try {
     const result = await o2k.generateFromString(
       input,
       'kong-declarative-config',
-      [`ns.${namespace}`]
+      [`ns.${namespace}`],
+      options
     );
     const document = extract(result);
 

@@ -6,7 +6,22 @@ const prompts: Prompt[] = [
     label: 'OpenAPI JSON URL',
     key: 'url',
     constraint: {
-      presence: true,
+      presence: { allowEmpty: false },
+      url: true,
+    },
+  },
+  {
+    label: 'Route Host',
+    key: 'routeHost',
+    constraint: {
+      presence: { allowEmpty: false },
+    },
+  },
+  {
+    label: 'Service URL',
+    key: 'serviceUrl',
+    constraint: {
+      presence: { allowEmpty: false },
       url: true,
     },
   },

@@ -51,7 +51,10 @@ const SetupView: React.FC<SetupViewProps> = () => {
           data.plugins.split(', '),
           `ns.${namespace}`
         );
-        const result = await convertRemote(json, namespace, plugins);
+        const result = await convertRemote(json, namespace, plugins, {
+          routeHost: data.routeHost,
+          serviceUrl: data.serviceUrl,
+        });
         dispatch({ type: 'spec/success', payload: result });
         await exportConfig(result, data.outfile);
         dispatch({ type: 'spec/written', payload: result });

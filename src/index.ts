@@ -29,6 +29,11 @@ const main = async () => {
   program
     .command('new [input]')
     .option('--service <service>', "The service's name")
+    .option('--route-host <routeHost>', "Generally a server's URL")
+    .option(
+      '--service-url <serviceUrl>',
+      'The URL the server will be accessable through'
+    )
     .option(
       '-p, --plugins [plugins...]',
       'Any starter plugins you would like to include'
