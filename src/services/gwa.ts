@@ -125,7 +125,7 @@ export async function publish({
       return reject(NAMESPACE_ERROR);
     }
 
-    request(options, (error: Error, response: any) => {
+    request(options, (error: Error, response: any, b) => {
       if (error) {
         reject(error);
       }
@@ -185,6 +185,6 @@ export async function addMembers({
       throw json.error;
     }
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }

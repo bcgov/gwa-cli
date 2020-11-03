@@ -8,5 +8,6 @@ const cmd = `node --no-warnings ${resolve(
   __dirname,
   '../dist/index.js'
 )} ${args}`;
-process.stdout.write('\033c');
+//process.stdout.write('\033c');
+console.log('hi');
 spawnSync(cmd, { stdio: 'inherit', shell: true });

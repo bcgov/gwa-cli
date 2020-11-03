@@ -1,4 +1,7 @@
+#!/usr/bin/env node
+import dotenv from 'dotenv';
 import { program } from 'commander';
+dotenv.config();
 
 import run from './run';
 import acl from './commands/acl';
@@ -24,6 +27,7 @@ const main = async () => {
     .option('-T, --test', 'Testing environment')
     .option('--client-id <clientId>', 'Authentication Client ID')
     .option('--client-secret <clientSecret>', 'Authentication Client Secret')
+    .option('--debug')
     .action((options) => run(init, null, options));
 
   program
@@ -45,6 +49,7 @@ const main = async () => {
     .description(
       'Initialize a config file in the current directory. The input file must be an OpenAPI JSON file or URL'
     )
+    .option('--debug')
     .action((input, options) => run(create, input, options));
 
   program
@@ -60,6 +65,7 @@ const main = async () => {
       '-f, --file [file]',
       'An OpenAPI spec JSON file on your local machine'
     )
+    .option('--debug')
     .action((input, options) => run(update, input, options));
 
   program
@@ -77,6 +83,7 @@ const main = async () => {
     .alias('pg')
     .description('Publish gateway config')
     .option('--dry-run', 'Enable dry run')
+    .option('--debug')
     .action((input, options) => run(publish, input, options));
 
   program
@@ -86,6 +93,7 @@ const main = async () => {
     )
     .option('-u, --users <users...>', 'Users to add')
     .option('-m, --managers <managers...>', 'Managers to add')
+    .option('--debug')
     .action((options) => run(acl, null, options));
 
   program.version(pkg.version, '-v, --version');

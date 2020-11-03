@@ -11,7 +11,7 @@ const run = async (fn: any, input: string | null, options?: any) => {
 
     return fn(input, options);
   } catch (err) {
-    console.error(err);
+    throw err;
   }
 };
 

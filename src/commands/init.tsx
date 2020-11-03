@@ -51,6 +51,7 @@ type InitOptions = {
   clientId: string;
   clientSecret: string;
   env: Envs;
+  debug: boolean;
 };
 
 function makeEnvFile(options: InitOptions): Promise<string> {
@@ -106,7 +107,11 @@ export default function init(_: string, options: InitOptions) {
         title="Configure this folder's environment variables"
       >
         {({ data }) => (
-          <ErrorBoundary FallbackComponent={Failed}>
+          <ErrorBoundary
+            fallbackRender={({ error }) => (
+              <Failed error={error} verbose={options.debug} />
+            )}
+          >
             <Suspense fallback={<Loading>Writing .env file</Loading>}>
               <Init options={data} />
             </Suspense>
@@ -116,7 +121,11 @@ export default function init(_: string, options: InitOptions) {
     );
   } else {
     render(
-      <ErrorBoundary FallbackComponent={Failed}>
+      <ErrorBoundary
+        fallbackRender={({ error }) => (
+          <Failed error={error} verbose={options.debug} />
+        )}
+      >
         <Suspense fallback={<Loading>Writing .env file</Loading>}>
           <Init options={options} />
         </Suspense>

@@ -33,9 +33,6 @@ export default async function (input: string) {
         })
         .filter((err: any | undefined) => err !== undefined);
     });
-
-    process.exitCode = 1;
-    throw new Error('Invalid');
     render(serviceErrors[0]);
   } catch (err) {
     throw new Error(err);

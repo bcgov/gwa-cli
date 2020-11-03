@@ -1,8 +1,8 @@
 import React, { Suspense } from 'react';
 import { Box, Text, render } from 'ink';
-import { addMembers } from '../services/gwa';
 import { ErrorBoundary } from 'react-error-boundary';
 
+import { addMembers } from '../services/gwa';
 import Failed from '../components/failed';
 import Loading from '../components/loading';
 import Success from '../components/success';
@@ -71,8 +71,14 @@ const ACL = ({ options }: ACLProps) => {
 
 export default function acl(input: string, options: any) {
   render(
-    <Suspense fallback={<Loading>Publishing membership changes...</Loading>}>
-      <ACL options={options} />
-    </Suspense>
+    <ErrorBoundary
+      fallbackRender={({ error }) => (
+        <Failed error={error} verbose={options.debug} />
+      )}
+    >
+      <Suspense fallback={<Loading>Publishing membership changes...</Loading>}>
+        <ACL options={options} />
+      </Suspense>
+    </ErrorBoundary>
   );
 }

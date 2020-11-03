@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"license": "MIT",
 	"bin": {
-		"gwa": "./bin/gwa"
+		"gwa": "./dist/index.js"
 	},
 	"engines": {
 		"node": ">=10"
