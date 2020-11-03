@@ -5,17 +5,15 @@ export interface Prompt {
   constraint: any;
 }
 
-export interface SetupState {
+export interface PromptFormState {
   step: number;
-  error: any | undefined;
+  error: string[] | undefined;
   value: string;
   data: any;
-  done: boolean;
   prompts: Prompt[];
 }
-export type SetupAction =
+
+export type PromptAction =
   | { type: 'change'; payload: string }
-  | { type: 'error'; payload: any | undefined }
-  | { type: 'next'; payload: any }
-  | { type: 'done' }
+  | { type: 'next'; payload: string }
   | { type: 'reset' };

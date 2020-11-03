@@ -9,42 +9,31 @@ import reducer, { makeInitialState } from './reducer';
 import type { Prompt } from './types';
 
 interface SetupViewProps {
-  children: ({ data }: { data: any }) => React.Node;
+  onSubmit: (data: any) => void;
   options: Prompt[];
   title: string;
 }
 
-const SetupView: React.FC<SetupViewProps> = ({ children, options, title }) => {
-  const [
-    { data, done, error, prompts, step, value },
-    dispatch,
-  ] = React.useReducer(reducer, makeInitialState(options));
+const SetupView: React.FC<SetupViewProps> = ({ onSubmit, options, title }) => {
+  const [state, dispatch] = React.useReducer(
+    reducer,
+    makeInitialState(options)
+  );
+  const { data, error, prompts, step, value } = state;
+  const done = step >= options.length;
   const prompt = options[step];
-  const onSubmit = (value: string) => {
-    const errors = validate.single(value, prompt.constraint, {
-      format: 'flat',
+  const onInputSubmit = (value: string) => {
+    dispatch({
+      type: 'next',
+      payload: value,
     });
-
-    if (errors) {
-      dispatch({
-        type: 'error',
-        payload: errors,
-      });
-    } else {
-      dispatch({
-        type: 'next',
-        payload: {
-          [prompt.key]: value,
-        },
-      });
-    }
   };
 
   React.useEffect(() => {
-    if (step === options.length) {
-      dispatch({ type: 'done' });
+    if (done && options.length > 0) {
+      onSubmit(data);
     }
-  }, [options, step]);
+  }, [done, onSubmit, options.length]);
 
   return (
     <Box flexDirection="column">
@@ -88,7 +77,7 @@ const SetupView: React.FC<SetupViewProps> = ({ children, options, title }) => {
                 onChange={(value) =>
                   dispatch({ type: 'change', payload: value })
                 }
-                onSubmit={onSubmit}
+                onSubmit={onInputSubmit}
               />
               {error && (
                 <Box>
@@ -99,7 +88,6 @@ const SetupView: React.FC<SetupViewProps> = ({ children, options, title }) => {
           </Box>
         </Box>
       )}
-      {done && children && children({ data })}
     </Box>
   );
 };
