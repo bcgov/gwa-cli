@@ -9,7 +9,7 @@ import reducer, { makeInitialState } from './reducer';
 import type { Prompt } from './types';
 
 interface SetupViewProps {
-  children: ({ data }: { data: any }) => any;
+  children: ({ data }: { data: any }) => React.Node;
   options: Prompt[];
   title: string;
 }
@@ -99,7 +99,7 @@ const SetupView: React.FC<SetupViewProps> = ({ children, options, title }) => {
           </Box>
         </Box>
       )}
-      {done && children({ data })}
+      {done && children && children({ data })}
     </Box>
   );
 };
