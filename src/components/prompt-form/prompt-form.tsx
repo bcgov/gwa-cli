@@ -9,6 +9,7 @@ import reducer, { makeInitialState } from './reducer';
 import type { Prompt } from './types';
 
 interface SetupViewProps {
+  // TODO: return generic here
   onSubmit: (data: any) => void;
   options: Prompt[];
   title: string;

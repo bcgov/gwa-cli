@@ -30,3 +30,14 @@ export interface PluginObject {
 export interface PluginsResult {
   [id: string]: PluginObject;
 }
+
+export interface InitOptions {
+  namespace: string;
+  clientId: string;
+  clientSecret: string;
+  env: string;
+  dev: boolean;
+  test: boolean;
+  prod: boolean;
+  debug: boolean;
+}

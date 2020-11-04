@@ -1,6 +1,27 @@
 import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
+import type { InitOptions } from '../types';
+
+export function checkForEnvFile() {
+  return fs.existsSync('.env');
+}
+
+export function makeEnvFile(options: InitOptions): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const data = `GWA_NAMESPACE=${options.namespace}
+CLIENT_ID=${options.clientId ?? ''}
+CLIENT_SECRET=${options.clientSecret ?? ''}
+GWA_ENV=${options.env}
+`;
+    fs.writeFile('.env', data, (err) => {
+      if (err) {
+        reject(`Unable to write file ${err}`);
+      }
+      resolve('.env file successfully generated');
+    });
+  });
+}
 
 export async function loadConfig(input: string): Promise<any> {
   const cwd = process.cwd();
