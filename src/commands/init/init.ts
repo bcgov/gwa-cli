@@ -30,7 +30,7 @@ export const actionHandler = (options: InitOptions) => {
           console.log(chalk.green.bold('Success'), '.env file generated');
         })
         .catch((err) => {
-          console.log(err);
+          console.error(chalk.red.bold('x Error'), err);
         });
     } catch (err) {
       throw err;

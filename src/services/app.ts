@@ -32,7 +32,7 @@ export async function loadConfig(input: string): Promise<any> {
 
     return json;
   } catch (err) {
-    console.log(err);
+    throw err;
   }
 }
 
@@ -60,6 +60,6 @@ export async function exportConfig(
   try {
     await fs.promises.writeFile(path.resolve(cwd, outfile), output);
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }

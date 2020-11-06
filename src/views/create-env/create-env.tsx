@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { Suspense, useCallback, useState } from 'react';
 import { Box, render } from 'ink';
 
+import { ErrorBoundary } from 'react-error-boundary';
+import Loading from '../../components/loading';
+import Failed from '../../components/failed';
 import PromptForm, { Prompt } from '../../components/prompt-form';
-import Success from '../../components/success';
-import { makeEnvFile } from '../../services/app';
+import WriteEnvAction from './write-env-action';
+import type { InitOptions } from '../../types';
 
 interface CreateEnvViewProps {
   env: string;
@@ -11,27 +14,32 @@ interface CreateEnvViewProps {
 }
 
 const CreateEnvView: React.FC<CreateEnvViewProps> = ({ env, prompts }) => {
-  const [doneText, setDoneText] = useState<string>('');
-  const onSubmit = async (data: any) => {
-    try {
-      const result = await makeEnvFile({
-        ...data,
-        env,
-      });
-      setDoneText(doneText);
-    } catch (err) {
-      throw err;
-    }
-  };
+  const [data, setData] = useState<InitOptions | null>(null);
+  const onSubmit = useCallback((formData: Omit<InitOptions, 'env'>) => {
+    setData({
+      ...formData,
+      env,
+    });
+  }, []);
 
   return (
-    <Box>
+    <Box flexDirection="column">
       <PromptForm
         options={prompts}
         onSubmit={onSubmit}
         title="Configure this folder's environment variables"
       />
-      {Boolean(doneText) && <Success>{doneText}</Success>}
+      {data && (
+        <ErrorBoundary
+          fallbackRender={({ error }) => (
+            <Failed error={error} verbose={false} />
+          )}
+        >
+          <Suspense fallback={<Loading>Writing .env file</Loading>}>
+            <WriteEnvAction data={data} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
     </Box>
   );
 };
