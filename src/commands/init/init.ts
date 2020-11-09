@@ -6,7 +6,7 @@ import pick from 'lodash/pick';
 import { checkForEnvFile, makeEnvFile } from '../../services/app';
 import prompts from './prompts';
 import { render } from '../../views/create-env';
-import type { Envs, InitOptions } from '../../types';
+import type { InitOptions } from '../../types';
 
 export const actionHandler = (options: InitOptions) => {
   const initArgs = pick(options, ['namespace', 'clientId', 'clientSecret']);
@@ -21,20 +21,22 @@ export const actionHandler = (options: InitOptions) => {
   if (isEmpty(initArgs)) {
     render(prompts, env);
   } else {
-    try {
-      makeEnvFile({
-        ...options,
-        env,
-      })
-        .then(() => {
-          console.log(chalk.green.bold('Success'), '.env file generated');
-        })
-        .catch((err) => {
-          console.error(chalk.red.bold('x Error'), err);
-        });
-    } catch (err) {
-      throw err;
-    }
+    makeEnvFile({
+      ...options,
+      env,
+    }).then(
+      (message: string) => {
+        console.log(chalk.green.bold('Success'), message);
+      },
+      (err) => {
+        console.error(chalk.red.bold('x Error'), 'Unable to create .env file');
+        process.exitCode = 1;
+
+        if (options.debug) {
+          console.error(err);
+        }
+      }
+    );
   }
 };
 
