@@ -1,5 +1,5 @@
 import React, { Suspense, useCallback, useState } from 'react';
-import { Box, render } from 'ink';
+import { Box } from 'ink';
 
 import { ErrorBoundary } from 'react-error-boundary';
 import Loading from '../../components/loading';
@@ -42,10 +42,6 @@ const CreateEnvView: React.FC<CreateEnvViewProps> = ({ env, prompts }) => {
       )}
     </Box>
   );
-};
-
-export const renderView = (prompts: Prompt[], env: string) => {
-  return render(<CreateEnvView env={env} prompts={prompts} />);
 };
 
 export default CreateEnvView;

@@ -4,8 +4,7 @@ import isEmpty from 'lodash/isEmpty';
 import pick from 'lodash/pick';
 
 import { checkForEnvFile, makeEnvFile } from '../../services/app';
-import prompts from './prompts';
-import { render } from '../../views/create-env';
+import render from './renderer';
 import type { InitOptions } from '../../types';
 
 export const actionHandler = (options: InitOptions) => {
@@ -19,7 +18,7 @@ export const actionHandler = (options: InitOptions) => {
 
   // Empty args indicates we launch the prompt form instead
   if (isEmpty(initArgs)) {
-    render(prompts, env);
+    render(env);
   } else {
     makeEnvFile({
       ...options,

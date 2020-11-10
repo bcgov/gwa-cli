@@ -1,5 +1,4 @@
 import React from 'react';
-import { Text } from 'ink';
 
 import { makeEnvFile } from '../../services/app';
 import Success from '../../components/success';
