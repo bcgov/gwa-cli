@@ -100,7 +100,6 @@
 	},
 	"jest": {
 		"verbose": true,
-		"restoreMocks": true,
 		"testMatch": [
 			"**/?(*.)+(test.{ts,tsx})"
 		],

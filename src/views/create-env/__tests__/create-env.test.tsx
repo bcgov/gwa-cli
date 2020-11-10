@@ -1,10 +1,10 @@
-jest.mock('../../../services/app');
 import React from 'react';
 import delay from 'delay';
 import { render } from 'ink-testing-library';
-import { makeEnvFile } from '../../../services/app';
+import * as app from '../../../services/app';
 
 import CreateEnvView from '../create-env';
+jest.mock('../../../services/app');
 
 describe('views/create-env', () => {
   const prompts = [
@@ -29,8 +29,8 @@ describe('views/create-env', () => {
   });
 
   it('should render write component after form is complete', async () => {
-    const successText = '.env file successfully generated';
-    makeEnvFile.mockImplementationOnce(() => Promise.resolve(successText));
+    const successText = 'Done';
+    app.makeEnvFile = jest.fn().mockResolvedValueOnce(successText);
     const { lastFrame, stdin } = render(
       <CreateEnvView env={env} prompts={prompts} />
     );
@@ -47,8 +47,8 @@ describe('views/create-env', () => {
   });
 
   it('should render error', async () => {
-    const errorText = 'unable to make file';
-    makeEnvFile.mockImplementationOnce(() => Promise.reject(errorText));
+    const errorText = 'Error';
+    app.makeEnvFile = jest.fn().mockRejectedValueOnce(errorText);
     const { lastFrame, stdin } = render(
       <CreateEnvView env={env} prompts={prompts} />
     );
