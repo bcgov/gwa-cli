@@ -41,7 +41,7 @@ describe('views/create-env', () => {
     await delay(100);
     stdin.write('\r');
     await delay(1);
-    expect(lastFrame()).toEqual(expect.stringContaining('Writing .env file'));
+    expect(lastFrame()).toEqual(expect.stringContaining('Writing file...'));
     await delay(100);
     expect(lastFrame()).toEqual(expect.stringContaining(successText));
   });

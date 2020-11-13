@@ -5,12 +5,12 @@ import Loading from '../loading';
 
 describe('components/loading', () => {
   it('should render with children', () => {
-    const { lastFrame } = render(<Loading>Text</Loading>);
+    const { lastFrame } = render(<Loading text="Text" />);
     expect(lastFrame()).toEqual('⠋ Text');
   });
 
   it('should accept a different spinner', () => {
-    const { lastFrame } = render(<Loading spinner="arc">Arc</Loading>);
+    const { lastFrame } = render(<Loading spinner="arc" text="Arc" />);
     expect(lastFrame()).toEqual('◜ Arc');
   });
 });

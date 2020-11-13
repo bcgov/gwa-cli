@@ -1,23 +1,49 @@
-import fetch from 'node-fetch';
-import { URLSearchParams } from 'url';
+import { compile } from 'path-to-regexp';
+import fetch, { RequestInit } from 'node-fetch';
+import merge from 'lodash/merge';
 
-import { clientId, clientSecret } from '../config';
+import authenticate from './auth';
+import {
+  authorizationEndpoint,
+  apiHost,
+  env,
+  legacyAuthorizationEndpoint,
+  legacyApiHost,
+  namespace,
+} from '../config';
 
-export async function authenticate(url: string): Promise<string> {
+export function getEndpoints() {
+  const isLegacy = env === 'test';
+  const auth = isLegacy ? legacyAuthorizationEndpoint : authorizationEndpoint;
+  const host = isLegacy ? legacyApiHost : apiHost;
+
+  return {
+    auth,
+    host,
+  };
+}
+
+export async function api<ApiResponse>(
+  token: string,
+  endpoint: string,
+  options?: RequestInit
+): Promise<ApiResponse> {
   try {
-    const body = new URLSearchParams();
-    body.append('client_id', clientId);
-    body.append('client_secret', clientSecret);
-    body.append('grant_type', 'client_credentials');
-
-    const res = await fetch(url, {
-      method: 'POST',
-      body,
-    });
+    const config = merge(
+      {},
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+      options
+    );
+    const res = await fetch(endpoint, config);
 
     if (res.ok) {
       const json = await res.json();
-      return json.access_token;
+      return json;
     } else {
       throw res.statusText;
     }
@@ -25,3 +51,27 @@ export async function authenticate(url: string): Promise<string> {
     throw new Error(err);
   }
 }
+
+export async function makeRequest<ApiResponse>(
+  endpoint: string,
+  options?: RequestInit
+): Promise<ApiResponse> {
+  try {
+    const { auth, host } = getEndpoints();
+    const token = await authenticate(auth);
+    const uncompiledUrl = host + endpoint;
+    let url = uncompiledUrl;
+
+    if (endpoint.includes(':')) {
+      const urlCompiler = compile(uncompiledUrl);
+      url = urlCompiler({ namespace }, { validate: false });
+    }
+    const response = await api(token, url, options);
+    return response;
+  } catch (err) {
+    console.log('hi', err);
+    throw new Error(err);
+  }
+}
+
+export default makeRequest;

@@ -1,12 +1,10 @@
-import React, { Suspense, useCallback, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Box } from 'ink';
 
-import { ErrorBoundary } from 'react-error-boundary';
-import Loading from '../../components/loading';
-import Failed from '../../components/failed';
 import PromptForm, { Prompt } from '../../components/prompt-form';
 import WriteEnvAction from './write-env-action';
 import type { InitOptions } from '../../types';
+import AsyncAction from '../../components/async-action';
 
 interface CreateEnvViewProps {
   env: string;
@@ -30,15 +28,9 @@ const CreateEnvView: React.FC<CreateEnvViewProps> = ({ env, prompts }) => {
         title="Configure this folder's environment variables"
       />
       {data && (
-        <ErrorBoundary
-          fallbackRender={({ error }) => (
-            <Failed error={error} verbose={false} />
-          )}
-        >
-          <Suspense fallback={<Loading>Writing .env file</Loading>}>
-            <WriteEnvAction data={data} />
-          </Suspense>
-        </ErrorBoundary>
+        <AsyncAction loadingText="Writing file...">
+          <WriteEnvAction data={data} />
+        </AsyncAction>
       )}
     </Box>
   );

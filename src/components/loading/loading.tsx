@@ -4,16 +4,22 @@ import Spinner from 'ink-spinner';
 import type { SpinnerName } from 'cli-spinners';
 
 interface LoadingProps {
-  children: string;
+  children?: React.ReactNode;
   spinner?: SpinnerName;
+  text?: string;
 }
 
-const Loading: React.FC<LoadingProps> = ({ children, spinner }) => {
+const Loading: React.FC<LoadingProps> = ({
+  children,
+  spinner,
+  text = 'Processing...',
+}) => {
   return (
-    <Box>
+    <Box flexDirection="column">
       <Text>
-        <Spinner type={spinner} /> <Text>{children}</Text>
+        <Spinner type={spinner} /> <Text>{text}</Text>
       </Text>
+      {children && <Box>{children}</Box>}
     </Box>
   );
 };

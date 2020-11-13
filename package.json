@@ -42,6 +42,7 @@
 		"meow": "^7.0.1",
 		"node-fetch": "^2.6.1",
 		"openapi-2-kong": "^2.2.24",
+		"path-to-regexp": "^6.2.0",
 		"react": "^16.13.1",
 		"react-error-boundary": "^3.0.2",
 		"react-ridge-state": "^4.1.6",

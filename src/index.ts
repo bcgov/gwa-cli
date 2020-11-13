@@ -19,7 +19,7 @@ const pkg = require('../package.json');
 const program = new Command();
 program.version(pkg.version);
 // Refactored commands
-program.addCommand(init);
+program.addCommand(init).addCommand(acl);
 
 // Commands to refactor
 program
@@ -77,16 +77,6 @@ program
   .option('--dry-run', 'Enable dry run')
   .option('--debug')
   .action((input, options) => run(publish, input, options));
-
-program
-  .command('acl')
-  .description(
-    'Update the full membership. Note that this command will overwrite the remote list of users, use with caution'
-  )
-  .option('-u, --users <users...>', 'Users to add')
-  .option('-m, --managers <managers...>', 'Managers to add')
-  .option('--debug')
-  .action((options) => run(acl, null, options));
 
 try {
   program.parse(process.argv);
