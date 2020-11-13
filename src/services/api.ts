@@ -3,16 +3,16 @@ import fetch, { RequestInit } from 'node-fetch';
 import merge from 'lodash/merge';
 
 import authenticate from './auth';
-import {
-  authorizationEndpoint,
-  apiHost,
-  env,
-  legacyAuthorizationEndpoint,
-  legacyApiHost,
-  namespace,
-} from '../config';
+import config from '../config';
 
 export function getEndpoints() {
+  const {
+    authorizationEndpoint,
+    apiHost,
+    env,
+    legacyAuthorizationEndpoint,
+    legacyApiHost,
+  } = config();
   const isLegacy = env === 'test';
   const auth = isLegacy ? legacyAuthorizationEndpoint : authorizationEndpoint;
   const host = isLegacy ? legacyApiHost : apiHost;
@@ -29,7 +29,7 @@ export async function api<ApiResponse>(
   options?: RequestInit
 ): Promise<ApiResponse> {
   try {
-    const config = merge(
+    const fetchOptions = merge(
       {},
       {
         method: 'GET',
@@ -39,7 +39,7 @@ export async function api<ApiResponse>(
       },
       options
     );
-    const res = await fetch(endpoint, config);
+    const res = await fetch(endpoint, fetchOptions);
 
     if (res.ok) {
       const json = await res.json();
@@ -57,19 +57,21 @@ export async function makeRequest<ApiResponse>(
   options?: RequestInit
 ): Promise<ApiResponse> {
   try {
+    const { apiHost, namespace } = config();
     const { auth, host } = getEndpoints();
     const token = await authenticate(auth);
-    const uncompiledUrl = host + endpoint;
-    let url = uncompiledUrl;
+    let path = endpoint;
 
     if (endpoint.includes(':')) {
-      const urlCompiler = compile(uncompiledUrl);
-      url = urlCompiler({ namespace }, { validate: false });
+      const compiler = compile(endpoint, {
+        encode: encodeURIComponent,
+      });
+      path = compiler({ namespace });
     }
+    const url = host + path;
     const response = await api(token, url, options);
     return response;
   } catch (err) {
-    console.log('hi', err);
     throw new Error(err);
   }
 }

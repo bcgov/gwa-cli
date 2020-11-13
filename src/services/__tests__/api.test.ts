@@ -1,9 +1,12 @@
 import fetch from 'node-fetch';
-import { api, makeRequest } from '../api';
+import authenticate from '../auth';
+import { api, getEndpoints, makeRequest } from '../api';
 import config from '../../config';
 
+jest.mock('../auth');
 jest.mock('node-fetch', () => require('fetch-mock-jest').sandbox());
-jest.mock('../../config');
+
+const CACHED_ENV = process.env;
 
 describe('services/api', () => {
   afterEach(() => {
@@ -51,36 +54,74 @@ describe('services/api', () => {
   });
 
   describe('#makeRequest', () => {
+    beforeEach(() => {
+      process.env = { ...CACHED_ENV, GWA_ENV: 'dev', GWA_NAMESPACE: 'sampler' };
+      jest.resetModules();
+    });
+
+    afterEach(() => {
+      process.env = CACHED_ENV;
+    });
+
     it('should call authenticate with the correct URL', async () => {
+      const { apiHost, authorizationEndpoint } = config();
       fetch
-        .post('https://auth.com/', { access_token: '123' })
-        .get('https://api.com/test', {});
-      const { makeRequest } = require('../api');
+        .post(authorizationEndpoint, { access_token: '123' })
+        .get(`${apiHost}/test`, {});
 
       await makeRequest('/test');
 
-      expect(authenticate).toHaveBeenCalledWith('https://auth.com');
+      expect(authenticate).toHaveBeenCalledWith(authorizationEndpoint);
+    });
+
+    it('should parse parameters with env variables', async () => {
+      const { apiHost, authorizationEndpoint } = config();
+      fetch
+        .post(authorizationEndpoint, { access_token: '123' })
+        .get(`${apiHost}/sampler/endpoint`, {});
+
+      await makeRequest('/:namespace/endpoint');
+
+      expect(fetch.mock.calls[0][0]).toEqual(`${apiHost}/sampler/endpoint`);
+    });
+
+    it('throw an error', async () => {
+      const { apiHost, authorizationEndpoint } = config();
+      fetch
+        .post(authorizationEndpoint, { access_token: '123' })
+        .get(`${apiHost}/sampler/endpoint`, 500);
+
+      expect(async () => {
+        await makeRequest('/:namespace/endpoint');
+      }).rejects.toThrow();
     });
   });
 
   describe('#getEndpoints', () => {
-    it('should return legacy endpoints', () => {
-      const { getEndpoints } = require('../api');
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    afterEach(() => {
+      process.env = CACHED_ENV;
+    });
+
+    it('should return legacy endpoints in test', () => {
+      process.env = { ...CACHED_ENV, GWA_ENV: 'test' };
+      const { legacyApiHost, legacyAuthorizationEndpoint } = config();
       expect(getEndpoints()).toEqual({
-        auth: 'https://legacy-auth.com',
-        host: 'https://legacy-api.com',
+        auth: legacyAuthorizationEndpoint,
+        host: legacyApiHost,
       });
     });
 
-    it('should return current endpoints', () => {
-      config.mockImplementation(() => ({
-        env: 'dev',
-      }));
-      const { getEndpoints } = require('../api');
+    it('should return current endpoints in dev, prod', () => {
+      process.env = { ...CACHED_ENV, GWA_ENV: 'dev' };
+      const { apiHost, authorizationEndpoint } = config();
 
       expect(getEndpoints()).toEqual({
-        auth: 'https://auth.com',
-        host: 'https://api.com',
+        auth: authorizationEndpoint,
+        host: apiHost,
       });
     });
   });
