@@ -1,10 +1,11 @@
 import fetch, { RequestInit } from 'node-fetch';
 import { URLSearchParams } from 'url';
 
-import { clientId, clientSecret } from '../config';
+import config from '../config';
 
 async function authenticate(url: string): Promise<string> {
   try {
+    const { clientId, clientSecret } = config();
     const body = new URLSearchParams();
     body.append('client_id', clientId);
     body.append('client_secret', clientSecret);

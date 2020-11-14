@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Box, Text, useApp } from 'ink';
-import type { FallbackProps } from 'react-error-boundary';
 
 interface FailedProps {
   error: Error | undefined;
@@ -24,7 +23,7 @@ const Failed: React.FC<FailedProps> = ({ error, verbose }) => {
           </Text>
           {error && (
             <Box marginLeft={1}>
-              <Text>{error.message}</Text>
+              <Text>{error.message?.replace(/Error\:\s/gi, '')}</Text>
             </Box>
           )}
         </Box>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { api } from '../../services/api';
+import api from '../../services/api';
 import Success from '../../components/success';
 import useAsync from '../../hooks/use-async';
 

@@ -11,7 +11,9 @@ import { exportConfig } from '../../services/app';
 import { fetchSpec } from '../../services/openapi';
 import { generatePluginTemplates } from '../../state/plugins';
 import reducer, { initialState } from './reducer';
-import { namespace } from '../../config';
+import config from '../../config';
+
+const { namespace } = config();
 
 interface SetupViewProps {}
 

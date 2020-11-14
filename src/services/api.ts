@@ -69,7 +69,7 @@ export async function makeRequest<ApiResponse>(
       path = compiler({ namespace });
     }
     const url = host + path;
-    const response = await api(token, url, options);
+    const response = await api<ApiResponse>(token, url, options);
     return response;
   } catch (err) {
     throw new Error(err);

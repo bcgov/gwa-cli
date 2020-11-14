@@ -7,7 +7,7 @@ import AclRequestView from './request-view';
 const renderView = (data: any) => {
   return render(
     <Box flexDirection="column">
-      <AsyncAction loadingText="Writing file...">
+      <AsyncAction loadingText="Publishing ACL changes">
         <AclRequestView data={data} />
       </AsyncAction>
     </Box>

@@ -12,8 +12,16 @@ import { fetchSpec, importSpec } from '../services/openapi';
 import { loadPlugins } from '../services/plugins';
 import { generatePluginTemplates } from '../state/plugins';
 import { initPluginsState } from '../state/plugins';
-import { namespace } from '../config';
+import config from '../config';
 import ui from '../ui';
+
+const {
+  clientId,
+  clientSecret,
+  apiHost,
+  authorizationEndpoint,
+  namespace,
+} = config();
 
 export default async function (input: string, options: any) {
   const cwd = process.cwd();

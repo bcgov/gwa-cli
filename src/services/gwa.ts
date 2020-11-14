@@ -6,14 +6,14 @@ import { URLSearchParams } from 'url';
 //import FormData from '@postman/form-data';
 import { basename, extname, resolve } from 'path';
 
-import {
+import config from '../config';
+const {
   clientId,
   clientSecret,
   apiHost,
   authorizationEndpoint,
   namespace,
-} from '../config';
-
+} = config();
 const TEMP_FILE: string = '.temp.yaml';
 const NAMESPACE_ERROR: string =
   'You do not have a namespace set. Check your .env file in this directory or run gwa init';
