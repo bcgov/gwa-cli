@@ -25,10 +25,12 @@ const {
 
 export default async function (input: string, options: any) {
   const cwd = process.cwd();
+  let outfile = options.outfile;
 
   try {
     const data = await loadPlugins(path.resolve(__dirname, '../../files'));
     initPluginsState(data);
+
     if (input) {
       const { routeHost, serviceUrl } = options;
       const isNotURL = validate.single(input, { url: true });
@@ -42,6 +44,11 @@ export default async function (input: string, options: any) {
       if (isNotURL) {
         const file = path.resolve(cwd, input);
         const result = await importSpec(file);
+
+        if (!options.outfile) {
+          outfile = input.replace(/json$/i, 'yaml');
+        }
+
         output = await convertRemote(
           result,
           namespace,
@@ -49,6 +56,10 @@ export default async function (input: string, options: any) {
           convertOptions
         );
       } else {
+        if (!outfile) {
+          throw new Error('An --outfile must be set');
+        }
+
         console.log(chalk.italic('Fetching spec...'));
         const result = await fetchSpec(input);
         output = await convertRemote(
@@ -60,11 +71,11 @@ export default async function (input: string, options: any) {
       }
 
       if (isString(output)) {
-        await exportConfig(output, options.outfile);
+        await exportConfig(output, outfile);
         console.log(
           `${
             chalk.bold.green('✓ ') + chalk.bold('DONE ')
-          } File ${chalk.italic.underline(options.outfile)} generated`
+          } File ${chalk.italic.underline(outfile)} generated`
         );
       }
     } else {
