@@ -28,6 +28,14 @@ describe('commands/acl', () => {
     );
   });
 
+  it('should be able to handle just one set of role arguments', () => {
+    expect(() => {
+      actionHandler({
+        managers: ['admin@idir'],
+      });
+    }).not.toThrow();
+  });
+
   it('should not add the same user to both managers and users', () => {
     expect(() => {
       actionHandler({

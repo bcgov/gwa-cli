@@ -57,7 +57,7 @@ export async function makeRequest<ApiResponse>(
   options?: RequestInit
 ): Promise<ApiResponse> {
   try {
-    const { apiHost, namespace } = config();
+    const { namespace } = config();
     const { auth, host } = getEndpoints();
     const token = await authenticate(auth);
     let path = endpoint;

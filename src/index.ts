@@ -19,7 +19,7 @@ const pkg = require('../package.json');
 const program = new Command();
 program.version(pkg.version);
 // Refactored commands
-program.addCommand(init).addCommand(acl);
+program.addCommand(init).addCommand(acl).addCommand(publish);
 
 // Commands to refactor
 program
@@ -69,14 +69,6 @@ program
   .command('plugins [input]')
   .description('List all available plugins')
   .action((input) => run(plugins, input));
-
-program
-  .command('publish-gateway [config]')
-  .alias('pg')
-  .description('Publish gateway config')
-  .option('--dry-run', 'Enable dry run')
-  .option('--debug')
-  .action((input, options) => run(publish, input, options));
 
 try {
   program.parse(process.argv);

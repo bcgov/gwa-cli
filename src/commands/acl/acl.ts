@@ -10,7 +10,11 @@ type AclOptions = {
   users: string[];
 };
 
-export const actionHandler = ({ managers, users, debug }: AclOptions) => {
+export const actionHandler = ({
+  managers = [],
+  users = [],
+  debug,
+}: AclOptions) => {
   const duplicates = intersection(managers, users);
 
   if (duplicates.length > 0) {
