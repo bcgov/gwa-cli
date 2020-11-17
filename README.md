@@ -9,13 +9,13 @@ GWA CLI is a tool for composing, validating and generating Kong Gateway configur
 This package isn't available on npm yet, so for now install like so:
 
 ```shell
-$ git clone https://github.com/bcgov/gwa-cli.git
+$ git clone --branch feature/feature-refactor https://github.com/bcgov/gwa-cli.git
 $ cd gwa-cli/
-$ npm install
-$ npm run build
 $ npm link
 $ which gwa # confirm it works
 ```
+
+You will receive an error about a missing `dist` directory when running link, but that is only for the development files. A precompiled single file is linked to the `gwa` prompt.
 
 #### Prerequisites
 
@@ -189,14 +189,30 @@ Update the full membership. Note that this command will overwrite the remote lis
 
 Run `$ gwa --help` to see all available commands, `$ gwa <command> --help` to view an individual command's help content.
 
+## CI Integration
+
+A precompiled node file is included in the `gwa` dist. In your workflows you can use the CLI like so (as long as the CLI repo is in the same directory as your configs)
+
+```javascript
+node gwa init --namespace=sampler ...etc
+node gwa publish-gateway
+```
+
+More to come.
+
 ## Development
 
 To install checkout this repo in the `dev` branch, then run the following:
 
 ```bash
 $ npm i
-$ npm start
+$ npm run build
 $ npm link
+$ npm start
 ```
+
+Running `build` first is required so npm can link to the correct files. During development `/src` TypeScript files will be compiled to the `/dist` folder.
+
+Running `$ gwa-dev` will allow for preview of any local changes. When you are ready to publish run `$ npm run build`
 
 To uninstall simply run `$ npm uninstall` from this directory.

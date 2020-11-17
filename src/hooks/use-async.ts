@@ -44,9 +44,9 @@ const callPromise = <Response, Args extends any[]>(
   return read;
 };
 
-const useAsync = <Response, Args extends any[]>(
-  promise: PromiseFn<Response, Args>,
-  ...args: Args
+const useAsync = <Response>(
+  promise: PromiseFn<Response, any[]>,
+  ...args: any[]
 ) => {
   const result = useRef<Response | undefined>(undefined);
 

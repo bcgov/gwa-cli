@@ -8,7 +8,6 @@ import run from './run';
 import acl from './commands/acl';
 import plugins from './commands/plugins';
 import create from './commands/create';
-import edit from './commands/edit';
 import init from './commands/init';
 import publish from './commands/publish';
 import update from './commands/update';
@@ -19,35 +18,9 @@ const pkg = require('../package.json');
 const program = new Command();
 program.version(pkg.version);
 // Refactored commands
-program.addCommand(init).addCommand(acl).addCommand(publish);
+program.addCommand(init).addCommand(acl).addCommand(publish).addCommand(create);
 
 // Commands to refactor
-program
-  .command('new [input]')
-  .option('--service <service>', "The service's name")
-  .option('--route-host <routeHost>', "Generally a server's URL")
-  .option(
-    '--service-url <serviceUrl>',
-    'The URL the server will be accessable through'
-  )
-  .option(
-    '-p, --plugins [plugins...]',
-    'Any starter plugins you would like to include'
-  )
-  .option(
-    '-o, --outfile <output>',
-    'An OpenAPI spec JSON file on your local machine'
-  )
-  .description(
-    'Initialize a config file in the current directory. The input file must be an OpenAPI JSON file or URL'
-  )
-  .option('--debug')
-  .action((input, options) => run(create, input, options));
-
-program
-  .command('edit <input>')
-  .description('Edit a config file')
-  .action((input) => run(edit, input));
 
 program
   .command('update <input>')
