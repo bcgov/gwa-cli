@@ -2,10 +2,7 @@
 	"name": "@bcgov/gwa-cli",
 	"version": "1.0.0",
 	"license": "MIT",
-	"bin": {
-		"gwa": "./gwa/index.js",
-		"gwa-dev": "./dist/index.js"
-	},
+	"bin": "dist/index.js",
 	"engines": {
 		"node": ">=10"
 	},
@@ -41,7 +38,6 @@
 		"ink-text-input": "^4.0.1",
 		"joi": "^17.2.1",
 		"lodash": "^4.17.20",
-		"lodash-es": "^4.17.15",
 		"meow": "^7.0.1",
 		"node-fetch": "^2.6.1",
 		"openapi-2-kong": "^2.2.24",
