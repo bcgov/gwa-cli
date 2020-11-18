@@ -96,19 +96,19 @@ async function upload(
 
     request(options, (error: Error, response: any, body: any) => {
       if (error) {
-        reject(error);
-      }
-      const json = JSON.parse(body);
-
-      if (response.statusCode >= 400) {
-        reject(new Error(json.results || json.error));
+        return reject(error);
       }
 
       if (fs.existsSync(TEMP_FILE)) {
         fs.unlinkSync(TEMP_FILE);
       }
 
-      resolve(json);
+      if (response.statusCode >= 400) {
+        reject(new Error(`[${response.statusCode}] Unable to publish config`));
+      } else {
+        const json = body ? JSON.parse(body) : {};
+        resolve(json);
+      }
     });
   });
 }
