@@ -18,7 +18,7 @@ const publish = new Command('publish-gateway');
 publish
   .alias('pg')
   .description('Publish gateway config')
-  .arguments('<input>')
+  .arguments('[input]')
   .option('--dry-run', 'Enable dry run')
   .option('--debug')
   .action(actionHandler);
