@@ -94,21 +94,21 @@ async function upload(
       return reject(NAMESPACE_ERROR);
     }
 
-    request(options, (error: Error, response: any) => {
+    request(options, (error: Error, response: any, body: any) => {
       if (error) {
         reject(error);
       }
-      const body = JSON.parse(response.body);
+      const json = JSON.parse(body);
 
       if (response.statusCode >= 400) {
-        reject(new Error(body.results || body.error));
+        reject(new Error(json.results || json.error));
       }
 
       if (fs.existsSync(TEMP_FILE)) {
         fs.unlinkSync(TEMP_FILE);
       }
 
-      resolve(body);
+      resolve(json);
     });
   });
 }

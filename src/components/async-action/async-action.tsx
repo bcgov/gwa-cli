@@ -7,12 +7,17 @@ import Loading from '../loading';
 interface AsyncActionProps {
   children: React.ReactNode;
   loadingText: string;
+  verbose?: boolean;
 }
 
-const AsyncAction: React.FC<AsyncActionProps> = ({ children, loadingText }) => {
+const AsyncAction: React.FC<AsyncActionProps> = ({
+  children,
+  loadingText,
+  verbose,
+}) => {
   return (
     <ErrorBoundary
-      fallbackRender={({ error }) => <Failed error={error} verbose={false} />}
+      fallbackRender={({ error }) => <Failed error={error} verbose={verbose} />}
     >
       <Suspense fallback={<Loading text={loadingText} />}>{children}</Suspense>
     </ErrorBoundary>

@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import compact from 'lodash/compact';
-import intersection from 'lodash/intersection';
+import union from 'lodash/union';
 
 import render from './renderer';
 
@@ -15,14 +15,7 @@ export const actionHandler = ({
   users = [],
   debug,
 }: AclOptions) => {
-  const duplicates = intersection(managers, users);
-
-  if (duplicates.length > 0) {
-    process.exitCode = 1;
-    throw new Error('Unable to add duplicate accounts to users and managers');
-  }
-
-  const usersToAdd = users.map((username: string) => ({
+  const usersToAdd = union(users, managers).map((username: string) => ({
     username,
     roles: ['viewer'],
   }));
@@ -32,7 +25,7 @@ export const actionHandler = ({
   }));
   const data = compact([...managersToAdd, ...usersToAdd]);
 
-  render(data);
+  render(data, debug);
 };
 
 const acl = new Command('acl');

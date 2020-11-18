@@ -20,7 +20,7 @@ export const makeConfigFile = async (
   let outfile = options.outfile;
 
   try {
-    const data = await loadPlugins(path.resolve(__dirname, '../../../files'));
+    const data = await loadPlugins(path.join(__dirname, '../../../files'));
     initPluginsState(data);
 
     const { routeHost, serviceUrl } = options;
