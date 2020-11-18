@@ -2,7 +2,10 @@
 	"name": "@bcgov/gwa-cli",
 	"version": "1.0.0",
 	"license": "MIT",
-	"bin": "dist/index.js",
+	"bin": {
+		"gwa": "./gwa/index.js",
+		"gwa-dev": "./dist/index.js"
+	},
 	"engines": {
 		"node": ">=10"
 	},
@@ -12,7 +15,7 @@
 		"test": "jest --coverage",
 		"test:watch": "jest --watch --coverage",
 		"compile": "ncc build dist/index.js -o gwa --license licenses.txt",
-		"bundle": "pkg ./package.json --targets node14-linux-x64"
+		"bundle": "pkg ./dist/index.js --output gwa-cli --targets node14-macos-x64"
 	},
 	"files": [
 		"dist/**/*",
