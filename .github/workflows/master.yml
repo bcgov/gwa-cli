@@ -21,6 +21,28 @@ jobs:
           echo "Got tag name ${{ steps.release.outputs.tag_name }}"
           echo "Got release version ${{ steps.release.outputs.version }}"
 
+      - name: NPM build
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: |
+          VER="${{ steps.release.outputs.tag_name }}"
+
+          npm install
+          npm run build
+          npm run bundle
+
+          (cd sbin && cp index-linux gwa | zip -mqj gwa_${VER}_linux_x64.zip gwa)
+          (cd sbin && cp index-macos gwa | zip -mqj gwa_${VER}_macos_x64.zip gwa)
+          (cd sbin && rm index-*)
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./sbin
+          keep_files: true
+
       # install and publish new config
       - name: NPM package containing Terraform configuration
         uses: actions/setup-node@v1
@@ -39,3 +61,5 @@ jobs:
           npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  
