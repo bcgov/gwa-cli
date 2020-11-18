@@ -2,25 +2,24 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import { RouteComponentProps } from 'react-router';
 
-import { IPlugin } from '../../types';
-import { pluginsState } from '../../state/plugins';
+import { usePluginsState } from '../../state/plugins';
 
 interface PluginStatusProps extends RouteComponentProps<{ plugin: string }> {}
 
 const PluginStatus: React.FC<PluginStatusProps> = ({ match }) => {
-  const plugins = pluginsState.useValue();
-  const plugin: IPlugin = plugins[match.params.plugin];
+  const plugins = usePluginsState();
+  const plugin: any = plugins[match.params.plugin];
 
   return (
     <Box>
       <Text bold inverse color="blueBright">
-        {` ${plugin.name} `}
+        {` ${plugin.meta.name} `}
       </Text>
       <Text
         inverse
-        color={plugin.data.enabled ? 'greenBright' : 'magentaBright'}
+        color={plugin.meta.enabled ? 'greenBright' : 'magentaBright'}
       >
-        {plugin.data.enabled ? ' [e] Enabled ' : ' [e] Disabled '}
+        {plugin.meta.enabled ? ' [e] Enabled ' : ' [e] Disabled '}
       </Text>
     </Box>
   );

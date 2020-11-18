@@ -1,39 +1,55 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Text, render } from 'ink';
-import Spinner from 'ink-spinner';
+import { uid } from 'react-uid';
 
 interface ValidateProps {
-  file: string;
+  errors: any[];
 }
 
-const Validate: React.FC<ValidateProps> = ({ file }) => {
-  const [validating, setValidating] = useState<boolean>(true);
-  useEffect(() => {
-    setTimeout(() => {
-      setValidating(false);
-    }, 5000);
-  }, []);
-
-  return (
-    <Box>
-      {validating && (
-        <Box>
-          <Box marginRight={2}>
-            <Spinner />
-          </Box>
-          <Text>{`Validating ${file}`}</Text>
-        </Box>
-      )}
-      {!validating && (
+const Validate: React.FC<ValidateProps> = ({ errors }) => {
+  if (errors.length === 0) {
+    return (
+      <Box>
         <Box>
           <Text bold color="green">
             {'✓ '}
           </Text>
           <Text>File is valid</Text>
         </Box>
-      )}
+      </Box>
+    );
+  }
+
+  return (
+    <Box flexDirection="column">
+      {errors.map((err) => (
+        <Box key={uid(err)} marginY={2} flexDirection="column">
+          <Box marginBottom={1}>
+            <Text dimColor underline>
+              {`Plugin: ${err.plugin} [${err.error.details.length} incorrect fields]`}
+            </Text>
+          </Box>
+          <Box flexDirection="column">
+            {err.error.details.map((detail: any) => (
+              <Box key={uid(detail)}>
+                <Box marginRight={2}>
+                  <Text bold color="red">
+                    {`× ${detail.message}`}
+                  </Text>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      ))}
+      <Box>
+        <Text
+          bold
+          color="red"
+        >{`There were ${errors.length} error(s) found`}</Text>
+      </Box>
     </Box>
   );
 };
 
-export default (file: string) => render(<Validate file={file} />);
+export default (errors: any[]) => render(<Validate errors={errors} />);

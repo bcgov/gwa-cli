@@ -1,3 +1,7 @@
-import { newRidgeState } from 'react-ridge-state';
+import create from 'zustand/vanilla';
 
-export const specState = newRidgeState<any>({});
+type SpecState = {};
+
+const store = create<SpecState>(() => ({}));
+
+export const loadSpec = (data: SpecState) => store.setState(data);

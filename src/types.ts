@@ -1,18 +1,43 @@
-export interface IAppContext {
+export type Envs = 'dev' | 'prod' | 'test';
+
+export interface AppContext {
   dir: string;
   file?: string;
   version: string;
 }
 
-export interface IPlugin {
-  id: string;
+export interface PluginMeta {
   name: string;
+  url: string;
+  id: string;
+  author: string;
   description: string;
-  constraints: any;
-  encrypted: string[];
-  data: {
-    name: string;
-    enabled: boolean;
-    config: any;
-  };
+  enabled: boolean;
+}
+
+export interface PluginConfig {
+  name: string;
+  enabled: boolean;
+  tags: string[];
+  config: any;
+}
+
+export interface PluginObject {
+  meta: PluginMeta;
+  config: PluginConfig;
+}
+
+export interface PluginsResult {
+  [id: string]: PluginObject;
+}
+
+export interface InitOptions {
+  namespace: string;
+  clientId: string;
+  clientSecret: string;
+  env: string;
+  dev: boolean;
+  test: boolean;
+  prod: boolean;
+  debug: boolean;
 }

@@ -3,22 +3,18 @@ import { Box, Text, useInput } from 'ink';
 import Spinner from 'ink-spinner';
 import { useHistory } from 'react-router';
 
-import { appState } from '../../state/app';
+import { useAppState } from '../../state/app';
 import PromptForm from '../../components/prompt-form';
-import TextField from '../../components/prompt-form/text-field';
-import { orgState, OrgState } from '../../state/org';
-import { specState } from '../../state/spec';
-import { parseYaml } from '../../services/kong';
+// import TextField from '../../components/prompt-form/text-field';
+import { useTeamState } from '../../state/team';
 
-type FormData = Omit<OrgState, 'host'>;
-
+type FormData = any;
 interface ConfigOrgProps {}
 
 const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   const history = useHistory();
-  const [org, setOrg] = orgState.use();
-  const [app, setAppState] = appState.use();
-  const [spec, setSpec] = specState.use();
+  const team = useTeamState();
+  const toggleMode = useAppState((state) => state.toggleMode);
   const [isProcessing, setProcessing] = useState<boolean>(false);
   const [processError, setProcessError] = useState<string | null>(null);
   const [valid, setValid] = useState<boolean>(false);
@@ -29,24 +25,23 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   });
 
   const onChange = (name: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [name]: value,
     }));
   };
-  const onSubmit = async () => {
+  const onSubmit = () => {
     setProcessing(true);
-    try {
-      setOrg((prev) => ({ ...prev, ...formData }));
-      const config = await parseYaml(formData.specUrl, formData.name);
-      setSpec(config);
-      setProcessing(false);
-      setValid(true);
-    } catch (err) {
-      setValid(true);
-      setProcessing(false);
-      setProcessError(err.message);
-    }
+    //try {
+    //  setOrg((prev) => ({ ...prev, ...formData }));
+    //  const config = await parseYaml(formData.specUrl, formData.name);
+    //  setProcessing(false);
+    //  setValid(true);
+    //} catch (err) {
+    //  setValid(true);
+    //  setProcessing(false);
+    //  setProcessError(err.message);
+    //}
   };
 
   useInput((input, key) => {
@@ -56,36 +51,12 @@ const ConfigOrg: React.FC<ConfigOrgProps> = ({}) => {
   });
 
   useEffect(() => {
-    setAppState({ mode: 'edit' });
-    return () => setAppState({ mode: 'view' });
+    toggleMode();
+    return () => toggleMode();
   }, []);
 
   return (
     <Box flexDirection="column" marginTop={2}>
-      <PromptForm complete={valid} onSubmit={onSubmit}>
-        <TextField
-          required
-          label="Organization Name"
-          name="name"
-          onChange={onChange}
-        />
-        <TextField
-          required
-          label="Swagger Docs URL"
-          type="url"
-          placeholder="URL should end with a .json"
-          name="specUrl"
-          onChange={onChange}
-        />
-        <TextField
-          required
-          label="Config File Name"
-          type="text"
-          placeholder="Enter a name for the YAML config file"
-          name="file"
-          onChange={onChange}
-        />
-      </PromptForm>
       {isProcessing && (
         <Box>
           <Text>

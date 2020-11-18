@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Box, /* measureElement,*/ Text /* useStdout*/ } from 'ink';
 import { Route, Switch, RouteComponentProps } from 'react-router';
 
-import { orgState } from '../../state/org';
+import { useAppState } from '../../state/app';
+import { useTeamState } from '../../state/team';
 import PluginStatus from '../plugins/status';
 
 interface AppBarProps extends RouteComponentProps {}
@@ -11,7 +12,8 @@ const AppBar: React.FC<AppBarProps> = ({ match }) => {
   // const { stdout } = useStdout();
   // const ref = useRef(null);
   // const [fill, setFill] = useState<number>(0);
-  const { name, file } = orgState.useValue();
+  const name = useTeamState((state) => state.name);
+  const input = useAppState((state) => state.input);
 
   /* stdout.on('resize', () => {
    *   const { width } = measureElement(ref.current);
@@ -52,7 +54,9 @@ const AppBar: React.FC<AppBarProps> = ({ match }) => {
       </Box>
       <Box>
         <Text inverse>
-          {` ${name || ''} ${file ? `[${file}] ` : ' [+] New configuration '}`}
+          {` ${name || ''} ${
+            input ? `[${input}] ` : ' [+] New configuration '
+          }`}
         </Text>
       </Box>
     </Box>

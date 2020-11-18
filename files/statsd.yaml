@@ -1,0 +1,10 @@
+name: "StatsD"
+url: "https://docs.konghq.com/hub/kong-inc/statsd/"
+author: Kong Inc
+description: |
+  Log metrics for a Service, Route to a StatsD server. It can also be used to log metrics on Collectd daemon by enabling its Statsd plugin.
+---
+host: "127.0.0.1"
+port: 8125
+metrics: [] # options: https://docs.konghq.com/hub/kong-inc/statsd/#metrics
+prefix: "kong"

@@ -1,86 +1,67 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Text, useFocusManager, useInput } from 'ink';
 import merge from 'deepmerge';
 import { RouteComponentProps } from 'react-router';
+import { clearTimeout, setTimeout } from 'timers';
 
-import { appState } from '../../state/app';
+import { useAppState } from '../../state/app';
 import Form from '../../components/form';
-import { IPlugin } from '../../types';
-import { encryptedValues, pluginsState } from '../../state/plugins';
+import { usePluginsState, set, toggleEnabled } from '../../state/plugins';
+import constraints from '../../validators';
 
 interface PluginEditorProps extends RouteComponentProps<{ plugin: string }> {}
 
 const PluginEditor: React.FC<PluginEditorProps> = ({ match }) => {
-  const mode = appState.useSelector((state) => state.mode);
-  const [encrypted, setEncrypted] = encryptedValues.use();
-  const [state, setAppState] = appState.use();
-  const [plugins, setPlugin] = pluginsState.use();
+  const id = match.params.plugin;
+  const mode = useAppState((state) => state.mode);
+  const toggleMode = useAppState((state) => state.toggleMode);
+  const plugins = usePluginsState();
   const [saved, setSaved] = useState<boolean>(false);
-  const plugin: IPlugin = plugins[match.params.plugin];
+  const plugin: any = plugins[id];
 
   const onSubmit = (formData: any) => {
-    setPlugin((prev) => ({
-      ...prev,
-      [plugin.id]: {
-        ...prev[plugin.id],
-        data: {
-          ...prev[plugin.id].data,
-          config: merge(prev[plugin.id].data.config, formData, {
-            arrayMerge: (_, srcArr) => srcArr,
-          }),
-        },
-      },
-    }));
+    set(id, formData);
     setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  };
-  const onToggleEnabled = (value: boolean) => {
-    setPlugin((prev) => {
-      return {
-        ...prev,
-        [plugin.id]: {
-          ...prev[plugin.id],
-          data: {
-            ...prev[plugin.id].data,
-            enabled: value,
-          },
-        },
-      };
-    });
-  };
-  const onEncrypt = (key: string, isEncrypted: boolean) => {
-    setEncrypted((prev) => {
-      if (isEncrypted) {
-        return [...prev, key];
-      }
-      return prev.filter((v) => v !== key);
-    });
   };
 
+  const onToggleEnabled = (value: boolean) => toggleEnabled(id, value);
+  const onEncrypt = (key: string, isEncrypted: boolean) => {};
+
   useInput((input, key) => {
-    if (state.mode === 'view') {
+    if (mode === 'view') {
       if (input === 'e') {
-        onToggleEnabled(!plugin.data.enabled);
+        onToggleEnabled(!plugin.meta.enabled);
       }
       if (key.return) {
-        setAppState((prev) => ({
-          ...prev,
-          mode: 'edit',
-        }));
+        toggleMode();
       }
     }
   });
 
+  useEffect(() => {
+    let timer: NodeJS.Timer;
+
+    if (saved) {
+      timer = setTimeout(() => {
+        setSaved(false);
+      }, 1500);
+    }
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [saved]);
+
   return (
     <Box flexDirection="column">
       <Box padding={1} marginY={1} justifyContent="space-between">
-        <Text>{plugin.description}</Text>
+        <Text>{plugin.meta.description}</Text>
       </Box>
       <Form
-        enabled={state.mode === 'edit'}
-        encryptedFields={encrypted}
-        constraints={plugin.constraints}
-        data={plugin.data.config}
+        enabled={mode === 'edit'}
+        encryptedFields={[]}
+        constraints={constraints[id]}
+        data={plugin.config}
         onEncrypt={onEncrypt}
         onSubmit={onSubmit}
       />

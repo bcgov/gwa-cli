@@ -1,0 +1,7 @@
+name: "GWA Endpoint"
+url: "https://github.com/bcgov/gwa-kong-endpoint"
+author: BC Gov
+description: |
+  Process BC Government siteminder headers to apply kong consumers and acls (groups) to BC Government users.
+---
+api_owners: []
