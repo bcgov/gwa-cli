@@ -104,7 +104,12 @@ async function upload(
       }
 
       if (response.statusCode >= 400) {
-        reject(new Error(`[${response.statusCode}] Unable to publish config`));
+        const message = body ? JSON.parse(body) : '';
+        reject(
+          new Error(
+            `[${response.statusCode}] ${message.error}: ${message.results}`
+          )
+        );
       } else {
         const json = body ? JSON.parse(body) : {};
         resolve(json);
