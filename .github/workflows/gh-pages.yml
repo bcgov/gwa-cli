@@ -16,9 +16,13 @@ jobs:
         with:
           node-version: 12
       - run: |
+          VER=`echo $GITHUB_REF | tr '/' '\n' | tail -1`
+
           npm install
           npm run build
           npm run bundle
+          (cd sbin && cp index-linux gwa | zip -mqj gwa_${VER}_linux_x64.zip gwa)
+          (cd sbin && cp index-macos gwa | zip -mqj gwa_${VER}_macos_x64.zip gwa)
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
