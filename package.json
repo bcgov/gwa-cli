@@ -125,6 +125,6 @@
 		"registry": "https://npm.pkg.github.com/"
 	},
 	"pkg": {
-    "assets": "files/**/*"
-  }
+		"assets": "../files/**/*"
+	}
 }
