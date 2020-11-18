@@ -11,7 +11,7 @@ function config(): Config {
     'https://auth-qwzrwc-test.pathfinder.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token';
   const legacyApiHost: string =
     'https://gwa-api-qwzrwc-test.pathfinder.gov.bc.ca/v1';
-  const authorizationEndpoint: string = `https://auth-264e6f-${env}.apps.silver.devops.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token`;
+  const authorizationEndpoint: string = `https://authz-264e6f-${env}.apps.silver.devops.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token`;
   const apiHost: string = `https://gwa-api-264e6f-${env}.apps.silver.devops.gov.bc.ca/v1`;
 
   return {
