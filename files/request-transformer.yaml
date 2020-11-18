@@ -1,0 +1,27 @@
+name: "Request Transformer"
+url: "https://docs.konghq.com/hub/kong-inc/request-transformer/"
+author: Kong Inc
+description: |
+  Allows simple transformation of requests before they reach the upstream server. These transformations can be simple substitutions or complex ones matching portions of incoming requests using regular expressions, saving those matched strings into variables, and substituting those strings into transformed requests using flexible templates.
+---
+http_method: null
+remove:
+  headers: []
+  querystring: []
+  body: []
+replace:
+  uri: null
+  body: []
+  headers: []
+  querystring: []
+rename:
+  headers: []
+  querystring: []
+add:
+  body: []
+  headers: []
+  querystring: []
+append:
+  body: []
+  headers: []
+  querystring: []

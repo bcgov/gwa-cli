@@ -3,20 +3,14 @@ import { Box, useApp, useInput } from 'ink';
 import { Route, Switch, useLocation, useHistory } from 'react-router';
 
 import AppBar from './app-bar';
-import { appState } from '../../state/app';
-import AppContext from '../../services/context';
-import ConfigOrg from '../config-org';
-import { IAppContext } from '../../types';
+import { useAppState } from '../../state/app';
+import Setup from '../setup';
 import Plugins from '../plugins';
 import Review from '../review';
 import Start from '../start';
 
-interface AppProps {
-  args: IAppContext;
-}
-
-const App: React.FC<AppProps> = ({ args }) => {
-  const [state, setAppState] = appState.use();
+const App: React.FC<{}> = () => {
+  const state = useAppState();
   const history = useHistory();
   const location = useLocation();
   const { exit } = useApp();
@@ -37,32 +31,27 @@ const App: React.FC<AppProps> = ({ args }) => {
       }
     } else {
       if (key.escape) {
-        setAppState((prev) => ({
-          ...prev,
-          mode: 'view',
-        }));
+        state.toggleMode();
       }
     }
   });
 
   return (
-    <AppContext.Provider value={args}>
-      <Box flexDirection="column" width="100%">
-        <Route path="/:any" component={AppBar} />
-        <Box>
-          <Switch>
-            <Route exact path="/" component={Start} />
-            <Route exact path="/org">
-              <ConfigOrg />
-            </Route>
-            <Route path="/editor" component={Plugins} />
-            <Route exact path="/export">
-              <Review />
-            </Route>
-          </Switch>
-        </Box>
+    <Box flexDirection="column" width="100%">
+      <Route path="/:any" component={AppBar} />
+      <Box>
+        <Switch>
+          <Route exact path="/" component={Start} />
+          <Route exact path="/setup">
+            <Setup />
+          </Route>
+          <Route path="/editor" component={Plugins} />
+          <Route exact path="/export">
+            <Review />
+          </Route>
+        </Switch>
       </Box>
-    </AppContext.Provider>
+    </Box>
   );
 };
 

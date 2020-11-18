@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { Route } from 'react-router';
-import { Tab, Tabs } from 'ink-tab';
 import { match, useHistory, useLocation } from 'react-router';
 
-import { appState } from '../../state/app';
-import { IPlugin } from '../../types';
-import { activePluginState, pluginsState } from '../../state/plugins';
+import { useAppState } from '../../state/app';
+import { usePluginsState } from '../../state/plugins';
 import PluginsList from './list';
 import PluginEditor from '../plugin-editor';
-import StepHeader from '../../components/step-header';
-import PluginItem from './item';
 
 interface PluginsProps {
   match: match;
@@ -18,18 +14,18 @@ interface PluginsProps {
 }
 
 const Plugins: React.FC<PluginsProps> = ({ match }) => {
-  const [app, setAppState] = appState.use();
+  const mode = useAppState((state) => state.mode);
   const history = useHistory();
   const { pathname } = useLocation();
   const [index, setIndex] = useState<number>(0);
-  const state = pluginsState.useValue();
-  const plugins: IPlugin[] = Object.values(state);
-  const urls = plugins.map((plugin) => `/editor/${plugin.id}`);
+  const state = usePluginsState();
+  const plugins: any[] = Object.values(state);
+  const urls = plugins.map((plugin) => `/editor/${plugin.meta.id}`);
 
-  useInput((input, key) => {
+  useInput((input) => {
     const idx = urls.indexOf(pathname);
 
-    if (app.mode === 'view') {
+    if (mode === 'view') {
       if (input === 'n') {
         const nextIndex = idx + 1;
         const nextUrlCandidate = urls[nextIndex];

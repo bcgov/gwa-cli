@@ -1,0 +1,23 @@
+name: "Response Transformer"
+url: "https://docs.konghq.com/hub/kong-inc/response-transformer/"
+author: Kong Inc
+description: |
+  Transform the response sent by the upstream server on the fly on Kong, before returning the response to the client.
+---
+remove:
+  headers: []
+  json: []
+rename:
+  headers: []
+replace:
+  headers: []
+  json: []
+  json_types: []
+add:
+  headers: []
+  json: []
+  json_types: []
+append:
+  headers: []
+  json: []
+  json_types: []

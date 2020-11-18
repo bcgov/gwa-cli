@@ -1,55 +1,51 @@
-import has from 'lodash/has';
-import head from 'lodash/head';
-import minimist, { ParsedArgs } from 'minimist';
-import path from 'path';
+#!/usr/bin/env node
+import dotenv from 'dotenv';
+import chalk from 'chalk';
+import { Command } from 'commander';
+dotenv.config();
 
-import { IAppContext } from './types';
-import { loadConfig } from './services/kong';
-import init from './views/init';
-import render from './ui';
-import help from './views/help';
-import validate from './views/validate';
+import run from './run';
+import acl from './commands/acl';
+import plugins from './commands/plugins';
+import create from './commands/create';
+import init from './commands/init';
+import publish from './commands/publish';
+import update from './commands/update';
+import validate from './commands/validate';
 
-const p = require('../package.json');
+const pkg = require('../package.json');
 
-const commands = ['edit', 'validate', 'init'];
-const args: ParsedArgs = minimist(process.argv.slice(2));
-const check = (args: ParsedArgs) => (...keys: string[]): boolean => {
-  return keys.some((key) => has(args, key));
-};
+const program = new Command();
+program.version(pkg.version);
+// Refactored commands
+program.addCommand(init).addCommand(acl).addCommand(publish).addCommand(create);
 
-main(args);
+// Commands to refactor
 
-function main(args: ParsedArgs) {
-  const c = check(args);
-  const version: string = p.version;
-  const [command, ...rest] = args._;
+program
+  .command('update <input>')
+  .description('Update a config with new OpenAPI specs')
+  .option('-u, --url [url]', 'The URL of a OpenAPI spec JSON file')
+  .option(
+    '-f, --file [file]',
+    'An OpenAPI spec JSON file on your local machine'
+  )
+  .option('--debug')
+  .action((input, options) => run(update, input, options));
 
-  if (c('v', 'version')) {
-    console.log(version);
-    process.exit(1);
-  }
+program
+  .command('validate <input>')
+  .description('Validate a config file')
+  .action((input) => run(validate, input));
 
-  switch (command) {
-    case 'edit':
-      const file = rest[0];
-      loadConfig(file);
-      const config: IAppContext = {
-        dir: args.dir,
-        file,
-        version,
-      };
-      render(config);
-      break;
-    case 'init':
-      init(args);
-      break;
-    case 'validate':
-      validate(rest[0]);
-      break;
-    default:
-      help();
-      process.exit(1);
-      break;
-  }
+program
+  .command('plugins [input]')
+  .description('List all available plugins')
+  .action((input) => run(plugins, input));
+
+try {
+  program.parse(process.argv);
+} catch (err) {
+  process.exitCode = 1;
+  console.log(chalk.bold.red`x Error`, err);
 }
