@@ -8,7 +8,7 @@ const prompts: Prompt[] = [
       presence: { allowEmpty: false },
       length: { minimum: 5, maximum: 10 },
       format: {
-        pattern: '^[a-z][a-z0-9]{4,14}$',
+        pattern: '^[a-z][a-z0-9-]{4,14}$',
         flags: 'i',
         message: 'can only contain a-z and 0-9',
       },
