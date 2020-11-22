@@ -1,5 +1,4 @@
 import React from 'react';
-import { Box, Text } from 'ink';
 
 import useAsync from '../../../hooks/use-async';
 import Success from '../../../components/success';
