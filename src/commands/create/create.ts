@@ -4,30 +4,30 @@ import { Command } from 'commander';
 import { makeConfigFile } from './create-actions';
 import render from './renderer';
 
-const actionHandler = async (input: string | undefined, options: any) => {
+export const actionHandler = (input: string | undefined, options: any) => {
   if (input) {
-    try {
-      console.log(chalk.italic('Fetching spec...'));
-      const result = await makeConfigFile(input, options);
-
-      console.log(
-        `${
-          chalk.bold.green('✓ ') + chalk.bold('DONE ')
-        } File ${chalk.italic.underline(result)} generated`
-      );
-    } catch (err) {
-      process.exitCode = 1;
-      console.log(chalk.bold.red`x Error:` + ` ${err.message}`);
-    }
+    console.log(chalk.italic('Fetching spec...'));
+    makeConfigFile(input, options).then(
+      (result) => {
+        console.log(
+          `${
+            chalk.bold.green('✓ ') + chalk.bold('DONE ')
+          } File ${chalk.italic.underline(result)} generated`
+        );
+      },
+      (err) => {
+        process.exitCode = 1;
+        console.error(chalk.bold.red`x Error:` + ` ${err.message}`);
+      }
+    );
   } else {
-    render(makeConfigFile);
+    render();
   }
 };
 
 const create = new Command('new');
 create
   .arguments('[input]')
-  //.option('--service <service>', "The service's name")
   .option('--route-host <routeHost>', "Generally a server's URL")
   .option(
     '--service-url <serviceUrl>',

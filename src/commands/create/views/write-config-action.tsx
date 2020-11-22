@@ -3,18 +3,15 @@ import { Box, Text } from 'ink';
 
 import useAsync from '../../../hooks/use-async';
 import Success from '../../../components/success';
+import { makeConfigFile } from '../create-actions';
 
 interface WriteConfigActionProps {
   data: any;
-  submitHandler: any;
 }
 
-const WriteConfigAction: React.FC<WriteConfigActionProps> = ({
-  data,
-  submitHandler,
-}) => {
+const WriteConfigAction: React.FC<WriteConfigActionProps> = ({ data }) => {
   const { url, ...options } = data;
-  const result = useAsync(submitHandler, url, options);
+  const result = useAsync(makeConfigFile, url, options);
 
   return <Success>{`Config ${result} successfully generated`}</Success>;
 };
