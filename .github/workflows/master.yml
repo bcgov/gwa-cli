@@ -37,10 +37,10 @@ jobs:
           npm run build
           npm run bundle
 
-          (cd sbin && cp index-linux gwa | zip -mqj gwa_${VER}_linux_x64.zip gwa)
-          (cd sbin && cp index-macos gwa | zip -mqj gwa_${VER}_macos_x64.zip gwa)
-          (cd sbin && cp index-win gwa | zip -mqj gwa_${VER}_win_x64.zip gwa)
-          (cd sbin && rm index-*)
+          (cd sbin && cp gwa-cli-linux gwa | zip -mqj gwa_${VER}_linux_x64.zip gwa)
+          (cd sbin && cp gwa-cli-macos gwa | zip -mqj gwa_${VER}_macos_x64.zip gwa)
+          (cd sbin && cp gwa-cli-win gwa | zip -mqj gwa_${VER}_win_x64.zip gwa)
+          (cd sbin && rm gwa-cli-*)
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
