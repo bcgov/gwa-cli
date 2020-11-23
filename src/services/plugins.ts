@@ -36,7 +36,7 @@ export async function loadPlugins(path: string): Promise<PluginsResult> {
       }
     }
   } catch (err) {
-    console.error(err);
+    throw new Error(err);
   }
 
   return result;

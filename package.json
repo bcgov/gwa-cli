@@ -3,19 +3,18 @@
 	"version": "1.0.0",
 	"license": "MIT",
 	"bin": {
-		"gwa": "./gwa/index.js",
-		"gwa-dev": "./dist/index.js"
+		"gwa": "./dist/index.js"
 	},
 	"engines": {
 		"node": ">=10"
 	},
 	"scripts": {
-		"build": "tsc && npm run compile",
+		"build": "tsc",
 		"start": "tsc -w",
 		"test": "jest --coverage",
 		"test:watch": "jest --watch --coverage",
 		"compile": "ncc build dist/index.js -o gwa --license licenses.txt",
-		"bundle": "pkg ./dist/index.js --out-path ./sbin --targets node14-macos-x64,node14-linux-x64,node14-alpine-x64"
+		"bundle": "pkg package.json --out-path ./sbin --targets node14-macos-x64,node14-linux-x64,node14-alpine-x64,node14-win-x64"
 	},
 	"files": [
 		"dist/**/*",
@@ -124,5 +123,8 @@
 	},
 	"publishConfig": {
 		"registry": "https://npm.pkg.github.com/"
+	},
+	"pkg": {
+		"assets": "../files/**/*"
 	}
 }

@@ -9,6 +9,7 @@ describe('commands/acl', () => {
     actionHandler({
       managers: ['admin1@idir'],
       users: ['user1@idir', 'user2@idir'],
+      debug: true,
     });
     expect(render).toHaveBeenCalledWith(
       expect.arrayContaining([
@@ -22,9 +23,14 @@ describe('commands/acl', () => {
         },
         {
           username: 'admin1@idir',
+          roles: ['viewer'],
+        },
+        {
+          username: 'admin1@idir',
           roles: ['admin'],
         },
-      ])
+      ]),
+      true
     );
   });
 
@@ -34,14 +40,5 @@ describe('commands/acl', () => {
         managers: ['admin@idir'],
       });
     }).not.toThrow();
-  });
-
-  it('should not add the same user to both managers and users', () => {
-    expect(() => {
-      actionHandler({
-        managers: ['admin@idir'],
-        users: ['admin@idir'],
-      });
-    }).toThrow();
   });
 });

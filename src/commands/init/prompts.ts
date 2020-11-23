@@ -6,11 +6,11 @@ const prompts: Prompt[] = [
     key: 'namespace',
     constraint: {
       presence: { allowEmpty: false },
-      length: { minimum: 5, maximum: 10 },
+      length: { minimum: 5, maximum: 15 },
       format: {
-        pattern: '^[a-z][a-z0-9]{4,14}$',
-        flags: 'i',
-        message: 'can only contain a-z and 0-9',
+        pattern: '^[a-z][a-z0-9-]{4,14}$',
+        flags: 'gi',
+        message: 'can only contain a-z, 0-9 and dashes',
       },
     },
   },

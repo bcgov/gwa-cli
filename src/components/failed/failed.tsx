@@ -3,7 +3,7 @@ import { Box, Text, useApp } from 'ink';
 
 interface FailedProps {
   error: Error | undefined;
-  verbose: boolean;
+  verbose?: boolean;
 }
 
 const Failed: React.FC<FailedProps> = ({ error, verbose }) => {
