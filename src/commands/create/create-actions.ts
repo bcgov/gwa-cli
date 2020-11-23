@@ -6,26 +6,33 @@ import { convertRemote, ImportOptions } from '../../services/kong';
 import { exportConfig } from '../../services/app';
 import { fetchSpec, importSpec } from '../../services/openapi';
 import { loadPlugins } from '../../services/plugins';
-import { generatePluginTemplates } from '../../state/plugins';
-import { initPluginsState } from '../../state/plugins';
+import { initPluginsState, generatePluginTemplates } from '../../state/plugins';
 import config from '../../config';
 
 const { namespace } = config();
 
 export const makeConfigFile = async (
   input: string,
-  options: any
+  options: {
+    outfile: string;
+    plugins: string[];
+    routeHost: string;
+    serviceUrl: string;
+  }
 ): Promise<string> => {
   const cwd = process.cwd();
   let outfile = options.outfile;
 
   try {
-    const data = await loadPlugins(path.resolve(__dirname, '../../../files'));
+    const data = await loadPlugins(path.join(__dirname, '../../../files'));
     initPluginsState(data);
 
     const { routeHost, serviceUrl } = options;
     const isNotURL = validate.single(input, { url: true });
-    const plugins = generatePluginTemplates(options.plugins, namespace);
+    const requestedPlugins = isString(options.plugins)
+      ? options.plugins.split(/,|\s/g)
+      : options.plugins;
+    const plugins = generatePluginTemplates(requestedPlugins, namespace);
     const convertOptions: ImportOptions = {
       routeHost,
       serviceUrl,

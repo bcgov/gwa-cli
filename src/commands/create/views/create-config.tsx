@@ -8,13 +8,9 @@ import WriteConfigAction from './write-config-action';
 
 interface CreateEnvViewProps {
   prompts: Prompt[];
-  submitHandler: any;
 }
 
-const CreateEnvView: React.FC<CreateEnvViewProps> = ({
-  prompts,
-  submitHandler,
-}) => {
+const CreateEnvView: React.FC<CreateEnvViewProps> = ({ prompts }) => {
   const [data, setData] = useState<ConfigFormData | null>(null);
   const onSubmit = useCallback((formData: ConfigFormData) => {
     setData(formData);
@@ -29,7 +25,7 @@ const CreateEnvView: React.FC<CreateEnvViewProps> = ({
       />
       {data && (
         <AsyncAction loadingText="Writing config file...">
-          <WriteConfigAction data={data} submitHandler={submitHandler} />
+          <WriteConfigAction data={data} />
         </AsyncAction>
       )}
     </Box>

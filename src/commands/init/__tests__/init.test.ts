@@ -1,9 +1,10 @@
-jest.mock('../../../services/app');
-jest.mock('../renderer');
 import chalk from 'chalk';
 import { actionHandler } from '../init';
 import * as app from '../../../services/app';
 import render from '../renderer';
+
+jest.mock('../../../services/app');
+jest.mock('../renderer');
 
 describe('commands/init', () => {
   beforeEach(() => {

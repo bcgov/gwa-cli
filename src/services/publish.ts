@@ -94,21 +94,26 @@ async function upload(
       return reject(NAMESPACE_ERROR);
     }
 
-    request(options, (error: Error, response: any) => {
+    request(options, (error: Error, response: any, body: any) => {
       if (error) {
-        reject(error);
-      }
-      const body = JSON.parse(response.body);
-
-      if (response.statusCode >= 400) {
-        reject(new Error(body.results || body.error));
+        return reject(error);
       }
 
       if (fs.existsSync(TEMP_FILE)) {
         fs.unlinkSync(TEMP_FILE);
       }
 
-      resolve(body);
+      if (response.statusCode >= 400) {
+        const message = body ? JSON.parse(body) : '';
+        reject(
+          new Error(
+            `[${response.statusCode}] ${message.error}: ${message.results}`
+          )
+        );
+      } else {
+        const json = body ? JSON.parse(body) : {};
+        resolve(json);
+      }
     });
   });
 }
