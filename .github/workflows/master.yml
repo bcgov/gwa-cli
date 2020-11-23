@@ -39,6 +39,7 @@ jobs:
 
           (cd sbin && cp index-linux gwa | zip -mqj gwa_${VER}_linux_x64.zip gwa)
           (cd sbin && cp index-macos gwa | zip -mqj gwa_${VER}_macos_x64.zip gwa)
+          (cd sbin && cp index-win gwa | zip -mqj gwa_${VER}_win_x64.zip gwa)
           (cd sbin && rm index-*)
 
       - name: Deploy
