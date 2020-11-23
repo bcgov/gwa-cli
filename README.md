@@ -6,16 +6,15 @@ GWA CLI is a tool for composing, validating and generating Kong Gateway configur
 
 ## Installation
 
-This package isn't available on npm yet, so for now install like so:
+You can download a precompiled binary via the [Github Releases page](https://github.com/bcgov/gwa-cli/releases).
 
 ```shell
-$ git clone --branch feature/feature-refactor https://github.com/bcgov/gwa-cli.git
-$ cd gwa-cli/
-$ npm link
-$ which gwa # confirm it works
+$ curl -L -O https://bcgov.github.io/gwa-cli/gwa_v1.0.6_macos_x64.zip
+$ unzip gwa_v1.0.6_macos_x64.zip
+$ ./gwa --version
 ```
 
-You will receive an error about a missing `dist` directory when running link, but that is only for the development files. A precompiled single file is linked to the `gwa` prompt.
+If you'd like you can add the binary to your `PATH` so you can run `gwa` anywhere.
 
 #### Prerequisites
 
@@ -59,8 +58,11 @@ $ gwa init --namespace=sampler --client-id=<CLIENT ID> --client-secret=<CLIENT S
 Import OpenAPI spec and convert to a Kong configuration file with the rate-limiting plugin.
 
 ```shell
-$ gwa new https://website/swagger.json --service=sampler-service \
-  --plugins=rate-limiting oidc --outfile=sampler-service.yaml
+$ gwa new https://website/swagger.json \
+  --route-host=sampler.api \
+  --service-url=http://api.service-url.com \
+  --plugins rate-limiting oidc \
+  --outfile=sampler-service.yaml
 ```
 
 Note you can see the list of available plugins and their description by running `$ gwa plugins`. Copy the **Plugin ID** to use in the `new` command. Use a space to add multiple plugins.
@@ -116,6 +118,14 @@ Generates a `.env` file in the current working directory.
 --client-secret    Namespace's Client Secret from API Services Portal
 ```
 
+###### Example
+
+```
+$ gwa init -T --namespace=sampler \
+  --client-id=<YOUR SERVICE ACCOUNT ID> \
+  --client-secret=<YOUR SERVICE ACCOUNT SECRET>
+```
+
 A `.env` file should have the following key/values
 
 ```
@@ -138,10 +148,20 @@ Initialize a config file in the current directory. The input file must be an Ope
 ##### Options
 
 ```shell
---service    Name of the service
---plugins    Space separated list of plugin IDs
-                (dash separated, see plugins command)
---outfile    The file to write to write output to
+--route-host   Host eg. myapi.api.gov.bc.ca
+--service-url  URL of the service
+--plugins      Space separated list of plugin IDs
+                 (dash separated, see plugins command)
+--outfile      The file to write to write output to
+```
+
+###### Example
+
+```
+$ gwa new -o sample.yaml \
+  --route-host myapi.api.gov.bc.ca \
+  --service-url https://httpbin.org \
+  https://bcgov.github.io/gwa-api/openapi/simple.yaml
 ```
 
 ### `gwa validate <input file>`
@@ -183,6 +203,12 @@ Update the full membership. Note that this command will overwrite the remote lis
 ```shell
 --managers    A list of IDs to be giving admin roles
 --users       A list of IDs to be giving read-only roles
+```
+
+###### Example
+
+```
+$ gwa acl --users jjones@idir --managers acope@idir
 ```
 
 ## Help

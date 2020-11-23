@@ -14,7 +14,7 @@
 		"test": "jest --coverage",
 		"test:watch": "jest --watch --coverage",
 		"compile": "ncc build dist/index.js -o gwa --license licenses.txt",
-		"bundle": "pkg package.json --out-path ./sbin --targets node14-macos-x64,node14-linux-x64,node14-alpine-x64"
+		"bundle": "pkg package.json --out-path ./sbin --targets node14-macos-x64,node14-linux-x64,node14-alpine-x64,node14-win-x64"
 	},
 	"files": [
 		"dist/**/*",
