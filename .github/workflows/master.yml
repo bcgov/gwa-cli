@@ -37,6 +37,7 @@ jobs:
           npm run build
           npm run bundle
 
+          (cd sbin && ls -l)
           (cd sbin && cp gwa-cli-linux gwa | zip -mqj gwa_${VER}_linux_x64.zip gwa)
           (cd sbin && cp gwa-cli-macos gwa | zip -mqj gwa_${VER}_macos_x64.zip gwa)
           (cd sbin && cp gwa-cli-win.exe gwa.exe | zip -mqj gwa_${VER}_win_x64.zip gwa.exe)
