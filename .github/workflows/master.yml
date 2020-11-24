@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 12
       - run: |
-          VER="${{ steps.release.outputs.tag_name }}"
+        VER="1.0.10"
 
           npm install
           npm run build
