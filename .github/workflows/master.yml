@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - feature/release-files-version
 
 jobs:
   release-on-push:
@@ -11,10 +12,10 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - id: release
-        uses: rymndhng/release-on-push-action@v0.15.0
-        with:
-          bump_version_scheme: patch
+      #- id: release
+      #  uses: rymndhng/release-on-push-action@v0.15.0
+      #  with:
+      #    bump_version_scheme: patch
 
       - name: Check Output Parameters
         run: |
@@ -43,30 +44,38 @@ jobs:
           (cd sbin && cp gwa-cli-win.exe gwa.exe && zip -mqj gwa_${VER}_win_x64.zip gwa.exe)
           (cd sbin && rm gwa-cli-*)
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./sbin
-          keep_files: true
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./sbin/gwa_*.zip
+          tag: ${{ github.ref }}
+          file_glob: true
+
+          #- name: Deploy
+          #  uses: peaceiris/actions-gh-pages@v3
+          #  with:
+          #    github_token: ${{ secrets.GITHUB_TOKEN }}
+          #    publish_dir: ./sbin
+          #    keep_files: true
 
       # install and publish new config
-      - name: NPM package containing Terraform configuration
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://npm.pkg.github.com/
-          scope: '@bcgov'
-      - run: |
-          # GITHUB_REF=refs/heads/dev
-          # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
-          # GITHUB_RUN_ID=193633377
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+      #- name: NPM package containing Terraform configuration
+      #  uses: actions/setup-node@v1
+      #  with:
+      #    node-version: 12
+      #    registry-url: https://npm.pkg.github.com/
+      #    scope: '@bcgov'
+      #- run: |
+      #    # GITHUB_REF=refs/heads/dev
+      #    # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
+      #    # GITHUB_RUN_ID=193633377
+      #    echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
 
-          npm version "${{ steps.release.outputs.version }}" --git-tag-version=false
-          npm install
-          npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #    npm version "${{ steps.release.outputs.version }}" --git-tag-version=false
+      #    npm install
+      #    npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
+      #  env:
+      #    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   
