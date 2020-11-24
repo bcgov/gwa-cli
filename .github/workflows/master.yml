@@ -32,7 +32,7 @@ jobs:
         with:
           node-version: 12
       - run: |
-          VER="1.0.10"
+          VER="v1.0.10"
 
           npm install
           npm run build
