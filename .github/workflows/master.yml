@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - feature/release-files-version
 
 jobs:
   release-on-push:
@@ -12,10 +11,17 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      #- id: release
-      #  uses: rymndhng/release-on-push-action@v0.15.0
-      #  with:
-      #    bump_version_scheme: patch
+      - name: Automated Version Bump
+        uses: phips28/gh-action-bump-version@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          skip-tag: true
+
+      - id: release
+        uses: rymndhng/release-on-push-action@v0.15.0
+        with:
+          bump_version_scheme: patch
 
       - name: Check Output Parameters
         run: |
@@ -32,7 +38,7 @@ jobs:
         with:
           node-version: 12
       - run: |
-          VER="v1.0.10"
+          VER="${{ steps.release.outputs.tag_name }}"
 
           npm install
           npm run build
@@ -52,30 +58,30 @@ jobs:
           tag: ${{ github.ref }}
           file_glob: true
 
-          #- name: Deploy
-          #  uses: peaceiris/actions-gh-pages@v3
-          #  with:
-          #    github_token: ${{ secrets.GITHUB_TOKEN }}
-          #    publish_dir: ./sbin
-          #    keep_files: true
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./sbin
+          keep_files: true
 
       # install and publish new config
-      #- name: NPM package containing Terraform configuration
-      #  uses: actions/setup-node@v1
-      #  with:
-      #    node-version: 12
-      #    registry-url: https://npm.pkg.github.com/
-      #    scope: '@bcgov'
-      #- run: |
-      #    # GITHUB_REF=refs/heads/dev
-      #    # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
-      #    # GITHUB_RUN_ID=193633377
-      #    echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+      - name: NPM package containing Terraform configuration
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://npm.pkg.github.com/
+          scope: '@bcgov'
+      - run: |
+          # GITHUB_REF=refs/heads/dev
+          # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
+          # GITHUB_RUN_ID=193633377
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
 
-      #    npm version "${{ steps.release.outputs.version }}" --git-tag-version=false
-      #    npm install
-      #    npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
-      #  env:
-      #    NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          npm version "${{ steps.release.outputs.version }}" --git-tag-version=false
+          npm install
+          npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   
