@@ -1,4 +1,4 @@
-import fs from 'fs';
+import compact from 'lodash/compact';
 import isString from 'lodash/isString';
 import path from 'path';
 import validate from 'validate.js';
@@ -6,11 +6,15 @@ import validate from 'validate.js';
 import { convertRemote, ImportOptions } from '../../services/kong';
 import { exportConfig } from '../../services/app';
 import { fetchSpec, importSpec } from '../../services/openapi';
-import { loadPlugins } from '../../services/plugins';
 import { initPluginsState, generatePluginTemplates } from '../../state/plugins';
 import config from '../../config';
 
-const { namespace } = config();
+export const parsePlugins = (plugins: string | string[], namespace: string) => {
+  const requestedPlugins = isString(plugins)
+    ? compact(plugins.split(/,|\s/g))
+    : plugins;
+  return generatePluginTemplates(requestedPlugins, namespace);
+};
 
 export const makeConfigFile = async (
   input: string,
@@ -21,19 +25,16 @@ export const makeConfigFile = async (
     serviceUrl: string;
   }
 ): Promise<string> => {
+  const { namespace } = config();
   const cwd = process.cwd();
   let outfile = options.outfile;
 
   try {
-    const data = await loadPlugins();
-    initPluginsState(data);
+    await initPluginsState();
 
     const { routeHost, serviceUrl } = options;
     const isNotURL = validate.single(input, { url: true });
-    const requestedPlugins = isString(options.plugins)
-      ? options.plugins.split(/,|\s/g)
-      : options.plugins;
-    const plugins = generatePluginTemplates(requestedPlugins, namespace);
+    const plugins = parsePlugins(options.plugins, namespace);
     const convertOptions: ImportOptions = {
       routeHost,
       serviceUrl,

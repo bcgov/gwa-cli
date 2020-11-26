@@ -6,20 +6,19 @@ import flow from 'lodash/flow';
 import produce from 'immer';
 import uniq from 'lodash/uniq';
 
+import { loadPlugins } from '../services/plugins';
 import type { PluginsResult } from '../types';
 
 const store = create<PluginsResult>(() => ({}));
 
-export const initPluginsState = (data: PluginsResult) => store.setState(data);
+export const initPluginsState = async () => {
+  try {
+    const data = await loadPlugins();
 
-export const loadPlugins = (data: any[]) => {
-  store.setState(
-    produce((draft) => {
-      data.forEach((plugin) => {
-        draft[plugin.name].config = plugin.config;
-      });
-    })
-  );
+    store.setState(produce((draft) => (draft = data)));
+  } catch (err) {
+    throw new Error(err);
+  }
 };
 
 export const toggleEnabled = (id: string, enabled: boolean) =>

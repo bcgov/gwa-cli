@@ -1,5 +1,4 @@
 jest.mock('../renderer');
-import chalk from 'chalk';
 
 import { actionHandler } from '../acl';
 import render from '../renderer';
