@@ -13,7 +13,7 @@ export function getEndpoints() {
     legacyAuthorizationEndpoint,
     legacyApiHost,
   } = config();
-  const isLegacy = env === 'test';
+  const isLegacy = false;
   const auth = isLegacy ? legacyAuthorizationEndpoint : authorizationEndpoint;
   const host = isLegacy ? legacyApiHost : apiHost;
 
