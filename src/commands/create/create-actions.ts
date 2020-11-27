@@ -1,3 +1,4 @@
+import fs from 'fs';
 import isString from 'lodash/isString';
 import path from 'path';
 import validate from 'validate.js';
@@ -24,7 +25,7 @@ export const makeConfigFile = async (
   let outfile = options.outfile;
 
   try {
-    const data = await loadPlugins(path.join(__dirname, '../../../files'));
+    const data = await loadPlugins();
     initPluginsState(data);
 
     const { routeHost, serviceUrl } = options;

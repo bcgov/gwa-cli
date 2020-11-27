@@ -5,24 +5,6 @@ import merge from 'lodash/merge';
 import authenticate from './auth';
 import config from '../config';
 
-export function getEndpoints() {
-  const {
-    authorizationEndpoint,
-    apiHost,
-    env,
-    legacyAuthorizationEndpoint,
-    legacyApiHost,
-  } = config();
-  const isLegacy = false;
-  const auth = isLegacy ? legacyAuthorizationEndpoint : authorizationEndpoint;
-  const host = isLegacy ? legacyApiHost : apiHost;
-
-  return {
-    auth,
-    host,
-  };
-}
-
 export async function api<ApiResponse>(
   token: string,
   endpoint: string,
@@ -57,9 +39,8 @@ export async function makeRequest<ApiResponse>(
   options?: RequestInit
 ): Promise<ApiResponse> {
   try {
-    const { namespace } = config();
-    const { auth, host } = getEndpoints();
-    const token = await authenticate(auth);
+    const { authorizationEndpoint, apiHost, namespace } = config();
+    const token = await authenticate(authorizationEndpoint);
     let path = endpoint;
 
     if (endpoint.includes(':')) {
@@ -68,7 +49,7 @@ export async function makeRequest<ApiResponse>(
       });
       path = compiler({ namespace });
     }
-    const url = host + path;
+    const url = apiHost + path;
     const response = await api<ApiResponse>(token, url, options);
     return response;
   } catch (err) {
