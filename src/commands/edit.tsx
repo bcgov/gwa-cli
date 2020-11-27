@@ -1,7 +1,7 @@
 import ui from '../ui';
 import { loadConfig, parseConfig } from '../services/app';
 import { initTeamState } from '../state/team';
-import { loadPlugins } from '../state/plugins';
+import { initPluginsState } from '../state/plugins';
 
 export default async function (input: string) {
   try {
@@ -13,7 +13,7 @@ export default async function (input: string) {
       team,
       host,
     });
-    loadPlugins(plugins);
+    initPluginsState();
     ui();
   } catch (err) {
     console.error(err);

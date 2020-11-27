@@ -27,17 +27,22 @@ export async function convertFile(
   }
 }
 
-export type ImportOptions = {
-  routeHost: string;
-  serviceUrl: string;
+export type GenerateConfigOptions = {
+  input: string;
+  namespace: string;
+  plugins: string[];
+  options: {
+    routeHost: string;
+    serviceUrl: string;
+  };
 };
 
-export async function convertRemote(
-  input: string,
-  namespace: string,
-  plugins?: string[],
-  options?: ImportOptions
-): Promise<string> {
+export async function generateConfig({
+  input,
+  namespace,
+  plugins,
+  options,
+}: GenerateConfigOptions): Promise<string> {
   try {
     const result = await o2k.generateFromString(
       input,
