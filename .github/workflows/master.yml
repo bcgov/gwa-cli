@@ -26,6 +26,14 @@ jobs:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
+      - name: Automated Version Bump
+        uses: phips28/gh-action-bump-version@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          skip-tag: 'true'
+          tag-prefix: 'v'
+
       - name: NPM build
         uses: actions/setup-node@v1
         with:
@@ -42,6 +50,14 @@ jobs:
           (cd sbin && cp -f gwa-cli-macos gwa && zip -mqj gwa_${VER}_macos_x64.zip gwa)
           (cd sbin && cp gwa-cli-win.exe gwa.exe && zip -mqj gwa_${VER}_win_x64.zip gwa.exe)
           (cd sbin && rm gwa-cli-*)
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./sbin/gwa_*.zip
+          tag: ${{ github.ref }}
+          file_glob: true
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
