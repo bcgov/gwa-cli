@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import authenticate from '../auth';
-import { api, getEndpoints, makeRequest } from '../api';
+import { api, makeRequest } from '../api';
 import config from '../../config';
 
 jest.mock('../auth');
@@ -16,14 +16,14 @@ describe('services/api', () => {
 
   describe('#api', () => {
     it('should call #authenticate first with endpoints', async () => {
-      fetch.get('https://legacy-api.com/url', { test: 'object' });
-      const response = await api('123', 'https://legacy-api.com/url');
+      fetch.get('https://api.com/url', { test: 'object' });
+      const response = await api('123', 'https://api.com/url');
       expect(response).toEqual({ test: 'object' });
     });
 
     it('should add auth header', async () => {
-      fetch.get('https://legacy-api.com/url', { test: 'object' });
-      const response = await api('123', 'https://legacy-api.com/url');
+      fetch.get('https://api.com/url', { test: 'object' });
+      const response = await api('123', 'https://api.com/url');
       expect(fetch.mock.calls[0][1]).toEqual({
         method: 'GET',
         headers: {
@@ -33,8 +33,8 @@ describe('services/api', () => {
     });
 
     it('should take different methods', async () => {
-      fetch.put('https://legacy-api.com/url', {});
-      const response = await api('123', 'https://legacy-api.com/url', {
+      fetch.put('https://api.com/url', {});
+      const response = await api('123', 'https://api.com/url', {
         method: 'PUT',
       });
       expect(fetch.mock.calls[0][1]).toEqual({
@@ -46,9 +46,9 @@ describe('services/api', () => {
     });
 
     it('should throw error messages', async () => {
-      fetch.get('https://legacy-api.com/url', 500);
+      fetch.get('https://api.com/url', 500);
       expect(async () => {
-        await api('123', 'https://legacy-api.com/url');
+        await api('123', 'https://api.com/url');
       }).rejects.toThrow();
     });
   });
@@ -94,35 +94,6 @@ describe('services/api', () => {
       expect(async () => {
         await makeRequest('/:namespace/endpoint');
       }).rejects.toThrow();
-    });
-  });
-
-  describe('#getEndpoints', () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
-
-    afterEach(() => {
-      process.env = CACHED_ENV;
-    });
-
-    it('should return legacy endpoints in test', () => {
-      process.env = { ...CACHED_ENV, GWA_ENV: 'test' };
-      const { legacyApiHost, legacyAuthorizationEndpoint } = config();
-      expect(getEndpoints()).toEqual({
-        auth: legacyAuthorizationEndpoint,
-        host: legacyApiHost,
-      });
-    });
-
-    it('should return current endpoints in dev, prod', () => {
-      process.env = { ...CACHED_ENV, GWA_ENV: 'dev' };
-      const { apiHost, authorizationEndpoint } = config();
-
-      expect(getEndpoints()).toEqual({
-        auth: authorizationEndpoint,
-        host: apiHost,
-      });
     });
   });
 });
