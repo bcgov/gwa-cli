@@ -5,7 +5,6 @@ import { extname, resolve } from 'path';
 
 import authenticate from './auth';
 import config from '../config';
-import { getEndpoints } from './api';
 
 const { apiHost, namespace } = config();
 const TEMP_FILE: string = '.temp.yaml';
@@ -124,9 +123,8 @@ export async function publish(
   options: PublishParams
 ): Promise<PublishResponse> {
   try {
-    const { namespace } = config();
-    const { auth, host } = getEndpoints();
-    const token = await authenticate(auth);
+    const { apiHost, authorizationEndpoint, namespace } = config();
+    const token = await authenticate(authorizationEndpoint);
     let path = endpoint;
 
     if (endpoint.includes(':')) {
@@ -135,7 +133,7 @@ export async function publish(
       });
       path = compiler({ namespace });
     }
-    const url = host + path;
+    const url = apiHost + path;
     const response = await upload(token, url, options);
     return response;
   } catch (err) {
