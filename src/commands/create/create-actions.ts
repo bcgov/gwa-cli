@@ -74,7 +74,6 @@ export const makeConfigFile = async (
       },
     });
     const output = await generateConfig(result);
-    console.log('hi', output);
 
     await exportConfig(output, outfile);
     return outfile;
