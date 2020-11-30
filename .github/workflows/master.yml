@@ -26,13 +26,10 @@ jobs:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
-      - name: Automated Version Bump
-        uses: phips28/gh-action-bump-version@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update package version
+        uses: reedyuk/npm-version@vlatest
         with:
-          skip-tag: 'true'
-          tag-prefix: 'v'
+          version: ${{ steps.release.outputs.version }}
 
       - name: NPM build
         uses: actions/setup-node@v1
