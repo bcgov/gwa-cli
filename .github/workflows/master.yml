@@ -11,32 +11,26 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - id: release
-        uses: rymndhng/release-on-push-action@v0.15.0
-        with:
-          bump_version_scheme: patch
-
-      - name: Check Output Parameters
-        run: |
-          echo "Got tag name ${{ steps.release.outputs.tag_name }}"
-          echo "Got release version ${{ steps.release.outputs.version }}"
-
       - uses: actions/checkout@v2
         with:
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
-      - name: Update package version
-        uses: reedyuk/npm-version@vlatest
-        with:
-          version: ${{ steps.release.outputs.version }}
+      - name: Get Package Version
+        uses: nyaayaya/package-info@v1
+
+      - name: Check Output Parameters
+        run: |
+          echo "Preparing to release v${{ env.PACKAGE_VERSION }}"
 
       - name: NPM build
         uses: actions/setup-node@v1
         with:
           node-version: 12
+
+      # Build and zip the binaries
       - run: |
-          VER="${{ steps.release.outputs.tag_name }}"
+          VER="v${{ env.PACKAGE_VERSION }}"
 
           npm install
           npm run build
@@ -48,20 +42,30 @@ jobs:
           (cd sbin && cp gwa-cli-win.exe gwa.exe && zip -mqj gwa_${VER}_win_x64.zip gwa.exe)
           (cd sbin && rm gwa-cli-*)
 
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ env.PACKAGE_VERSION }}
+          release_name: Release ${{ env.PACKAGE_VERSION }}
+
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./sbin/gwa_*.zip
-          tag: ${{ github.ref }}
+          tag: v${{ env.PACKAGE_VERSION }}
           file_glob: true
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./sbin
-          keep_files: true
+
+      # - name: Deploy
+      #   uses: peaceiris/actions-gh-pages@v3
+      #   with:
+      #     github_token: ${{ secrets.GITHUB_TOKEN }}
+      #     publish_dir: ./sbin
+      #     keep_files: true
 
       # install and publish new config
       - name: NPM package containing Terraform configuration
