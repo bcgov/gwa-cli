@@ -9,12 +9,13 @@ GWA CLI is a tool for composing, validating and generating Kong Gateway configur
 You can download a precompiled binary via the [Github Releases page](https://github.com/bcgov/gwa-cli/releases).
 
 ```shell
-$ curl -L -O https://bcgov.github.io/gwa-cli/gwa_v1.0.6_macos_x64.zip
-$ unzip gwa_v1.0.6_macos_x64.zip
-$ ./gwa --version
+$ unzip gwa_v1.0.##_macos_x64.zip
+$ mv gwa_v1.0.##_macos_x64 gwa
+$ export PATH=`pwd`:$PATH
+$ gwa --version
 ```
 
-If you'd like you can add the binary to your `PATH` so you can run `gwa` anywhere.
+Edge releases are built from the latest commit on `dev`. You can download them from the [Edge Release Page](https://github.com/bcgov/gwa-cli/releases/tag/edge)
 
 #### Prerequisites
 
@@ -239,6 +240,10 @@ $ npm start
 
 Running `build` first is required so npm can link to the correct files. During development `/src` TypeScript files will be compiled to the `/dist` folder.
 
-Running `$ gwa-dev` will allow for preview of any local changes. When you are ready to publish run `$ npm run build`
+Running `$ gwa` will allow for preview of any local changes. When you are ready to publish run `$ npm run build`
 
 To uninstall simply run `$ npm uninstall` from this directory.
+
+#### Releasing a new version
+
+Make sure the `package.json` version is updated following SEMVER conventions. Make a PR into the main branch.
