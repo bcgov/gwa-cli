@@ -10,8 +10,13 @@ import publish from '../../../services/publish';
 jest.mock('../../../services/publish');
 
 describe('commands/publish/upload-view', () => {
+  const result = {
+    message: 'success',
+    results: 'all done',
+  };
+
   it('should send the correct args to publish', async () => {
-    publish.mockResolvedValueOnce('success');
+    publish.mockResolvedValueOnce(result);
     const options = {
       input: 'input',
       dryRun: 'true',
@@ -29,10 +34,7 @@ describe('commands/publish/upload-view', () => {
   });
 
   it('should render upload message', async () => {
-    publish.mockResolvedValueOnce({
-      message: 'message',
-      results: 'result',
-    });
+    publish.mockResolvedValueOnce(result);
     const options = {
       input: 'input.yaml',
       dryRun: 'true',
@@ -47,7 +49,11 @@ describe('commands/publish/upload-view', () => {
       `${chalk.bold.green`✓`} ${chalk.bold(
         chalk.green`Success`,
         'Configuration input.yaml Published'
-      )}`
+      )}
+
+success
+
+all done`
     );
   });
 });
