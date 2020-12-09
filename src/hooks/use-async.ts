@@ -3,7 +3,7 @@ type State = 'pending' | 'error' | 'done';
 
 export type PromiseFn<R, A extends any[] = []> = (...args: A) => Promise<R>;
 
-const cache = new Map();
+export const cache = new Map();
 
 const callPromise = <Response, Args extends any[]>(
   promise: PromiseFn<Response, Args>,
@@ -54,11 +54,11 @@ const useAsync = <Response>(
     result.current = callPromise(promise, ...args);
   }, [promise, ...args]);
 
-  if (typeof result.current === 'function') {
-    return result.current();
+  if (typeof result.current !== 'function') {
+    return;
   }
 
-  return result.current;
+  return result.current();
 };
 
 export default useAsync;
