@@ -1,10 +1,13 @@
-jest.mock('../renderer');
-import chalk from 'chalk';
-
 import { actionHandler } from '../acl';
 import render from '../renderer';
 
+jest.mock('../renderer');
+
 describe('commands/acl', () => {
+  afterEach(() => {
+    render.mockReset();
+  });
+
   it('should adds managers and users', () => {
     actionHandler({
       managers: ['admin1@idir'],
@@ -31,6 +34,21 @@ describe('commands/acl', () => {
         },
       ]),
       true
+    );
+  });
+
+  it('should only send users', () => {
+    actionHandler({
+      users: ['user1@idir'],
+    });
+    expect(render).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        {
+          username: 'user1@idir',
+          roles: ['viewer'],
+        },
+      ]),
+      undefined
     );
   });
 

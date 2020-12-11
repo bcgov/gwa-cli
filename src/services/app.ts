@@ -7,20 +7,18 @@ export function checkForEnvFile() {
   return fs.existsSync('.env');
 }
 
-export function makeEnvFile(options: InitOptions): Promise<string> {
-  return new Promise((resolve, reject) => {
+export async function makeEnvFile(options: InitOptions): Promise<string> {
+  try {
     const data = `GWA_NAMESPACE=${options.namespace}
-CLIENT_ID=${options.clientId ?? ''}
-CLIENT_SECRET=${options.clientSecret ?? ''}
+CLIENT_ID=${options.clientId}
+CLIENT_SECRET=${options.clientSecret}
 GWA_ENV=${options.env}
 `;
-    fs.writeFile('.env', data, (err) => {
-      if (err) {
-        reject(`Unable to write file ${err}`);
-      }
-      resolve('.env file successfully generated');
-    });
-  });
+    await fs.promises.writeFile('.env', data);
+    return '.env file successfully generated';
+  } catch (err) {
+    throw new Error(`Unable to write file ${err}`);
+  }
 }
 
 export async function loadConfig(input: string): Promise<any> {
@@ -32,26 +30,11 @@ export async function loadConfig(input: string): Promise<any> {
 
     return json;
   } catch (err) {
-    throw err;
+    throw new Error(err);
   }
 }
 
-export function parseConfig(json: any) {
-  const service = json.services[0];
-  const name = service.name;
-  const team = service.tags.slice(-1)[0];
-  const host = service.host || service.url;
-  const plugins = service.plugins;
-
-  return {
-    name,
-    team,
-    host,
-    plugins,
-  };
-}
-
-export async function exportConfig(
+export async function saveConfig(
   output: string,
   outfile: string
 ): Promise<any> {
@@ -60,6 +43,6 @@ export async function exportConfig(
   try {
     await fs.promises.writeFile(path.resolve(cwd, outfile), output);
   } catch (err) {
-    throw err;
+    throw new Error(err);
   }
 }
