@@ -5,7 +5,7 @@ import AsyncAction from '../../components/async-action';
 import UploadView from './upload-view';
 
 interface PublishRenderOptions {
-  configFile: string;
+  configFile?: string;
   dryRun: string;
 }
 const renderer = (options: PublishRenderOptions) => {

@@ -7,7 +7,7 @@ import validate from 'validate.js';
 import { uid } from 'react-uid';
 
 import { generateConfig } from '../../services/kong';
-import { exportConfig } from '../../services/app';
+import { saveConfig } from '../../services/app';
 import { fetchSpec } from '../../services/openapi';
 import { generatePluginTemplates } from '../../state/plugins';
 import reducer, { initialState } from './reducer';
@@ -63,7 +63,7 @@ const SetupView: React.FC<SetupViewProps> = () => {
           },
         });
         dispatch({ type: 'spec/success', payload: result });
-        await exportConfig(result, data.outfile);
+        await saveConfig(result, data.outfile);
         dispatch({ type: 'spec/written', payload: result });
       } catch (err) {
         dispatch({ type: 'spec/failed', payload: err.message });

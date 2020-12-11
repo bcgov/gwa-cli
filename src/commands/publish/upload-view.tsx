@@ -7,7 +7,7 @@ import useAsync from '../../hooks/use-async';
 
 interface UploadViewProps {
   options: {
-    input: string;
+    input?: string;
     dryRun: string;
   };
 }

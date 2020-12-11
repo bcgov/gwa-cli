@@ -1,7 +1,7 @@
 import isString from 'lodash/isString';
 import path from 'path';
 
-import { exportConfig, loadConfig } from '../services/app';
+import { saveConfig, loadConfig } from '../services/app';
 import { fetchSpec, importSpec } from '../services/openapi';
 import { generateConfig } from '../services/kong';
 
@@ -40,7 +40,7 @@ export default async function (input: string, options: any) {
     }
 
     if (isString(output)) {
-      await exportConfig(output, input);
+      await saveConfig(output, input);
       console.log(`[DONE]: File ${input} updated`);
     }
   } catch (err) {
