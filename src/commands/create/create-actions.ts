@@ -4,7 +4,7 @@ import isString from 'lodash/isString';
 import path from 'path';
 
 import { generateConfig, GenerateConfigOptions } from '../../services/kong';
-import { exportConfig } from '../../services/app';
+import { saveConfig } from '../../services/app';
 import { fetchSpec, importSpec } from '../../services/openapi';
 import { initPluginsState, generatePluginTemplates } from '../../state/plugins';
 import { isLocalInput, makeOutputFilename } from '../../services/utils';
@@ -75,7 +75,7 @@ export const makeConfigFile = async (
     });
     const output = await generateConfig(result);
 
-    await exportConfig(output, outfile);
+    await saveConfig(output, outfile);
     return outfile;
   } catch (err) {
     throw new Error(err);

@@ -1,4 +1,4 @@
-import { exportConfig } from '../../../services/app';
+import { saveConfig } from '../../../services/app';
 import { fetchSpec, importSpec } from '../../../services/openapi';
 import { generateConfig } from '../../../services/kong';
 import { importInput, makeConfigFile, parseOptions } from '../create-actions';
@@ -33,7 +33,7 @@ describe('commands/create/create-actions', () => {
   });
 
   it('should throw if errors are encountered', () => {
-    exportConfig.mockRejectedValueOnce();
+    saveConfig.mockRejectedValueOnce();
     expect(async () => await makeConfigFile('file.json', {})).rejects.toThrow();
   });
 
