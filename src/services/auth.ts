@@ -1,4 +1,4 @@
-import fetch, { RequestInit } from 'node-fetch';
+import fetch from 'node-fetch';
 import { URLSearchParams } from 'url';
 
 import config from '../config';
