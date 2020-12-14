@@ -18,7 +18,7 @@ describe('commands/publish/upload-view', () => {
   it('should send the correct args to publish', async () => {
     publish.mockResolvedValueOnce(result);
     const options = {
-      input: 'input',
+      configFile: 'input',
       dryRun: 'true',
     };
     render(
@@ -36,7 +36,7 @@ describe('commands/publish/upload-view', () => {
   it('should render upload message', async () => {
     publish.mockResolvedValueOnce(result);
     const options = {
-      input: 'input.yaml',
+      configFile: 'input.yaml',
       dryRun: 'true',
     };
     const { lastFrame } = render(

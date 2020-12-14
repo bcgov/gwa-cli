@@ -7,7 +7,7 @@ import useAsync from '../../hooks/use-async';
 
 interface UploadViewProps {
   options: {
-    input?: string;
+    configFile?: string;
     dryRun: string;
   };
 }
@@ -23,7 +23,7 @@ const UploadView: React.FC<UploadViewProps> = ({ options }) => {
     <Box flexDirection="column">
       <Success>
         <Text color="green">Success</Text>
-        {` Configuration ${options.input} Published`}
+        {` Configuration ${options.configFile} Published`}
       </Success>
       <Box flexDirection="column" marginTop={1}>
         <Box>

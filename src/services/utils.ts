@@ -7,20 +7,21 @@ export const isLocalInput = (input: string): boolean => {
 
 export const makeOutputFilename = (
   input: string,
-  outfile: string = ''
+  filename: string = ''
 ): string => {
-  if (!outfile.trim()) {
+  if (!filename.trim()) {
     if (isLocalInput(input)) {
       return input.replace(/json$/i, 'yaml');
     } else {
-      const urlFileName = input.match(/[^\/]+(?=\/$|$)/);
+      const urlFileName = input.match(/[^\/]+(?=\/json|$)/);
+
       if (urlFileName) {
         return urlFileName[0].replace('json', 'yaml');
       } else {
-        throw 'No outfile specified';
+        throw new Error('No outfile specified');
       }
     }
   }
 
-  return outfile;
+  return filename;
 };
