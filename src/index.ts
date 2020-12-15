@@ -10,6 +10,7 @@ import plugins from './commands/plugins';
 import create from './commands/create';
 import init from './commands/init';
 import publish from './commands/publish';
+import status from './commands/status';
 import update from './commands/update';
 import validate from './commands/validate';
 
@@ -18,7 +19,12 @@ const pkg = require('../package.json');
 const program = new Command();
 program.version(pkg.version);
 // Refactored commands
-program.addCommand(init).addCommand(acl).addCommand(publish).addCommand(create);
+program
+  .addCommand(init)
+  .addCommand(acl)
+  .addCommand(publish)
+  .addCommand(create)
+  .addCommand(status);
 
 // Commands to refactor
 
