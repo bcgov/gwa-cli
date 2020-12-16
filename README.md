@@ -2,7 +2,7 @@
 
 <img src="https://github.com/bcgov/gwa-cli/workflows/Build/badge.svg"></img>
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gwa-cli&metric=alert_status)](https://sonarcloud.io/dashboard?id=gwa-cli)
-
+[![img](https://img.shields.io/badge/Lifecycle-Experimental-339999)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 
 > **NOTE:** This tool is going through rapid development and could change often. Check back for updates.
 
