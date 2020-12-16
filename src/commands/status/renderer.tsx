@@ -2,7 +2,7 @@ import React from 'react';
 import { render } from 'ink';
 
 import AsyncAction from '../../components/async-action';
-import StatusView from './status-view';
+import StatusView from './views/status-view';
 
 const renderer = () => {
   render(
