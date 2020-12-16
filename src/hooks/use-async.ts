@@ -1,4 +1,6 @@
+import isString from 'lodash/isString';
 import { useRef, useMemo } from 'react';
+import { uid } from 'react-uid';
 type State = 'pending' | 'error' | 'done';
 
 export type PromiseFn<R, A extends any[] = []> = (...args: A) => Promise<R>;
@@ -9,7 +11,8 @@ const callPromise = <Response, Args extends any[]>(
   promise: PromiseFn<Response, Args>,
   ...args: Args
 ) => {
-  const cached = cache.get(promise);
+  const key = args.filter((arg) => isString(arg)).join();
+  const cached = cache.get(key);
 
   if (cached) {
     return cached;
@@ -39,7 +42,7 @@ const callPromise = <Response, Args extends any[]>(
     return result;
   };
 
-  cache.set(promise, read);
+  cache.set(key, read);
 
   return read;
 };
