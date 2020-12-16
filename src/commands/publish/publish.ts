@@ -3,10 +3,10 @@ import { Command } from 'commander';
 import render from './renderer';
 
 type PublishOptions = {
-  dryRun: boolean;
+  dryRun?: boolean;
 };
 
-export const actionHandler = (input: string, options: PublishOptions) => {
+export const actionHandler = (input: string, options: PublishOptions = {}) => {
   render({
     configFile: input,
     dryRun: Boolean(options.dryRun).toString(),

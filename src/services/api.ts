@@ -1,5 +1,6 @@
 import { compile } from 'path-to-regexp';
 import fetch, { RequestInit } from 'node-fetch';
+import humps from 'lodash-humps-ts';
 import merge from 'lodash/merge';
 
 import authenticate from './auth';
@@ -25,7 +26,7 @@ export async function api<ApiResponse>(
 
     if (res.ok) {
       const json = await res.json();
-      return json;
+      return humps(json);
     } else {
       throw res.statusText;
     }

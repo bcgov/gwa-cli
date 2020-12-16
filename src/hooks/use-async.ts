@@ -1,15 +1,18 @@
+import isString from 'lodash/isString';
 import { useRef, useMemo } from 'react';
+import { uid } from 'react-uid';
 type State = 'pending' | 'error' | 'done';
 
 export type PromiseFn<R, A extends any[] = []> = (...args: A) => Promise<R>;
 
-const cache = new Map();
+export const cache = new Map();
 
 const callPromise = <Response, Args extends any[]>(
   promise: PromiseFn<Response, Args>,
   ...args: Args
 ) => {
-  const cached = cache.get(promise);
+  const key = args.filter((arg) => isString(arg)).join();
+  const cached = cache.get(key);
 
   if (cached) {
     return cached;
@@ -39,7 +42,7 @@ const callPromise = <Response, Args extends any[]>(
     return result;
   };
 
-  cache.set(promise, read);
+  cache.set(key, read);
 
   return read;
 };
@@ -54,11 +57,11 @@ const useAsync = <Response>(
     result.current = callPromise(promise, ...args);
   }, [promise, ...args]);
 
-  if (typeof result.current === 'function') {
-    return result.current();
+  if (typeof result.current !== 'function') {
+    return;
   }
 
-  return result.current;
+  return result.current();
 };
 
 export default useAsync;

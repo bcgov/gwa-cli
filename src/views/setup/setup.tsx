@@ -6,8 +6,8 @@ import TextInput from 'ink-text-input';
 import validate from 'validate.js';
 import { uid } from 'react-uid';
 
-import { convertRemote } from '../../services/kong';
-import { exportConfig } from '../../services/app';
+import { generateConfig } from '../../services/kong';
+import { saveConfig } from '../../services/app';
 import { fetchSpec } from '../../services/openapi';
 import { generatePluginTemplates } from '../../state/plugins';
 import reducer, { initialState } from './reducer';
@@ -53,12 +53,17 @@ const SetupView: React.FC<SetupViewProps> = () => {
           data.plugins.split(', '),
           `ns.${namespace}`
         );
-        const result = await convertRemote(json, namespace, plugins, {
-          routeHost: data.routeHost,
-          serviceUrl: data.serviceUrl,
+        const result = await generateConfig({
+          input: json,
+          namespace,
+          plugins,
+          options: {
+            routeHost: data.routeHost,
+            serviceUrl: data.serviceUrl,
+          },
         });
         dispatch({ type: 'spec/success', payload: result });
-        await exportConfig(result, data.outfile);
+        await saveConfig(result, data.outfile);
         dispatch({ type: 'spec/written', payload: result });
       } catch (err) {
         dispatch({ type: 'spec/failed', payload: err.message });

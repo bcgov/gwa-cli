@@ -1,9 +1,9 @@
 import isString from 'lodash/isString';
 import path from 'path';
 
-import { exportConfig, loadConfig } from '../services/app';
+import { saveConfig, loadConfig } from '../services/app';
 import { fetchSpec, importSpec } from '../services/openapi';
-import { convertRemote } from '../services/kong';
+import { generateConfig } from '../services/kong';
 
 export default async function (input: string, options: any) {
   const cwd = process.cwd();
@@ -16,15 +16,31 @@ export default async function (input: string, options: any) {
     if (options.url) {
       console.log('Fetching spec...');
       const result = await fetchSpec(options.url);
-      output = await convertRemote(result, options.team, ...plugins);
+      output = await generateConfig({
+        input: result,
+        namespace: options.team,
+        plugins,
+        options: {
+          routeHost: options.routeHost,
+          serviceUrl: options.serviceUrl,
+        },
+      });
     } else if (options.file) {
       const file = path.resolve(cwd, options.file);
       const result = await importSpec(file);
-      output = await convertRemote(result, options.team, ...plugins);
+      output = await generateConfig({
+        input: result,
+        namespace: options.team,
+        plugins,
+        options: {
+          routeHost: options.routeHost,
+          serviceUrl: options.serviceUrl,
+        },
+      });
     }
 
     if (isString(output)) {
-      await exportConfig(output, input);
+      await saveConfig(output, input);
       console.log(`[DONE]: File ${input} updated`);
     }
   } catch (err) {

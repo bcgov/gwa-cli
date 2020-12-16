@@ -1,5 +1,5 @@
+import { basename, extname } from 'path';
 import fs from 'fs';
-import { basename, extname, resolve } from 'path';
 import path from 'path';
 import YAML from 'yaml';
 

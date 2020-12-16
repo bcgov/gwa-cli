@@ -1,5 +1,9 @@
 # gwa-cli
 
+<img src="https://github.com/bcgov/gwa-cli/workflows/Build/badge.svg"></img>
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gwa-cli&metric=alert_status)](https://sonarcloud.io/dashboard?id=gwa-cli)
+[![img](https://img.shields.io/badge/Lifecycle-Experimental-339999)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
+
 > **NOTE:** This tool is going through rapid development and could change often. Check back for updates.
 
 GWA CLI is a tool for composing, validating and generating Kong Gateway configuration files from OpenAPI (aka Swagger) specs and managing Kong Plugins.
@@ -24,15 +28,17 @@ Edge releases are built from the latest commit on `dev`. You can download them f
 
 Below are a few setting values that you should have ready before publishing workspaces to help the process go quicker.
 
+For an example end-to-end workflow, visit the [GWA API USER JOURNEY](https://github.com/bcgov/gwa-api/blob/dev/USER-JOURNEY.md) and follow the steps there.
+
 ##### A Namespace
 
 A namespace represents a collections of Kong Services and Routes that are managed independently.
 
-To create a new namespace, go to the [API Services Portal](https://gwa-qwzrwc-test.pathfinder.gov.bc.ca/int).
+To create a new namespace, go to the API Services Portal (as referernced in [ USER-JOURNEY.md ](https://github.com/bcgov/gwa-api/blob/dev/USER-JOURNEY.md)).
 
 ##### Client ID & Secret
 
-While in the [API Services Portal](https://gwa-qwzrwc-test.pathfinder.gov.bc.ca/int), go to **Service Accounts** tab and click the **Create Service Account**. A new credential will be created - make a note of the `CLIENT ID` and `CLIENT SECRET`, they will only be shown once.
+See [GWA API USER JOURNEY](https://github.com/bcgov/gwa-api/blob/dev/USER-JOURNEY.md).
 
 ## Usage
 

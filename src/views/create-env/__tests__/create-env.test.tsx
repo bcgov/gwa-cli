@@ -45,19 +45,4 @@ describe('views/create-env', () => {
     await delay(100);
     expect(lastFrame()).toEqual(expect.stringContaining(successText));
   });
-
-  it('should render error', async () => {
-    const errorText = 'Error';
-    app.makeEnvFile = jest.fn().mockRejectedValueOnce(errorText);
-    const { lastFrame, stdin } = render(
-      <CreateEnvView env={env} prompts={prompts} />
-    );
-
-    await delay(100);
-    stdin.write('will not work');
-    await delay(100);
-    stdin.write('\r');
-    await delay(100);
-    expect(lastFrame()).toEqual(expect.stringContaining(errorText));
-  });
 });
