@@ -15,7 +15,6 @@ const StatusView: React.FC<StatusViewProps> = () => {
   const data = useAsync<StatusData[]>(api, '/namespaces/:namespace/services', {
     namespace,
   });
-  console.log('res', data);
 
   React.useEffect(() => {
     const downServices = data.filter((d: StatusData) => d.status === 'DOWN');

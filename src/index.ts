@@ -8,6 +8,7 @@ import run from './run';
 import acl from './commands/acl';
 import plugins from './commands/plugins';
 import create from './commands/create';
+import info from './commands/info';
 import init from './commands/init';
 import publish from './commands/publish';
 import status from './commands/status';
@@ -21,6 +22,7 @@ program.version(pkg.version);
 // Refactored commands
 program
   .addCommand(init)
+  .addCommand(info)
   .addCommand(acl)
   .addCommand(publish)
   .addCommand(create)
