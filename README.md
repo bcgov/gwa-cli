@@ -1,5 +1,9 @@
 # gwa-cli
 
+<img src="https://github.com/bcgov/gwa-cli/workflows/Build/badge.svg"></img>
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gwa-cli&metric=alert_status)](https://sonarcloud.io/dashboard?id=gwa-cli)
+
+
 > **NOTE:** This tool is going through rapid development and could change often. Check back for updates.
 
 GWA CLI is a tool for composing, validating and generating Kong Gateway configuration files from OpenAPI (aka Swagger) specs and managing Kong Plugins.
