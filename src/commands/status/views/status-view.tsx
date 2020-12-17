@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Text } from 'ink';
+import { Box, measureElement, Text, DOMElement } from 'ink';
 import { uid } from 'react-uid';
 
 import api from '../../../services/api';
@@ -11,11 +11,25 @@ import type { StatusData } from '../types';
 interface StatusViewProps {}
 
 const StatusView: React.FC<StatusViewProps> = () => {
+  const [small, setSmall] = React.useState<boolean>(false);
+  const ref = React.useRef<DOMElement>(null);
   const { namespace } = config();
   const data = useAsync<StatusData[]>(api, '/namespaces/:namespace/services', {
     namespace,
   });
 
+  // Responsive test
+  React.useEffect(() => {
+    if (ref.current) {
+      const { width } = measureElement(ref.current);
+
+      if (width < 150) {
+        setSmall(true);
+      }
+    }
+  }, [setSmall]);
+
+  // Down services handler
   React.useEffect(() => {
     const downServices = data.filter((d: StatusData) => d.status === 'DOWN');
 
@@ -25,7 +39,7 @@ const StatusView: React.FC<StatusViewProps> = () => {
   }, [data]);
 
   return (
-    <Box flexDirection="column" width="100%">
+    <Box flexDirection="column" width="100%" ref={ref}>
       <Box marginY={1}>
         <Text>{`${namespace} Status`}</Text>
       </Box>
@@ -35,7 +49,7 @@ const StatusView: React.FC<StatusViewProps> = () => {
         </Box>
       )}
       {data.map((service: StatusData) => (
-        <ServiceItem key={uid(service)} data={service} />
+        <ServiceItem key={uid(service)} data={service} sm={small} />
       ))}
     </Box>
   );

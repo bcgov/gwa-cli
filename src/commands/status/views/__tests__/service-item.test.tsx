@@ -18,41 +18,48 @@ describe('commands/status/views/service-item', () => {
       />
     );
     expect(lastFrame()).toEqual(
-      `${chalk.greenBright`▲`} ${chalk.greenBright`My Service`}        200 Response                  ${chalk.dim`api.host.xyz [https://httpbin.org]`}`
+      `${chalk.greenBright`▲`} ${chalk.greenBright`My Service`}                                   200 Response   ${chalk.dim`https://httpbin.org`}`
     );
   });
 
   it('should render an inactive service', () => {
-    const { lastFrame } = render(
+    const { lastFrame, stdout } = render(
       <ServiceItem
+        sm={false}
         data={{
-          name: 'My Service',
-          envHost: 'api.host.xyz',
-          reason: '500 Response',
-          upstream: 'https://httpbin.org',
+          name: 'apidata-abcde-searh-bc-api-service',
+          reason: '404 Response',
+          envHost: 'apidata-test-url.abc.test.apsgw.xyz',
+          upstream: 'https://updstream.url/path/dir/',
+          host: '',
           status: 'DOWN',
         }}
       />
     );
     expect(lastFrame()).toEqual(
-      `${chalk.redBright`▼`} ${chalk.redBright`My Service`}        500 Response                  ${chalk.dim`api.host.xyz [https://httpbin.org]`}`
+      `${chalk.redBright`▼`} ${chalk.redBright`apidata-abcde-searh-bc-api-service`}           404 Response   ${chalk.dim`https://updstream.url/path/dir/`}`
     );
   });
 
-  it('should just show upstream if it matches host (in prod)', () => {
+  it('it should render responsive items', () => {
     const { lastFrame } = render(
       <ServiceItem
+        sm
         data={{
-          name: 'My Service',
-          envHost: 'https://httpbin.org',
-          reason: '500 Response',
-          upstream: 'https://httpbin.org',
-          status: 'DOWN',
+          name: 'apidata-abcde-searh-bc-api-service',
+          reason: '404 Response',
+          envHost: 'apidata-test-url.abc.test.apsgw.xyz',
+          upstream: 'https://updstream.url/path/dir/',
+          host: '',
+          status: 'UP',
         }}
       />
     );
+    expect(lastFrame()).not.toEqual(
+      expect.stringContaining('https://updstream.url/path/dir/')
+    );
     expect(lastFrame()).toEqual(
-      `${chalk.redBright`▼`} ${chalk.redBright`My Service`}        500 Response                  ${chalk.dim`https://httpbin.org`}`
+      `${chalk.greenBright`▲`} ${chalk.greenBright`apidata-abcde-searh-bc-api-service`}           404 Response`
     );
   });
 });
