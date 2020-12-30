@@ -11,8 +11,8 @@ function config() {
   let apiHost: string = `https://gwa-api-gov-bc-ca.${env}.apsgw.xyz/v1`;
 
   if (env === 'prod') {
-    authorizationEndpoint = 'https://authz.apps.gov.bc.ca';
-    apiHost = 'https://gwa.api.gov.bc.ca';
+    authorizationEndpoint = 'https://authz.apps.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token';
+    apiHost = 'https://gwa.api.gov.bc.ca/v1';
   }
 
   return {
