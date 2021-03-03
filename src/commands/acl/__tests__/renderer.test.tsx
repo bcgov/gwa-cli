@@ -1,5 +1,3 @@
-import React from 'react';
-import chalk from 'chalk';
 import ink from 'ink';
 
 import renderer from '../renderer';

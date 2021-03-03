@@ -3,6 +3,7 @@ import compact from 'lodash/compact';
 import union from 'lodash/union';
 
 import render from './renderer';
+import type { AclContent } from './types';
 
 type AclOptions = {
   debug: boolean;
@@ -14,7 +15,7 @@ export const actionHandler = ({
   managers = [],
   users = [],
   debug,
-}: AclOptions) => {
+}: AclOptions): void => {
   const usersToAdd = union(users, managers).map((username: string) => ({
     username,
     roles: ['viewer'],
@@ -23,7 +24,7 @@ export const actionHandler = ({
     username,
     roles: ['admin'],
   }));
-  const data = compact([...managersToAdd, ...usersToAdd]);
+  const data: AclContent[] = compact([...managersToAdd, ...usersToAdd]);
 
   render(data, debug);
 };

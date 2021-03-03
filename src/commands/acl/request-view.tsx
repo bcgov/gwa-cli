@@ -4,16 +4,27 @@ import { Box, Text } from 'ink';
 import api from '../../services/api';
 import Success from '../../components/success';
 import useAsync from '../../hooks/use-async';
+import type { AclContent } from './types';
+
+interface AclResponse {
+  added: number;
+  missing: number;
+  removed: number;
+}
 
 interface AclRequestViewProps {
-  data: any[];
+  data: AclContent[];
 }
 
 const AclRequestView: React.FC<AclRequestViewProps> = ({ data }) => {
-  const result = useAsync(api, '/namespaces/:namespace/membership', {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+  const result = useAsync<AclResponse>(
+    api,
+    '/namespaces/:namespace/membership',
+    {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }
+  );
 
   return (
     <Box flexDirection="column">
