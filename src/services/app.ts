@@ -4,7 +4,9 @@ import path from 'path';
 import YAML from 'yaml';
 import type { InitOptions } from '../types';
 
-export async function checkVersion(pkgVersion: string): Promise<boolean> {
+export async function checkVersion(
+  pkgVersion: string
+): Promise<boolean | string> {
   try {
     const res = await fetch(
       'https://api.github.com/repos/bcgov/gwa-cli/releases/latest'
@@ -13,7 +15,7 @@ export async function checkVersion(pkgVersion: string): Promise<boolean> {
     const currentVersion = json.tag_name.replace('v', '');
 
     if (pkgVersion < currentVersion) {
-      return false;
+      return currentVersion;
     }
 
     return true;

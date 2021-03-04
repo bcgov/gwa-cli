@@ -29,12 +29,12 @@ describe('services/app', () => {
       expect(isValid).toEqual(true);
     });
 
-    it('should return false if older version', async () => {
+    it('should return correct version if older version', async () => {
       fetch.get('https://api.github.com/repos/bcgov/gwa-cli/releases/latest', {
         tag_name: 'v1.1.1',
       });
       const isValid = await app.checkVersion('1.1.0');
-      expect(isValid).toEqual(false);
+      expect(isValid).toEqual('1.1.1');
     });
 
     it('should throw an error', async () => {
