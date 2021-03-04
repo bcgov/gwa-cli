@@ -13,7 +13,8 @@ import init from './commands/init';
 import publish from './commands/publish';
 import status from './commands/status';
 import update from './commands/update';
-import validate from './commands/validate';
+// import validate from './commands/validate';
+import { checkVersion } from './services/app';
 
 const pkg = require('../package.json');
 
@@ -41,18 +42,42 @@ program
   .option('--debug')
   .action((input, options) => run(update, input, options));
 
-program
-  .command('validate <input>')
-  .description('Validate a config file')
-  .action((input) => run(validate, input));
+// program
+//   .command('validate <input>')
+//   .description('Validate a config file')
+//   .action((input) => run(validate, input));
 
 program
   .command('plugins [input]')
   .description('List all available plugins')
   .action((input) => run(plugins, input));
 
+const main = async () => {
+  try {
+    const isValid = await checkVersion(pkg.version);
+    if (isValid === true) {
+      program.parse(process.argv);
+    } else {
+      process.exitCode = 1;
+      console.log(
+        chalk.bold
+          .cyanBright`${chalk.yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
+      );
+      console.log(`Please upgrade to ${chalk.bold`v${isValid}`}`);
+      console.log('https://github.com/bcgov/gwa-cli/releases');
+    }
+  } catch (err) {
+    throw err;
+  }
+};
 try {
-  program.parse(process.argv);
+  main().catch(() => {
+    process.exitCode = 1;
+    console.log(
+      chalk.bold.red`x Error`,
+      'Unable to verify you have the latest version'
+    );
+  });
 } catch (err) {
   process.exitCode = 1;
   console.log(chalk.bold.red`x Error`, err);

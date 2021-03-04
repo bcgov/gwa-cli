@@ -1,7 +1,9 @@
 import fs from 'fs';
+import fetch from 'node-fetch';
 
 import * as app from '../app';
 
+jest.mock('node-fetch', () => require('fetch-mock-jest').sandbox());
 jest.mock('fs', () => ({
   existsSync: jest.fn(),
   promises: {
@@ -12,8 +14,36 @@ jest.mock('fs', () => ({
 
 describe('services/app', () => {
   afterEach(() => {
+    fetch.mockClear();
+    fetch.mockReset();
     fs.existsSync.mockReset();
     fs.promises.writeFile.mockReset();
+  });
+
+  describe('#checkVersion', () => {
+    it('should return true if latest release from GH', async () => {
+      fetch.get('https://api.github.com/repos/bcgov/gwa-cli/releases/latest', {
+        tag_name: 'v1.1.1',
+      });
+      const isValid = await app.checkVersion('1.1.1');
+      expect(isValid).toEqual(true);
+    });
+
+    it('should return correct version if older version', async () => {
+      fetch.get('https://api.github.com/repos/bcgov/gwa-cli/releases/latest', {
+        tag_name: 'v1.1.1',
+      });
+      const isValid = await app.checkVersion('1.1.0');
+      expect(isValid).toEqual('1.1.1');
+    });
+
+    it('should throw an error', async () => {
+      fetch.get(
+        'https://api.github.com/repos/bcgov/gwa-cli/releases/latest',
+        500
+      );
+      expect(async () => await app.checkVersion('1.1.0')).rejects.toThrow();
+    });
   });
 
   describe('#checkForEnvFile', () => {
