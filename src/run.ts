@@ -1,5 +1,3 @@
-import path from 'path';
-
 import { initAppState } from './state/app';
 
 const run = async (fn: any, input: string | null, options?: any) => {

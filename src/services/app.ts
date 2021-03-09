@@ -1,7 +1,28 @@
+import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
 import type { InitOptions } from '../types';
+
+export async function checkVersion(
+  pkgVersion: string
+): Promise<boolean | string> {
+  try {
+    const res = await fetch(
+      'https://api.github.com/repos/bcgov/gwa-cli/releases/latest'
+    );
+    const json = await res.json();
+    const currentVersion = json.tag_name.replace('v', '');
+
+    if (pkgVersion < currentVersion) {
+      return currentVersion;
+    }
+
+    return true;
+  } catch (err) {
+    throw new Error(err);
+  }
+}
 
 export function checkForEnvFile() {
   return fs.existsSync('.env');

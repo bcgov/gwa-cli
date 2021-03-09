@@ -1,7 +1,7 @@
 import * as React from 'react';
 import chalk from 'chalk';
 import delay from 'delay';
-import { Text } from 'ink';
+import { Box, Text } from 'ink';
 import { render } from 'ink-testing-library';
 
 import { cache } from '../../../../hooks/use-async';
@@ -11,7 +11,7 @@ import StatusView from '../status-view';
 jest.mock('../../../../services/api');
 const CACHED_ENV = process.env;
 
-describe('commands/status/views/service-item', () => {
+describe('commands/status/views/status-view', () => {
   beforeEach(() => {
     process.env = {
       ...CACHED_ENV,
@@ -64,7 +64,7 @@ You have no services yet.`);
     expect(lastFrame()).toEqual(`
 sampler Status
 
-${chalk.greenBright`▲`} ${chalk.greenBright`My Service`}        200 Response                  ${chalk.dim`api.host.xyz [https://httpbin.org]`}`);
+${chalk.greenBright`▲`} ${chalk.greenBright`My Service`}                                   200 Response`);
   });
 
   it('should exitCode 1 if there is a down service', async () => {

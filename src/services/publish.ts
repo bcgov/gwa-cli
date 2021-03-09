@@ -2,11 +2,12 @@ import { compile } from 'path-to-regexp';
 import fs from 'fs';
 import request from 'request';
 import { extname, resolve } from 'path';
+import YAML from 'yaml';
 
 import authenticate from './auth';
 import config from '../config';
 
-const { apiHost, namespace } = config();
+const { namespace } = config();
 const TEMP_FILE: string = '.temp.yaml';
 const NAMESPACE_ERROR: string =
   'You do not have a namespace set. Check your .env file in this directory or run gwa init';
@@ -27,6 +28,13 @@ export async function mergeConfigs() {
           resolve(current, dirent.name),
           'utf8'
         );
+
+        try {
+          YAML.parse(file);
+        } catch (err) {
+          throw new Error(err);
+        }
+
         files.push(file);
       }
     }
@@ -93,9 +101,11 @@ async function upload(
       return reject(NAMESPACE_ERROR);
     }
 
-    request(options, (error: Error, response: any, body: any) => {
+    request(options, (error: any, response: any, body: any) => {
       if (error) {
-        return reject(error);
+        const errMessage =
+          error.code === 'ETIMEDOUT' ? 'Publish request timed out' : error;
+        return reject(errMessage);
       }
 
       if (fs.existsSync(TEMP_FILE)) {
