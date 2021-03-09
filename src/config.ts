@@ -7,8 +7,8 @@ function config() {
     'https://auth-qwzrwc-test.pathfinder.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token';
   const legacyApiHost: string =
     'https://gwa-api-qwzrwc-test.pathfinder.gov.bc.ca/v1';
-  let authorizationEndpoint: string = `https://authz-apps-gov-bc-ca.${env}.apsgw.xyz/auth/realms/aps/protocol/openid-connect/token`;
-  let apiHost: string = `https://gwa-api-gov-bc-ca.${env}.apsgw.xyz/v1`;
+  let authorizationEndpoint: string = `https://authz-apps-gov-bc-ca.${env}.api.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token`;
+  let apiHost: string = `https://gwa-api-gov-bc-ca.${env}.api.gov.bc.ca/v1`;
 
   if (env === 'prod') {
     authorizationEndpoint = 'https://authz.apps.gov.bc.ca';
