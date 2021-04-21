@@ -42,13 +42,15 @@ export const parseOptions = (
     : options.plugins;
   const plugins = generatePluginTemplates(requestedPlugins, options.namespace);
 
-  if (requestedPlugins.length !== plugins.length) {
-    const missingPlugins = difference(requestedPlugins, plugins);
-    console.warn(
-      `The following plugins are named incorrectly or are not supported: ${missingPlugins.join(
-        ', '
-      )}`
-    );
+  if (plugins) {
+    if (requestedPlugins.length !== plugins.length) {
+      const missingPlugins = difference(requestedPlugins, plugins);
+      console.warn(
+        `The following plugins are named incorrectly or are not supported: ${missingPlugins.join(
+          ', '
+        )}`
+      );
+    }
   }
 
   return {
