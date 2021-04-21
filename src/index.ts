@@ -13,7 +13,6 @@ import init from './commands/init';
 import publish from './commands/publish';
 import status from './commands/status';
 import update from './commands/update';
-// import validate from './commands/validate';
 import { checkVersion } from './services/app';
 
 const pkg = require('../package.json');
@@ -42,10 +41,10 @@ program
   .option('--debug')
   .action((input, options) => run(update, input, options));
 
-// program
-//   .command('validate <input>')
-//   .description('Validate a config file')
-//   .action((input) => run(validate, input));
+program.addHelpCommand(
+  'validate <input>',
+  '[DEPRECIATED] - publish-gateway will validate'
+);
 
 program
   .command('plugins [input]')
