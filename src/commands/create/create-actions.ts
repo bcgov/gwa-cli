@@ -1,4 +1,5 @@
 import compact from 'lodash/compact';
+import difference from 'lodash/difference';
 import flow from 'lodash/flow';
 import isString from 'lodash/isString';
 import path from 'path';
@@ -40,6 +41,17 @@ export const parseOptions = (
     ? compact(options.plugins.split(/,|\s/g))
     : options.plugins;
   const plugins = generatePluginTemplates(requestedPlugins, options.namespace);
+
+  if (plugins) {
+    if (requestedPlugins.length !== plugins.length) {
+      const missingPlugins = difference(requestedPlugins, plugins);
+      console.warn(
+        `The following plugins are named incorrectly or are not supported: ${missingPlugins.join(
+          ', '
+        )}`
+      );
+    }
+  }
 
   return {
     ...options,

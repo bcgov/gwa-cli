@@ -78,12 +78,6 @@ Note you can see the list of available plugins and their description by running 
 
 The result of this command will be a `sampler-service.yaml` file in the current directory. The plugins property in the service config will have the fields needed to configure the service. You can fill these in using you IDE of choice.
 
-After filling out the plugins settings, check that your entries are valid by running
-
-```shell
-$ gwa validate sampler-service.yaml
-```
-
 If the config file is valid you're ready to publish. Run
 
 ```shell
@@ -107,7 +101,7 @@ Lastly, if your API routes change after publishing your API gateway config, you 
 $ gwa update sampler-service.yaml -u https://website/swagger.json
 ```
 
-You can re-validate and publish your gateway with the updated routes.
+You can publish your gateway with the updated routes.
 
 ## Commands
 
@@ -170,10 +164,6 @@ $ gwa new -o sample.yaml \
   --service-url https://httpbin.org \
   https://bcgov.github.io/gwa-api/openapi/simple.yaml
 ```
-
-### `gwa validate <input file>`
-
-Validate a configuration file
 
 ### `gwa update <input file>`
 
