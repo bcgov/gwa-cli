@@ -2,6 +2,7 @@
 import dotenv from 'dotenv';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import isString from 'lodash/isString';
 dotenv.config();
 
 import run from './run';
@@ -54,7 +55,7 @@ program
 const main = async () => {
   try {
     const isValid = await checkVersion(pkg.version);
-    if (!isValid === true) {
+    if (isString(isValid)) {
       console.log(
         chalk.bold
           .cyanBright`${chalk.yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
@@ -67,13 +68,11 @@ const main = async () => {
     throw err;
   }
 };
+
 try {
-  main().catch(() => {
+  main().catch((err) => {
     process.exitCode = 1;
-    console.log(
-      chalk.bold.red`x Error`,
-      'Unable to verify you have the latest version'
-    );
+    console.log(chalk.bold.red`x Error`, err);
   });
 } catch (err) {
   process.exitCode = 1;

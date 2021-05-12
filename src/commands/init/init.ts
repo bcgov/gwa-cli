@@ -12,7 +12,7 @@ export const actionHandler = (options: InitOptions) => {
     'namespace',
     'clientId',
     'clientSecret',
-    'ver',
+    'apiVersion',
   ]);
   const envArgs = pick(options, ['dev', 'test', 'prod']);
   const env = Object.keys(envArgs)[0] ?? 'test';
@@ -34,11 +34,17 @@ export const actionHandler = (options: InitOptions) => {
       },
       (err) => {
         console.error(chalk.red.bold('x Error'), 'Unable to create .env file');
+        if (err) {
+          console.error('Reason:');
+          console.error(err.message);
+        }
         process.exitCode = 1;
 
         if (options.debug) {
           console.error(err);
         }
+
+        process.exit();
       }
     );
   }
@@ -58,7 +64,7 @@ init
   .option('--client-secret <clientSecret>', 'The Service Account Client Secret')
   .option('--debug', 'Show stack traces on error. Useful for debugging.')
   .option(
-    '-v, --ver <apiVersion>',
+    '--apiVersion <apiVersion>',
     'Show stack traces on error. Useful for debugging.'
   )
   .action(actionHandler);

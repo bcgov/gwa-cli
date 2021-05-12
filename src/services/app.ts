@@ -1,6 +1,8 @@
 import fetch from 'node-fetch';
+import flatten from 'lodash/flatten';
 import fs from 'fs';
 import path from 'path';
+import validate from 'validate.js';
 import YAML from 'yaml';
 import type { InitOptions } from '../types';
 
@@ -29,7 +31,39 @@ export function checkForEnvFile() {
 }
 
 export async function makeEnvFile(options: InitOptions): Promise<string> {
+  const rules = {
+    namespace: {
+      presence: { allowEmpty: false },
+      length: { minimum: 5, maximum: 15 },
+      format: {
+        pattern: '^[a-z][a-z0-9-]{4,14}$',
+        flags: 'gi',
+        message: 'can only contain a-z, 0-9 and dashes',
+      },
+    },
+    clientId: {
+      presence: { allowEmpty: false },
+    },
+    clientSecret: {
+      presence: { allowEmpty: false },
+    },
+    apiVersion: {
+      format: {
+        pattern: '[1-2]+',
+        message: 'only versions 1 and 2 are available',
+      },
+    },
+  };
+
   try {
+    const errors = validate(options, rules);
+
+    if (errors) {
+      const errorMessage = flatten(Object.values(errors)).join('\n');
+
+      throw errorMessage;
+    }
+
     const data = `GWA_NAMESPACE=${options.namespace}
 CLIENT_ID=${options.clientId}
 CLIENT_SECRET=${options.clientSecret}

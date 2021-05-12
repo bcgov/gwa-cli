@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { Command } from 'commander';
 import compact from 'lodash/compact';
 import config from '../../config';
@@ -18,9 +19,9 @@ export const actionHandler = ({
   users = [],
   debug,
 }: AclOptions) => {
-  if (apiVersion === '1') {
+  if (apiVersion === '2') {
     process.exitCode = 1;
-    console.log('ACL only supported in API v1');
+    console.error(chalk.red.bold('x Error'), 'ACL only supported in API v1');
     process.exit();
   }
   const usersToAdd = union(users, managers).map((username: string) => ({

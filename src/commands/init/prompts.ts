@@ -32,7 +32,12 @@ const prompts: Prompt[] = [
   {
     label: 'API Version',
     key: 'apiVersion',
-    constraint: {},
+    constraint: {
+      format: {
+        pattern: '[1-2]+',
+        message: 'only versions 1 and 2 are available',
+      },
+    },
   },
 ];
 
