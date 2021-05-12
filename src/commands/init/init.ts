@@ -8,7 +8,12 @@ import render from './renderer';
 import type { InitOptions } from '../../types';
 
 export const actionHandler = (options: InitOptions) => {
-  const initArgs = pick(options, ['namespace', 'clientId', 'clientSecret']);
+  const initArgs = pick(options, [
+    'namespace',
+    'clientId',
+    'clientSecret',
+    'ver',
+  ]);
   const envArgs = pick(options, ['dev', 'test', 'prod']);
   const env = Object.keys(envArgs)[0] ?? 'test';
 
@@ -52,6 +57,10 @@ init
   .option('--client-id <clientId>', 'The Service Account Client ID')
   .option('--client-secret <clientSecret>', 'The Service Account Client Secret')
   .option('--debug', 'Show stack traces on error. Useful for debugging.')
+  .option(
+    '-v, --ver <apiVersion>',
+    'Show stack traces on error. Useful for debugging.'
+  )
   .action(actionHandler);
 
 export default init;

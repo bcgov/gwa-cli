@@ -34,6 +34,7 @@ export async function makeEnvFile(options: InitOptions): Promise<string> {
 CLIENT_ID=${options.clientId}
 CLIENT_SECRET=${options.clientSecret}
 GWA_ENV=${options.env}
+API_VERSION=${options.apiVersion ?? '2'}
 `;
     await fs.promises.writeFile('.env', data);
     return '.env file successfully generated';

@@ -54,10 +54,7 @@ program
 const main = async () => {
   try {
     const isValid = await checkVersion(pkg.version);
-    if (isValid === true) {
-      program.parse(process.argv);
-    } else {
-      process.exitCode = 1;
+    if (!isValid === true) {
       console.log(
         chalk.bold
           .cyanBright`${chalk.yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
@@ -65,6 +62,7 @@ const main = async () => {
       console.log(`Please upgrade to ${chalk.bold`v${isValid}`}`);
       console.log('https://github.com/bcgov/gwa-cli/releases');
     }
+    program.parse(process.argv);
   } catch (err) {
     throw err;
   }
