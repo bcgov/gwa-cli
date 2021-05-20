@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import fetch from 'node-fetch';
 import flatten from 'lodash/flatten';
 import fs from 'fs';
@@ -28,6 +29,20 @@ export async function checkVersion(
 
 export function checkForEnvFile() {
   return fs.existsSync('.env');
+}
+
+export function checkForApiVersion() {
+  if (checkForEnvFile() && !process.env.API_VERSION) {
+    console.log('');
+    console.log(
+      chalk.cyanBright`${chalk.bold
+        .yellow`[ Warning ]`} Your ${chalk.underline`API_VERSION`} has not be set.`
+    );
+    console.log(
+      'All requests will default to v2. ACL commands are not available.'
+    );
+    console.log('');
+  }
 }
 
 export async function makeEnvFile(options: InitOptions): Promise<string> {

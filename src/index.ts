@@ -14,7 +14,7 @@ import init from './commands/init';
 import publish from './commands/publish';
 import status from './commands/status';
 import update from './commands/update';
-import { checkVersion } from './services/app';
+import { checkVersion, checkForApiVersion } from './services/app';
 
 const pkg = require('../package.json');
 
@@ -57,12 +57,13 @@ const main = async () => {
     const isValid = await checkVersion(pkg.version);
     if (isString(isValid)) {
       console.log(
-        chalk.bold
-          .cyanBright`${chalk.yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
+        chalk.cyanBright`${chalk.bold
+          .yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
       );
       console.log(`Please upgrade to ${chalk.bold`v${isValid}`}`);
       console.log('https://github.com/bcgov/gwa-cli/releases');
     }
+    checkForApiVersion();
     program.parse(process.argv);
   } catch (err) {
     throw err;

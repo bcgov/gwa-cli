@@ -64,7 +64,7 @@ init
   .option('--client-secret <clientSecret>', 'The Service Account Client Secret')
   .option('--debug', 'Show stack traces on error. Useful for debugging.')
   .option(
-    '--apiVersion <apiVersion>',
+    '--api-version <apiVersion>',
     'Show stack traces on error. Useful for debugging.'
   )
   .action(actionHandler);
