@@ -18,8 +18,9 @@ describe('config', () => {
       expect.objectContaining({
         env: 'dev',
         authorizationEndpoint:
-          'https://authz-apps-gov-bc-ca.dev.apsgw.xyz/auth/realms/aps/protocol/openid-connect/token',
-        apiHost: 'https://gwa-api-gov-bc-ca.dev.apsgw.xyz/v1',
+          'https://authz-apps-gov-bc-ca.dev.api.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token',
+        apiHost: 'https://gwa-api-gov-bc-ca.dev.api.gov.bc.ca/v2',
+        apiVersion: '2',
       })
     );
   });
@@ -30,8 +31,9 @@ describe('config', () => {
       expect.objectContaining({
         env: 'test',
         authorizationEndpoint:
-          'https://authz-apps-gov-bc-ca.test.apsgw.xyz/auth/realms/aps/protocol/openid-connect/token',
-        apiHost: 'https://gwa-api-gov-bc-ca.test.apsgw.xyz/v1',
+          'https://authz-apps-gov-bc-ca.test.api.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token',
+        apiHost: 'https://gwa-api-gov-bc-ca.test.api.gov.bc.ca/v2',
+        apiVersion: '2',
       })
     );
   });
@@ -41,8 +43,10 @@ describe('config', () => {
     expect(config()).toEqual(
       expect.objectContaining({
         env: 'prod',
-        authorizationEndpoint: 'https://authz.apps.gov.bc.ca',
-        apiHost: 'https://gwa.api.gov.bc.ca',
+        authorizationEndpoint:
+          'https://authz.apps.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token',
+        apiHost: 'https://gwa.api.gov.bc.ca/v2',
+        apiVersion: '2',
       })
     );
   });

@@ -29,6 +29,16 @@ const prompts: Prompt[] = [
       presence: { allowEmpty: false },
     },
   },
+  {
+    label: 'API Version',
+    key: 'apiVersion',
+    constraint: {
+      format: {
+        pattern: '[1-2]+',
+        message: 'only versions 1 and 2 are available',
+      },
+    },
+  },
 ];
 
 export default prompts;
