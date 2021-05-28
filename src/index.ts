@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import isString from 'lodash/isString';
+import last from 'lodash/last';
 dotenv.config();
 
 import run from './run';
@@ -54,16 +55,19 @@ program
 
 const main = async () => {
   try {
-    const isValid = await checkVersion(pkg.version);
-    if (isString(isValid)) {
-      console.log(
-        chalk.cyanBright`${chalk.bold
-          .yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
-      );
-      console.log(`Please upgrade to ${chalk.bold`v${isValid}`}`);
-      console.log('https://github.com/bcgov/gwa-cli/releases');
+    // Don't run verification on certain commands that have simple outputs
+    if (!process.argv.some((arg) => /(--version|info)/.test(arg))) {
+      const isValid = await checkVersion(pkg.version);
+      if (isString(isValid)) {
+        console.log(
+          chalk.cyanBright`${chalk.bold
+            .yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
+        );
+        console.log(`Please upgrade to ${chalk.bold`v${isValid}`}`);
+        console.log('https://github.com/bcgov/gwa-cli/releases');
+      }
+      checkForApiVersion();
     }
-    checkForApiVersion();
     program.parse(process.argv);
   } catch (err) {
     throw err;

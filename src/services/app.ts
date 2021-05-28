@@ -23,7 +23,7 @@ export async function checkVersion(
 
     return true;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
