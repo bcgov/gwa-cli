@@ -1,6 +1,9 @@
+import chalk from 'chalk';
 import fetch from 'node-fetch';
+import flatten from 'lodash/flatten';
 import fs from 'fs';
 import path from 'path';
+import validate from 'validate.js';
 import YAML from 'yaml';
 import type { InitOptions } from '../types';
 
@@ -20,7 +23,7 @@ export async function checkVersion(
 
     return true;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -28,12 +31,59 @@ export function checkForEnvFile() {
   return fs.existsSync('.env');
 }
 
+export function checkForApiVersion() {
+  if (checkForEnvFile() && !process.env.API_VERSION) {
+    console.log('');
+    console.log(
+      chalk.cyanBright`${chalk.bold
+        .yellow`[ Warning ]`} Your ${chalk.underline`API_VERSION`} has not be set.`
+    );
+    console.log(
+      'All requests will default to v2. ACL commands are not available.'
+    );
+    console.log('');
+  }
+}
+
 export async function makeEnvFile(options: InitOptions): Promise<string> {
+  const rules = {
+    namespace: {
+      presence: { allowEmpty: false },
+      length: { minimum: 5, maximum: 15 },
+      format: {
+        pattern: '^[a-z][a-z0-9-]{4,14}$',
+        flags: 'gi',
+        message: 'can only contain a-z, 0-9 and dashes',
+      },
+    },
+    clientId: {
+      presence: { allowEmpty: false },
+    },
+    clientSecret: {
+      presence: { allowEmpty: false },
+    },
+    apiVersion: {
+      format: {
+        pattern: '[1-2]+',
+        message: 'only versions 1 and 2 are available',
+      },
+    },
+  };
+
   try {
+    const errors = validate(options, rules);
+
+    if (errors) {
+      const errorMessage = flatten(Object.values(errors)).join('\n');
+
+      throw errorMessage;
+    }
+
     const data = `GWA_NAMESPACE=${options.namespace}
 CLIENT_ID=${options.clientId}
 CLIENT_SECRET=${options.clientSecret}
 GWA_ENV=${options.env}
+API_VERSION=${options.apiVersion ?? '2'}
 `;
     await fs.promises.writeFile('.env', data);
     return '.env file successfully generated';

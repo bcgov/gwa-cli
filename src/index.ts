@@ -2,6 +2,8 @@
 import dotenv from 'dotenv';
 import chalk from 'chalk';
 import { Command } from 'commander';
+import isString from 'lodash/isString';
+import last from 'lodash/last';
 dotenv.config();
 
 import run from './run';
@@ -13,7 +15,7 @@ import init from './commands/init';
 import publish from './commands/publish';
 import status from './commands/status';
 import update from './commands/update';
-import { checkVersion } from './services/app';
+import { checkVersion, checkForApiVersion } from './services/app';
 
 const pkg = require('../package.json');
 
@@ -53,29 +55,29 @@ program
 
 const main = async () => {
   try {
-    const isValid = await checkVersion(pkg.version);
-    if (isValid === true) {
-      program.parse(process.argv);
-    } else {
-      process.exitCode = 1;
-      console.log(
-        chalk.bold
-          .cyanBright`${chalk.yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
-      );
-      console.log(`Please upgrade to ${chalk.bold`v${isValid}`}`);
-      console.log('https://github.com/bcgov/gwa-cli/releases');
+    // Don't run verification on certain commands that have simple outputs
+    if (!process.argv.some((arg) => /(--version|info)/.test(arg))) {
+      const isValid = await checkVersion(pkg.version);
+      if (isString(isValid)) {
+        console.log(
+          chalk.cyanBright`${chalk.bold
+            .yellow`[ Warning ]`} Your installed version of APS CLI is out of date.`
+        );
+        console.log(`Please upgrade to ${chalk.bold`v${isValid}`}`);
+        console.log('https://github.com/bcgov/gwa-cli/releases');
+      }
+      checkForApiVersion();
     }
+    program.parse(process.argv);
   } catch (err) {
     throw err;
   }
 };
+
 try {
-  main().catch(() => {
+  main().catch((err) => {
     process.exitCode = 1;
-    console.log(
-      chalk.bold.red`x Error`,
-      'Unable to verify you have the latest version'
-    );
+    console.log(chalk.bold.red`x Error`, err);
   });
 } catch (err) {
   process.exitCode = 1;
