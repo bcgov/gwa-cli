@@ -1,136 +1,136 @@
 {
-	"name": "@bcgov/gwa-cli",
-	"version": "1.2.0",
-	"license": "MIT",
-	"bin": {
-		"gwa": "./dist/index.js"
-	},
-	"engines": {
-		"node": ">=10"
-	},
-	"scripts": {
-		"build": "tsc",
-		"start": "tsc -w",
-		"test": "jest --coverage",
-		"test:watch": "jest --watch --coverage",
-		"compile": "ncc build dist/index.js -o gwa --license licenses.txt",
-		"bundle": "pkg package.json --out-path ./sbin --targets node14-macos-x64,node14-linux-x64,node14-alpine-x64,node14-win-x64",
-		"update:major": "npm --no-git-tag-version version major",
-		"update:minor": "npm --no-git-tag-version version minor",
-		"update:patch": "npm --no-git-tag-version version patch"
-	},
-	"files": [
-		"dist/**/*",
-		"bin/**/*",
-		"files/**/*"
-	],
-	"dependencies": {
-		"@postman/form-data": "^3.1.1",
-		"axios": "^0.20.0",
-		"commander": "^6.1.0",
-		"deepmerge": "^4.2.2",
-		"dotenv": "^8.2.0",
-		"history": "^4.0.0",
-		"immer": "^7.0.9",
-		"import-jsx": "^4.0.0",
-		"ink": "^3.0.6",
-		"ink-big-text": "^1.2.0",
-		"ink-color-pipe": "^1.0.0",
-		"ink-confirm-input": "^2.0.0",
-		"ink-multi-select": "^1.1.2",
-		"ink-select-input": "^4.0.0",
-		"ink-spinner": "^4.0.0",
-		"ink-tab": "^4.0.0",
-		"ink-text-input": "^4.0.1",
-		"joi": "^17.2.1",
-		"lodash": "^4.17.20",
-		"lodash-humps-ts": "0.0.6",
-		"meow": "^7.0.1",
-		"node-fetch": "^2.6.1",
-		"openapi-2-kong": "^2.2.24",
-		"path-to-regexp": "^6.2.0",
-		"react": "^16.13.1",
-		"react-error-boundary": "^3.0.2",
-		"react-ridge-state": "^4.1.6",
-		"react-router": "^5.2.0",
-		"react-uid": "^2.3.0",
-		"request": "^2.88.2",
-		"valid-url": "^1.0.9",
-		"validate.js": "^0.13.1",
-		"yaml": "^1.10.0",
-		"zustand": "^3.1.2"
-	},
-	"devDependencies": {
-		"@apidevtools/swagger-parser": "^10.0.1",
-		"@ava/babel": "^1.0.1",
-		"@babel/preset-env": "^7.12.1",
-		"@babel/preset-react": "^7.10.4",
-		"@babel/preset-typescript": "^7.12.1",
-		"@babel/register": "^7.10.5",
-		"@types/dotenv": "^8.2.0",
-		"@types/history": "^4.7.7",
-		"@types/jest": "^26.0.15",
-		"@types/lodash-es": "^4.17.3",
-		"@types/minimist": "^1.2.0",
-		"@types/node-fetch": "^2.5.7",
-		"@types/react": "^16.9.46",
-		"@types/react-router": "^5.1.8",
-		"@types/request": "^2.48.5",
-		"@types/valid-url": "^1.0.3",
-		"@types/validate.js": "^0.11.0",
-		"@typescript-eslint/eslint-plugin": "^4.0.1",
-		"@typescript-eslint/parser": "^4.0.1",
-		"@vercel/ncc": "^0.25.1",
-		"chalk": "^4.1.0",
-		"delay": "^4.4.0",
-		"eslint": "^7.7.0",
-		"eslint-config-prettier": "^6.13.0",
-		"eslint-plugin-react": "^7.20.5",
-		"eslint-plugin-react-hooks": "^4.0.8",
-		"fetch-mock-jest": "^1.3.0",
-		"ink-testing-library": "^2.0.1",
-		"jest": "^26.6.0",
-		"mock-fs": "^4.13.0",
-		"pkg": "^4.4.9",
-		"prettier": "^2.0.5",
-		"typescript": "^3.9.7"
-	},
-	"babel": {
-		"presets": [
-			[
-				"@babel/preset-env",
-				{
-					"targets": {
-						"node": "current"
-					}
-				}
-			],
-			"@babel/preset-react",
-			"@babel/preset-typescript"
-		]
-	},
-	"jest": {
-		"verbose": true,
-		"testMatch": [
-			"**/?(*.)+(test.{ts,tsx})"
-		],
-		"collectCoverageFrom": [
-			"src/**/*.{ts,tsx}"
-		],
-		"coveragePathIgnorePatterns": [
-			".*/__mocks__/.*",
-			".*/@types/.*"
-		],
-		"coverageDirectory": "__coverage__",
-		"coverageReporters": [
-			"lcov",
-			"text-summary"
-		]
-	},
-	"publishConfig": {
-		"registry": "https://npm.pkg.github.com/"
-	},
-	"pkg": {
-		"assets": "files/**/*"
-	}
+  "name": "@bcgov/gwa-cli",
+  "version": "1.2.1",
+  "license": "MIT",
+  "bin": {
+    "gwa": "./dist/index.js"
+  },
+  "engines": {
+    "node": ">=10"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc -w",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch --coverage",
+    "compile": "ncc build dist/index.js -o gwa --license licenses.txt",
+    "bundle": "pkg package.json --out-path ./sbin --targets node14-macos-x64,node14-linux-x64,node14-alpine-x64,node14-win-x64",
+    "update:major": "npm --no-git-tag-version version major",
+    "update:minor": "npm --no-git-tag-version version minor",
+    "update:patch": "npm --no-git-tag-version version patch"
+  },
+  "files": [
+    "dist/**/*",
+    "bin/**/*",
+    "files/**/*"
+  ],
+  "dependencies": {
+    "@postman/form-data": "^3.1.1",
+    "axios": "^0.20.0",
+    "commander": "^6.1.0",
+    "deepmerge": "^4.2.2",
+    "dotenv": "^8.2.0",
+    "history": "^4.0.0",
+    "immer": "^7.0.9",
+    "import-jsx": "^4.0.0",
+    "ink": "^3.0.6",
+    "ink-big-text": "^1.2.0",
+    "ink-color-pipe": "^1.0.0",
+    "ink-confirm-input": "^2.0.0",
+    "ink-multi-select": "^1.1.2",
+    "ink-select-input": "^4.0.0",
+    "ink-spinner": "^4.0.0",
+    "ink-tab": "^4.0.0",
+    "ink-text-input": "^4.0.1",
+    "joi": "^17.2.1",
+    "lodash": "^4.17.20",
+    "lodash-humps-ts": "0.0.6",
+    "meow": "^7.0.1",
+    "node-fetch": "^2.6.1",
+    "openapi-2-kong": "^2.2.24",
+    "path-to-regexp": "^6.2.0",
+    "react": "^16.13.1",
+    "react-error-boundary": "^3.0.2",
+    "react-ridge-state": "^4.1.6",
+    "react-router": "^5.2.0",
+    "react-uid": "^2.3.0",
+    "request": "^2.88.2",
+    "valid-url": "^1.0.9",
+    "validate.js": "^0.13.1",
+    "yaml": "^1.10.0",
+    "zustand": "^3.1.2"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.0.1",
+    "@ava/babel": "^1.0.1",
+    "@babel/preset-env": "^7.12.1",
+    "@babel/preset-react": "^7.10.4",
+    "@babel/preset-typescript": "^7.12.1",
+    "@babel/register": "^7.10.5",
+    "@types/dotenv": "^8.2.0",
+    "@types/history": "^4.7.7",
+    "@types/jest": "^26.0.15",
+    "@types/lodash-es": "^4.17.3",
+    "@types/minimist": "^1.2.0",
+    "@types/node-fetch": "^2.5.7",
+    "@types/react": "^16.9.46",
+    "@types/react-router": "^5.1.8",
+    "@types/request": "^2.48.5",
+    "@types/valid-url": "^1.0.3",
+    "@types/validate.js": "^0.11.0",
+    "@typescript-eslint/eslint-plugin": "^4.0.1",
+    "@typescript-eslint/parser": "^4.0.1",
+    "@vercel/ncc": "^0.25.1",
+    "chalk": "^4.1.0",
+    "delay": "^4.4.0",
+    "eslint": "^7.7.0",
+    "eslint-config-prettier": "^6.13.0",
+    "eslint-plugin-react": "^7.20.5",
+    "eslint-plugin-react-hooks": "^4.0.8",
+    "fetch-mock-jest": "^1.3.0",
+    "ink-testing-library": "^2.0.1",
+    "jest": "^26.6.0",
+    "mock-fs": "^4.13.0",
+    "pkg": "^4.4.9",
+    "prettier": "^2.0.5",
+    "typescript": "^3.9.7"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ],
+      "@babel/preset-react",
+      "@babel/preset-typescript"
+    ]
+  },
+  "jest": {
+    "verbose": true,
+    "testMatch": [
+      "**/?(*.)+(test.{ts,tsx})"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}"
+    ],
+    "coveragePathIgnorePatterns": [
+      ".*/__mocks__/.*",
+      ".*/@types/.*"
+    ],
+    "coverageDirectory": "__coverage__",
+    "coverageReporters": [
+      "lcov",
+      "text-summary"
+    ]
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "pkg": {
+    "assets": "files/**/*"
+  }
 }

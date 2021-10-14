@@ -35,6 +35,7 @@ export interface InitOptions {
   namespace: string;
   clientId: string;
   clientSecret: string;
+  dataCenter: string;
   env: string;
   dev: boolean;
   test: boolean;
