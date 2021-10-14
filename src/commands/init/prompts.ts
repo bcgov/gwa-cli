@@ -39,6 +39,13 @@ const prompts: Prompt[] = [
       },
     },
   },
+  {
+    label: 'Data Center (optional)',
+    key: 'dataCenter',
+    constraint: {
+      presence: { allowEmpty: true },
+    },
+  },
 ];
 
 export default prompts;

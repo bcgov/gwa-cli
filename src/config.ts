@@ -1,6 +1,7 @@
 function config() {
   const namespace: string = process.env.GWA_NAMESPACE || '';
   const env: string = process.env.GWA_ENV || '';
+  const dataCenter: string = process.env.DATA_CENTER || '';
   const clientId: string = process.env.CLIENT_ID || '';
   const clientSecret: string = process.env.CLIENT_SECRET || '';
   const apiVersion: string = process.env.API_VERSION || '2';
@@ -14,6 +15,11 @@ function config() {
     authorizationEndpoint =
       'https://authz.apps.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token';
     apiHost = `https://gwa.api.gov.bc.ca/v${apiVersion}`;
+  }
+
+  if (dataCenter === 'kdc' || dataCenter === 'cdc') {
+    authorizationEndpoint = `https://authz-apps-gov-bc-ca-${env}.${dataCenter}.api.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token`;
+    apiHost = `https://gwa-api-gov-bc-ca-${env}.${dataCenter}.api.gov.bc.ca/v${apiVersion}`;
   }
 
   return {
