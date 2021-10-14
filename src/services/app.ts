@@ -82,17 +82,15 @@ export async function makeEnvFile(options: InitOptions): Promise<string> {
       throw errorMessage;
     }
 
-    const data = `GWA_NAMESPACE=${options.namespace}
+    let data = `GWA_NAMESPACE=${options.namespace}
 CLIENT_ID=${options.clientId}
 CLIENT_SECRET=${options.clientSecret}
 GWA_ENV=${options.env}
-API_VERSION=${options.apiVersion ?? '2'}${
-      options.dataCenter
-        ? `
-DATA_CENTER=${options.dataCenter}`
-        : ''
-    }
+API_VERSION=${options.apiVersion ?? '2'}
 `;
+    if (options.dataCenter) {
+      data += `DATA_CENTER=${options.dataCenter}`;
+    }
     await fs.promises.writeFile('.env', data);
     return '.env file successfully generated';
   } catch (err) {
