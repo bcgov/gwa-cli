@@ -60,7 +60,7 @@ init
   .option('-D, --dev', 'Dev environment')
   .option('-P, --prod', 'Set environment to production')
   .option('-T, --test', 'Set environment to test (default)')
-  .option('--data-center <dc>', 'Target a particular data center')
+  .option('--data-center [dc]', 'Target a particular data center', '')
   .option('--client-id <clientId>', 'The Service Account Client ID')
   .option('--client-secret <clientSecret>', 'The Service Account Client Secret')
   .option('--debug', 'Show stack traces on error. Useful for debugging.')
