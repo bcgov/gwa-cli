@@ -1,36 +1,70 @@
 import React from 'react';
 import { Box, Text } from 'ink';
+import { resolve } from 'path';
+import fs from 'fs';
+import YAML from 'yaml';
 
-import publish from '../../services/publish';
+import { publish } from '../../services/publish';
 import Success from '../../components/success';
 import useAsync from '../../hooks/use-async';
 
 interface UploadViewProps {
+  action: string;
   options: {
-    configFile?: string;
-    dryRun: string;
+    body: string;
+    content?: string;
   };
 }
 
-const UploadView: React.FC<UploadViewProps> = ({ options }) => {
-  const { message, results } = useAsync(
+const UploadView: React.FC<UploadViewProps> = ({ action, options }) => {
+  const payload = useAsync(async () => {
+    try {
+      const filePath = resolve(process.cwd(), options.body);
+      const file = await fs.promises.readFile(filePath, 'utf8');
+      const result = YAML.parse(file);
+
+      if (options.content) {
+        const contentPath = resolve(process.cwd(), options.content);
+        const content = await fs.promises.readFile(contentPath, 'utf8');
+        result.content = content;
+      }
+      return result;
+    } catch (err) {
+      throw new Error(err);
+    }
+  });
+  const { result, status } = useAsync(
     publish,
-    '/namespaces/:namespace/gateway',
-    options
+    `/ds/api/namespaces/:namespace/${action}s`,
+    payload
   );
+
+  if (status !== 200) {
+    return (
+      <Box>
+        <Box flexDirection="column">
+          <Box>
+            <Text bold color="red">
+              x Error
+            </Text>
+            <Box marginLeft={1}>
+              <Text>{result}</Text>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box flexDirection="column">
       <Success>
         <Text color="green">Success</Text>
-        {` Configuration ${options.configFile} Published`}
+        {` ${action} published`}
       </Success>
       <Box flexDirection="column" marginTop={1}>
         <Box>
-          <Text>{message}</Text>
-        </Box>
-        <Box marginTop={1}>
-          <Text>{results}</Text>
+          <Text>{`Result: ${result}`}</Text>
         </Box>
       </Box>
     </Box>

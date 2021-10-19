@@ -5,18 +5,17 @@ import AsyncAction from '../../components/async-action';
 import UploadView from './upload-view';
 
 interface PublishRenderOptions {
-  body: string;
-  content?: string;
+  configFile?: string;
+  dryRun: string;
   verbose?: boolean;
 }
-
-const renderer = (action: string, options: PublishRenderOptions) => {
+const renderer = (options: PublishRenderOptions) => {
   render(
     <AsyncAction
-      loadingText={`Publishing ${action}...`}
+      loadingText="Publishing gateway config..."
       verbose={options.verbose}
     >
-      <UploadView action={action} options={options} />
+      <UploadView options={options} />
     </AsyncAction>
   );
 };

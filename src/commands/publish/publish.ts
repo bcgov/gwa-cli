@@ -3,25 +3,26 @@ import { Command } from 'commander';
 import render from './renderer';
 
 type PublishOptions = {
-  dryRun?: boolean;
+  body: string;
+  content?: string;
   verbose?: boolean;
 };
 
-export const actionHandler = (input: string, options: PublishOptions = {}) => {
-  render({
-    configFile: input,
-    dryRun: Boolean(options.dryRun).toString(),
-    verbose: options.verbose,
-  });
+export const actionHandler = (action: string, options: PublishOptions) => {
+  if (/(content|dataset|product|issuer)/.test(action)) {
+    render(action, options);
+  }
 };
 
-const publish = new Command('publish-gateway');
+const publish = new Command('publish');
 
 publish
-  .alias('pg')
-  .description('Publish gateway config')
-  .arguments('[input]')
-  .option('--dry-run', 'Enable dry run')
+  .description(
+    'Publish to DS API. Available commands are content, datasets, issuers and products'
+  )
+  .arguments('[action]')
+  .option('-b,--body <body>', 'YAML file to convert to JSON')
+  .option('-c,--content [content]', 'Content to add to body')
   .option('--verbose')
   .option('--debug')
   .action(actionHandler);
