@@ -12,6 +12,7 @@ import plugins from './commands/plugins';
 import create from './commands/create';
 import info from './commands/info';
 import init from './commands/init';
+import publishGateway from './commands/publish-gateway';
 import publish from './commands/publish';
 import status from './commands/status';
 import update from './commands/update';
@@ -28,6 +29,7 @@ program
   .addCommand(acl)
   .addCommand(publish)
   .addCommand(create)
+  .addCommand(publishGateway)
   .addCommand(status);
 
 // Commands to refactor
