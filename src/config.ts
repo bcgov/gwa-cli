@@ -21,6 +21,7 @@ function config() {
   if (dataCenter === 'kdc' || dataCenter === 'cdc') {
     authorizationEndpoint = `https://authz-apps-gov-bc-ca-${env}.${dataCenter}.api.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token`;
     apiHost = `https://gwa-api-gov-bc-ca-${env}.${dataCenter}.api.gov.bc.ca/v${apiVersion}`;
+    dsApiHost = `https://api-gov-bc-ca-${env}.${dataCenter}.api.gov.bc.ca`;
   }
 
   return {
