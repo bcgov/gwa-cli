@@ -1,4 +1,4 @@
-import { actionHandler } from '../publish';
+import { actionHandler } from '../publish-gateway';
 import render from '../renderer';
 
 jest.mock('../renderer');

@@ -48,7 +48,7 @@ export async function mergeConfigs() {
   }
 }
 
-async function bundleFiles(configFile: string | undefined) {
+export async function bundleFiles(configFile: string | undefined) {
   try {
     if (!configFile) {
       await mergeConfigs();
@@ -61,6 +61,7 @@ async function bundleFiles(configFile: string | undefined) {
     throw new Error(err);
   }
 }
+
 type PublishParams = {
   configFile: string | undefined;
   dryRun: string;
@@ -71,29 +72,22 @@ type PublishResponse = {
   message: string;
   results: string;
 };
+
 // Temporarily using request due to an issue with FormData and save actions
 async function upload(
   token: string,
   endpoint: string,
-  { configFile, dryRun }: PublishParams
+  formData: Record<string, any>
 ): Promise<PublishResponse> {
-  const value = await bundleFiles(configFile);
   const options = {
     method: 'PUT',
     url: endpoint,
     headers: {
       Authorization: `Bearer ${token}`,
+      'Content-Type':
+        typeof formData === 'object' ? 'application/json' : undefined,
     },
-    formData: {
-      configFile: {
-        value,
-        options: {
-          filename: configFile,
-          contentType: null,
-        },
-      },
-      dryRun,
-    },
+    formData,
   };
 
   return new Promise((resolve, reject) => {
@@ -127,13 +121,57 @@ async function upload(
   });
 }
 
-// TODO combine this with api so there is only one entry point
+async function update(
+  token: string,
+  endpoint: string,
+  body: any
+): Promise<PublishResponse> {
+  const options = {
+    method: 'PUT',
+    url: endpoint,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    json: true,
+    body,
+  };
+
+  return new Promise((resolve, reject) => {
+    if (!namespace) {
+      return reject(NAMESPACE_ERROR);
+    }
+
+    request(options, (error: any, response: any, body: any) => {
+      if (error) {
+        const errMessage =
+          error.code === 'ETIMEDOUT' ? 'Publish request timed out' : error;
+        return reject(errMessage);
+      }
+
+      if (fs.existsSync(TEMP_FILE)) {
+        fs.unlinkSync(TEMP_FILE);
+      }
+
+      if (response.statusCode >= 400) {
+        const message = body ? JSON.parse(body) : '';
+        reject(
+          new Error(
+            `[${response.statusCode}] ${message.error}: ${message.results}`
+          )
+        );
+      } else {
+        resolve(body);
+      }
+    });
+  });
+}
+
 export async function publish(
   endpoint: string,
   options: PublishParams
 ): Promise<PublishResponse> {
   try {
-    const { apiHost, authorizationEndpoint, namespace } = config();
+    const { apiHost, authorizationEndpoint, dsApiHost, namespace } = config();
     const token = await authenticate(authorizationEndpoint);
     let path = endpoint;
 
@@ -143,7 +181,32 @@ export async function publish(
       });
       path = compiler({ namespace });
     }
-    const url = apiHost + path;
+    const url = path.includes('/ds') ? dsApiHost + path : apiHost + path;
+
+    const response = await update(token, url, options);
+    return response;
+  } catch (err) {
+    throw new Error(err);
+  }
+}
+
+export async function publishWithFile(
+  endpoint: string,
+  options: PublishParams
+): Promise<PublishResponse> {
+  try {
+    const { apiHost, authorizationEndpoint, dsApiHost, namespace } = config();
+    const token = await authenticate(authorizationEndpoint);
+    let path = endpoint;
+
+    if (endpoint.includes(':')) {
+      const compiler = compile(endpoint, {
+        encode: encodeURIComponent,
+      });
+      path = compiler({ namespace });
+    }
+    const url = path.includes('/ds') ? dsApiHost + path : apiHost + path;
+
     const response = await upload(token, url, options);
     return response;
   } catch (err) {
@@ -151,4 +214,4 @@ export async function publish(
   }
 }
 
-export default publish;
+export default publishWithFile;
