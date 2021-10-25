@@ -10,12 +10,13 @@ function config() {
   const legacyApiHost: string = `https://gwa-api-qwzrwc-test.pathfinder.gov.bc.ca/v${apiVersion}`;
   let authorizationEndpoint: string = `https://authz-apps-gov-bc-ca.${env}.api.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token`;
   let apiHost: string = `https://gwa-api-gov-bc-ca.${env}.api.gov.bc.ca/v${apiVersion}`;
-  const dsApiHost: string = `https://api-gov-bc-ca.${env}.api.gov.bc.ca`;
+  let dsApiHost: string = `https://api-gov-bc-ca.${env}.api.gov.bc.ca`;
 
   if (env === 'prod') {
     authorizationEndpoint =
       'https://authz.apps.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token';
     apiHost = `https://gwa.api.gov.bc.ca/v${apiVersion}`;
+    dsApiHost = `https://api.gov.bc.ca`;
   }
 
   if (dataCenter === 'kdc' || dataCenter === 'cdc') {
