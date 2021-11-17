@@ -205,7 +205,7 @@ export async function publishWithFile(
       });
       path = compiler({ namespace });
     }
-    const url = path.includes('/ds') ? dsApiHost + path : apiHost + path;
+    const url = path.includes('/ds/api/') ? dsApiHost + path : apiHost + path;
 
     const response = await upload(token, url, options);
     return response;
