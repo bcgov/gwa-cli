@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Box, Text, useApp } from 'ink';
 
 interface FailedProps {
-  error: Error | undefined;
+  error: unknown;
   verbose?: boolean;
 }
 
@@ -11,8 +11,10 @@ const Failed: React.FC<FailedProps> = ({ error, verbose }) => {
 
   React.useEffect(() => {
     process.exitCode = 1;
-    exit(error);
+    exit(error as Error);
   }, []);
+
+  const e = error as { status: string; statusText: string; stack: string };
 
   return (
     <Box>
@@ -22,16 +24,19 @@ const Failed: React.FC<FailedProps> = ({ error, verbose }) => {
             x Error
           </Text>
           {error && (
-            <Box marginLeft={1}>
-              <Text>{error.message?.replace(/Error\:\s/gi, '')}</Text>
+            <Box>
+              <Box marginLeft={1} flexDirection="column">
+                <Text>{e.statusText}</Text>
+                <Box>{e.status && <Text>Status code {e.status} </Text>}</Box>
+              </Box>
             </Box>
           )}
         </Box>
-        {verbose && error?.stack && (
+        {verbose && e?.stack && (
           <Box marginTop={1}>
             <Text dimColor>Details</Text>
             <Box marginX={3}>
-              <Text>{error.stack}</Text>
+              <Text>{e.stack}</Text>
             </Box>
           </Box>
         )}

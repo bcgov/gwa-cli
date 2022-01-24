@@ -36,7 +36,7 @@ const callPromise = <Response, Args extends any[]>(
     if (state === 'pending') {
       throw pending;
     } else if (state === 'error') {
-      throw new Error(error);
+      throw error;
     }
 
     return result;

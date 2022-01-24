@@ -20,10 +20,13 @@ async function authenticate(url: string): Promise<string> {
       const json = await res.json();
       return json.access_token;
     } else {
-      throw res.statusText;
+      throw res;
     }
   } catch (err) {
-    throw new Error(err);
+    throw {
+      status: err.status ?? 500,
+      statusText: err.statusText ?? err.message,
+    };
   }
 }
 

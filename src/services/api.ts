@@ -28,10 +28,13 @@ export async function api<ApiResponse>(
       const json = await res.json();
       return humps(json);
     } else {
-      throw res.statusText;
+      throw {
+        status: res.status,
+        statusText: res.statusText,
+      };
     }
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -54,7 +57,10 @@ export async function makeRequest<ApiResponse>(
     const response = await api<ApiResponse>(token, url, options);
     return response;
   } catch (err) {
-    throw new Error(err);
+    throw {
+      status: err.status,
+      statusText: err.statusText,
+    };
   }
 }
 

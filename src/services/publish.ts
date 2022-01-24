@@ -32,7 +32,7 @@ export async function mergeConfigs() {
         try {
           YAML.parse(file);
         } catch (err) {
-          throw new Error(err);
+          throw err;
         }
 
         files.push(file);
@@ -44,7 +44,7 @@ export async function mergeConfigs() {
     );
     return result;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -58,7 +58,7 @@ export async function bundleFiles(configFile: string | undefined) {
 
     return fs.createReadStream(filePath);
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -97,9 +97,9 @@ async function upload(
 
     request(options, (error: any, response: any, body: any) => {
       if (error) {
-        const errMessage =
+        const statusText =
           error.code === 'ETIMEDOUT' ? 'Publish request timed out' : error;
-        return reject(errMessage);
+        return reject({ status: response.statusCode, statusText });
       }
 
       if (fs.existsSync(TEMP_FILE)) {
@@ -107,12 +107,11 @@ async function upload(
       }
 
       if (response.statusCode >= 400) {
-        const message = body ? JSON.parse(body) : '';
-        reject(
-          new Error(
-            `[${response.statusCode}] ${message.error}: ${message.results}`
-          )
-        );
+        const statusText = body ? JSON.parse(body) : '';
+        reject({
+          status: response.statusCode,
+          statusText,
+        });
       } else {
         const json = body ? JSON.parse(body) : {};
         resolve(json);
@@ -143,9 +142,12 @@ async function update(
 
     request(options, (error: any, response: any, body: any) => {
       if (error) {
-        const errMessage =
+        const statusText =
           error.code === 'ETIMEDOUT' ? 'Publish request timed out' : error;
-        return reject(errMessage);
+        return reject({
+          status: response.statusCode,
+          statusText,
+        });
       }
 
       if (fs.existsSync(TEMP_FILE)) {
@@ -154,11 +156,11 @@ async function update(
 
       if (response.statusCode >= 400) {
         const message = body ? JSON.parse(body) : '';
-        reject(
-          new Error(
-            `[${response.statusCode}] ${message.error}: ${message.results}`
-          )
-        );
+        reject({
+          status: response.statusCode,
+          statusText: message.error,
+          meta: message.results,
+        });
       } else {
         resolve(body);
       }
@@ -186,7 +188,7 @@ export async function publish(
     const response = await update(token, url, options);
     return response;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -210,7 +212,7 @@ export async function publishWithFile(
     const response = await upload(token, url, options);
     return response;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 

@@ -14,14 +14,22 @@ export async function checkVersion(
     const res = await fetch(
       'https://api.github.com/repos/bcgov/gwa-cli/releases/latest'
     );
-    const json = await res.json();
-    const currentVersion = json.tag_name.replace('v', '');
 
-    if (pkgVersion < currentVersion) {
-      return currentVersion;
+    if (res.ok) {
+      const json = await res.json();
+      const currentVersion = json.tag_name.replace('v', '');
+
+      if (pkgVersion < currentVersion) {
+        return currentVersion;
+      }
+
+      return true;
+    } else {
+      throw {
+        status: res.status,
+        statusText: res.statusText,
+      };
     }
-
-    return true;
   } catch (err) {
     throw err;
   }
