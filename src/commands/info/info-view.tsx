@@ -11,7 +11,7 @@ interface InfoViewProps {}
 const InfoView: React.FC<InfoViewProps> = () => {
   const data = useAsync<InfoData>(api, '/whoami');
   const { status } = useAsync<InfoData>(api, '/status');
-  const { env, clientSecret } = config();
+  const { env, clientSecret, namespace } = config();
   const isUp = status === 'ok';
   const statusTextColor = isUp ? 'green' : 'red';
   const statusIcon = isUp ? '✓' : 'x';
@@ -21,7 +21,7 @@ const InfoView: React.FC<InfoViewProps> = () => {
     <Box flexDirection="column" marginY={1}>
       <Box marginBottom={1}>
         <Text>
-          Namespace: <Text bold>{data.namespace}</Text>
+          Namespace: <Text bold>{namespace}</Text>
         </Text>
       </Box>
       <Box>

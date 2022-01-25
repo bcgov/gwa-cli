@@ -23,11 +23,15 @@ const Failed: React.FC<FailedProps> = ({ error, verbose }) => {
           <Text bold color="red">
             x Error
           </Text>
-          {error && (
+          {e && (
             <Box>
               <Box marginLeft={1} flexDirection="column">
                 <Text>{e.statusText}</Text>
-                <Box>{e.status && <Text>Status code {e.status} </Text>}</Box>
+                {e.status && (
+                  <Box>
+                    <Text>{`Status code ${e.status.toString()} `}</Text>
+                  </Box>
+                )}
               </Box>
             </Box>
           )}

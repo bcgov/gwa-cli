@@ -30,7 +30,7 @@ export const importInput = async (
       input,
     };
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 };
 
@@ -43,7 +43,7 @@ export const parseOptions = (
   const plugins = generatePluginTemplates(requestedPlugins, options.namespace);
 
   if (plugins) {
-    if (requestedPlugins.length !== plugins.length) {
+    if (requestedPlugins?.length !== plugins.length) {
       const missingPlugins = difference(requestedPlugins, plugins);
       console.warn(
         `The following plugins are named incorrectly or are not supported: ${missingPlugins.join(
@@ -90,6 +90,6 @@ export const makeConfigFile = async (
     await saveConfig(output, outfile);
     return outfile;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 };

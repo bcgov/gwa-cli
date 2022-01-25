@@ -98,7 +98,9 @@ async function upload(
     request(options, (error: any, response: any, body: any) => {
       if (error) {
         const statusText =
-          error.code === 'ETIMEDOUT' ? 'Publish request timed out' : error;
+          error.code === 'ETIMEDOUT'
+            ? 'Publish request timed out'
+            : error.error;
         return reject({ status: response.statusCode, statusText });
       }
 
@@ -107,7 +109,13 @@ async function upload(
       }
 
       if (response.statusCode >= 400) {
-        const statusText = body ? JSON.parse(body) : '';
+        let statusText = 'Unable to upload';
+
+        if (body) {
+          const { error } = JSON.parse(body);
+          statusText = error;
+        }
+
         reject({
           status: response.statusCode,
           statusText,
@@ -137,6 +145,7 @@ async function update(
 
   return new Promise((resolve, reject) => {
     if (!namespace) {
+      console.log('no namespace');
       return reject(NAMESPACE_ERROR);
     }
 
@@ -144,6 +153,7 @@ async function update(
       if (error) {
         const statusText =
           error.code === 'ETIMEDOUT' ? 'Publish request timed out' : error;
+        console.log('reject');
         return reject({
           status: response.statusCode,
           statusText,
@@ -156,6 +166,7 @@ async function update(
 
       if (response.statusCode >= 400) {
         const message = body ? JSON.parse(body) : '';
+        console.log('reject 2');
         reject({
           status: response.statusCode,
           statusText: message.error,
@@ -174,7 +185,9 @@ export async function publish(
 ): Promise<PublishResponse> {
   try {
     const { apiHost, authorizationEndpoint, dsApiHost, namespace } = config();
+    console.log('token start');
     const token = await authenticate(authorizationEndpoint);
+    console.log('token');
     let path = endpoint;
 
     if (endpoint.includes(':')) {
@@ -186,8 +199,10 @@ export async function publish(
     const url = path.includes('/ds') ? dsApiHost + path : apiHost + path;
 
     const response = await update(token, url, options);
+    console.log('rs', response);
     return response;
   } catch (err) {
+    console.log('hi', err);
     throw err;
   }
 }
@@ -212,6 +227,7 @@ export async function publishWithFile(
     const response = await upload(token, url, options);
     return response;
   } catch (err) {
+    console.log('publish', err);
     throw err;
   }
 }
