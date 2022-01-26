@@ -23,7 +23,7 @@ export async function convertFile(
 
     return document;
   } catch (err) {
-    throw new Error(err.message);
+    throw err.message;
   }
 }
 
@@ -58,7 +58,7 @@ export async function generateConfig({
 
     return document;
   } catch (err) {
-    throw new Error(err.message);
+    throw err.message;
   }
 }
 

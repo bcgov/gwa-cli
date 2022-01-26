@@ -102,7 +102,7 @@ API_VERSION=${options.apiVersion ?? '2'}
     await fs.promises.writeFile('.env', data);
     return '.env file successfully generated';
   } catch (err) {
-    throw new Error(`Unable to write file ${err}`);
+    throw `Unable to write file ${err}`;
   }
 }
 
@@ -115,7 +115,7 @@ export async function loadConfig(input: string): Promise<any> {
 
     return json;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -128,6 +128,6 @@ export async function saveConfig(
   try {
     await fs.promises.writeFile(path.resolve(cwd, outfile), output);
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }

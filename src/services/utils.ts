@@ -18,7 +18,7 @@ export const makeOutputFilename = (
       if (urlFileName) {
         return urlFileName[0].replace('json', 'yaml');
       } else {
-        throw new Error('No outfile specified');
+        throw 'No outfile specified';
       }
     }
   }

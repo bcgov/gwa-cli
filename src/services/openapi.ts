@@ -12,7 +12,7 @@ export async function validateConfig(file: string): Promise<any> {
     // await SwaggerParser.validate(json);
     return json;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -27,7 +27,7 @@ export async function importSpec(file: string) {
     const result = parser(json);
     return result;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
@@ -46,7 +46,7 @@ export async function fetchSpec(url: string) {
     const result = parser(json);
     return result;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 }
 
