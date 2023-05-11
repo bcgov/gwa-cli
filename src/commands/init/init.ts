@@ -13,6 +13,7 @@ export const actionHandler = (options: InitOptions) => {
     'clientId',
     'clientSecret',
     'apiVersion',
+    'dirApiVersion',
   ]);
   const envArgs = pick(options, ['dev', 'test', 'prod']);
   const env = Object.keys(envArgs)[0] ?? 'test';
@@ -64,9 +65,11 @@ init
   .option('--client-id <clientId>', 'The Service Account Client ID')
   .option('--client-secret <clientSecret>', 'The Service Account Client Secret')
   .option('--debug', 'Show stack traces on error. Useful for debugging.')
+  .option('--api-version <apiVersion>', 'Set API version.', '2')
   .option(
-    '--api-version <apiVersion>',
-    'Show stack traces on error. Useful for debugging.'
+    '--dir-api-version <dirApiVersion>',
+    'Set Directory API version.',
+    '2'
   )
   .action(actionHandler);
 

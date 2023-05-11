@@ -71,6 +71,12 @@ export async function makeEnvFile(options: InitOptions): Promise<string> {
         message: 'only versions 1 and 2 are available',
       },
     },
+    dirApiVersion: {
+      format: {
+        pattern: '[1-2]+',
+        message: 'only versions 1 and 2 are available',
+      },
+    },
   };
 
   try {
@@ -87,6 +93,7 @@ CLIENT_ID=${options.clientId}
 CLIENT_SECRET=${options.clientSecret}
 GWA_ENV=${options.env}
 API_VERSION=${options.apiVersion ?? '2'}
+DIR_API_VERSION=${options.dirApiVersion ?? '2'}
 `;
     if (options.dataCenter) {
       data += `DATA_CENTER=${options.dataCenter}`;

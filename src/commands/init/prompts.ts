@@ -40,6 +40,16 @@ const prompts: Prompt[] = [
     },
   },
   {
+    label: 'Directory API Version',
+    key: 'dirApiVersion',
+    constraint: {
+      format: {
+        pattern: '[1-2]+',
+        message: 'only versions 1 and 2 are available',
+      },
+    },
+  },
+  {
     label: 'Data Center (optional)',
     key: 'dataCenter',
     constraint: {

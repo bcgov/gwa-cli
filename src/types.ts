@@ -42,4 +42,5 @@ export interface InitOptions {
   prod: boolean;
   debug: boolean;
   apiVersion?: string;
+  dirApiVersion?: string;
 }
