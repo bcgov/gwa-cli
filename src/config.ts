@@ -5,6 +5,7 @@ function config() {
   const clientId: string = process.env.CLIENT_ID || '';
   const clientSecret: string = process.env.CLIENT_SECRET || '';
   const apiVersion: string = process.env.API_VERSION || '2';
+  const dirApiVersion: string = process.env.DIR_API_VERSION || '1';
   const legacyAuthorizationEndpoint: string =
     'https://auth-qwzrwc-test.pathfinder.gov.bc.ca/auth/realms/aps/protocol/openid-connect/token';
   const legacyApiHost: string = `https://gwa-api-qwzrwc-test.pathfinder.gov.bc.ca/v${apiVersion}`;
@@ -31,6 +32,7 @@ function config() {
     apiHost,
     clientId,
     clientSecret,
+    dirApiVersion,
     dsApiHost,
     env,
     namespace,
