@@ -18,7 +18,7 @@ const publish = new Command('publish');
 
 publish
   .description(
-    'Publish to DS API. Available commands are content, datasets, issuers and products'
+    'Publish to DS API. Available commands are content, dataset, issuer and product'
   )
   .arguments('[action]')
   .option('-b,--body <body>', 'YAML file to convert to JSON')

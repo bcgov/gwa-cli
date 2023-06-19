@@ -7,6 +7,7 @@ import YAML from 'yaml';
 import { publish } from '../../services/publish';
 import Success from '../../components/success';
 import useAsync from '../../hooks/use-async';
+import config from '../../config';
 
 interface UploadViewProps {
   action: string;
@@ -33,9 +34,13 @@ const UploadView: React.FC<UploadViewProps> = ({ action, options }) => {
       throw new Error(err);
     }
   });
+
+  const { dirApiVersion } = config();
+  const dirApiPath = dirApiVersion === '2' ? '/ds/api/v2' : '/ds/api';
+
   const { result, status } = useAsync(
     publish,
-    `/ds/api/namespaces/:namespace/${action}s`,
+    `${dirApiPath}/namespaces/:namespace/${action}s`,
     payload
   );
 
