@@ -1,6 +1,20 @@
-.DS_Store
 dist/*
 .log
 node_modules/
 __coverage__/
 sbin/
+bin/
+.env
+
+# VS Code
+.vscode
+
+# IntelliJ
+.idea
+
+# macOS
+.DS_Store
+
+# vim
+*.swp
+

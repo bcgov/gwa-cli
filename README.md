@@ -1,3 +1,5 @@
+> **NOTICE:** This project is currently being converted from Node.js to Go. As a result, most features are not available yet. The old documentation will stay up for now but this README will be updated shortly.
+
 # gwa-cli
 
 <img src="https://github.com/bcgov/gwa-cli/workflows/Build/badge.svg"></img>
