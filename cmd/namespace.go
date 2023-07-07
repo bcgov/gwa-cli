@@ -1,12 +1,8 @@
 package cmd
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
-	"strings"
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
@@ -18,6 +14,7 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "Manage your namespaces",
 		Long:  `Longer explanation to come...`,
 	}
+	namespaceCmd.AddCommand(NamespaceListCmd(ctx))
 	namespaceCmd.AddCommand(NamespaceCreateCmd(ctx))
 	return namespaceCmd
 }
@@ -25,6 +22,31 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 type NamespaceFormData struct {
 	namespace   string
 	description string
+}
+
+func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
+	var listCommand = &cobra.Command{
+		Use:   "list",
+		Short: "List all your managed namespaces",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			URL, _ := ctx.CreateUrl("/ds/api/v2/namespaces", nil)
+			response, err := pkg.ApiGet[[]string](ctx, URL)
+			if err != nil {
+				if response.StatusCode == http.StatusUnauthorized {
+					cmd.SetUsageTemplate("\nNext Steps:\nRun gwa login to obtain another auth token")
+				}
+				return err
+			}
+
+			for _, n := range response.Data {
+				fmt.Println(n)
+			}
+			return nil
+
+		},
+	}
+
+	return listCommand
 }
 
 func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -35,7 +57,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			namespace, err := createNamespace(ctx, &namespaceFormData)
 			if err != nil {
-				cmd.SetUsageTemplate("\n")
+				cmd.SilenceUsage = true
 				return err
 			}
 
@@ -46,6 +68,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 	}
 	createCommand.Flags().StringVarP(&namespaceFormData.namespace, "namespace", "n", "", "optionally define your own namespace")
 	createCommand.Flags().StringVarP(&namespaceFormData.description, "description", "d", "", "optionally add a description")
+
 	return createCommand
 }
 
@@ -54,49 +77,11 @@ type NamespaceResult struct {
 }
 
 func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, error) {
-	client := http.Client{}
-
 	URL, err := ctx.CreateUrl("/ds/api/v2/namespaces", data)
 	if err != nil {
 		return "", err
 	}
-	request, err := http.NewRequest(http.MethodPost, URL, nil)
-	if err != nil {
-		return "", err
-	}
-	bearer := fmt.Sprintf("bearer %s", ctx.ApiKey)
-	request.Header.Set("Authorization", bearer)
-	request.Header.Set("Content-Type", "application/json")
-	response, err := client.Do(request)
-	if err != nil {
-		return "", err
-	}
+	response, err := pkg.ApiPost[NamespaceResult](ctx, URL, nil)
 
-	if response.StatusCode == http.StatusOK {
-		var result NamespaceResult
-		body, err := io.ReadAll(response.Body)
-		if err != nil {
-			return "", err
-		}
-		json.Unmarshal(body, &result)
-		return result.Name, err
-	}
-
-	var result ApiErrorResponse
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return "", err
-	}
-	json.Unmarshal(body, &result)
-	errMessage := strings.Join([]string{result.Message, result.Details.Item.Message}, " ")
-	return "", errors.New(errMessage)
-}
-
-type ApiErrorResponse struct {
-	Message string `json:"message"`
-	Details struct {
-		Item struct {
-			Message string `json:"message"`
-		} `json:"d0"`
-	} `json:"details"`
+	return response.Data.Name, nil
 }

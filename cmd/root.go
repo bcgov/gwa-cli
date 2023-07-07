@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -30,8 +27,9 @@ func Execute(ctx *pkg.AppContext) {
 	rootCmd.AddCommand(NewPublishGatewayCmd(ctx))
 	rootCmd.AddCommand(NewLoginCmd(ctx))
 	rootCmd.AddCommand(NewNamespaceCmd(ctx))
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-cli.yaml)")
-	rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "only print results, ideal for CI/CD")
+	// Disable these for now since they don't do anything
+	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-confg.yaml)")
+	// rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "only print results, ideal for CI/CD")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	err := rootCmd.Execute()
 	if err != nil {

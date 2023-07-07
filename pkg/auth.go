@@ -30,7 +30,31 @@ func DeviceLogin(ctx *AppContext) error {
 		return err
 	}
 
-	err = login(wellKnownConfig, ctx.ClientId)
+	err = deviceLogin(wellKnownConfig, ctx.ClientId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret string) error {
+	openApiPathname, err := fetchConfigUrl(ctx)
+	if err != nil {
+		return err
+	}
+
+	authTokenUrl, err := fetchOpenApiConfig(ctx, openApiPathname)
+	if err != nil {
+		return err
+	}
+
+	wellKnownConfig, err := fetchWellKnown(authTokenUrl)
+	if err != nil {
+		return err
+	}
+
+	err = clientCredentialLogin(wellKnownConfig, clientId, clientSecret)
 	if err != nil {
 		return err
 	}
@@ -51,8 +75,17 @@ func fetchConfigUrl(ctx *AppContext) (string, error) {
 		return "", err
 	}
 	linkHeader := response.Header.Get("Link")
-	links := strings.Split(linkHeader, ",")
+	result, err := parseLinkHeader(linkHeader)
+	if err != nil {
+		return "", err
+	}
+
+	return result, nil
+}
+
+func parseLinkHeader(link string) (string, error) {
 	var result string
+	links := strings.Split(link, ",")
 
 	for _, link := range links {
 
@@ -69,7 +102,6 @@ func fetchConfigUrl(ctx *AppContext) (string, error) {
 	if result == "" {
 		return result, errors.New("unable to find OpenAPI")
 	}
-
 	return result, nil
 }
 
@@ -142,7 +174,7 @@ type DeviceData struct {
 	VerificationUriComplete string `json:"verification_uri_complete"`
 }
 
-func login(wellKnownConfig WellKnownConfig, clientId string) error {
+func deviceLogin(wellKnownConfig WellKnownConfig, clientId string) error {
 	data := url.Values{}
 	data.Set("client_id", clientId)
 	URL := wellKnownConfig.DeviceAuthorizationEndpoint
@@ -261,4 +293,47 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) (TokenRespon
 		return tokenData, nil
 	}
 	return tokenData, nil
+}
+
+type CredentialError struct {
+	Error       string `json:"error"`
+	Description string `json:"error_description"`
+}
+
+func clientCredentialLogin(wellKnownConfig WellKnownConfig, clientId string, clientSecret string) error {
+	data := url.Values{}
+	data.Set("client_id", clientId)
+	data.Set("client_secretn", clientSecret)
+	data.Set("grant_type", "client_credentials")
+	request, err := http.NewRequest(http.MethodPost, wellKnownConfig.TokenEndpoint, strings.NewReader(data.Encode()))
+	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	client := http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusOK {
+		b, err := io.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		var auth TokenResponse
+		json.Unmarshal(b, &auth)
+		viper.Set("api_key", auth.AccessToken)
+		viper.Set("refresh_token", auth.RefreshToken)
+		viper.Set("refresh_expires_in", auth.RefreshExpiresIn)
+		viper.WriteConfig()
+		return nil
+	}
+	var errorMessage CredentialError
+	b, err := io.ReadAll(response.Body)
+	json.Unmarshal(b, &errorMessage)
+
+	if err != nil {
+		return err
+	}
+	return errors.New(errorMessage.Description)
 }
