@@ -15,6 +15,7 @@ type AppContext struct {
 	ClientId   string
 	Cwd        string
 	Host       string
+	Scheme     string
 }
 
 func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) {
@@ -32,8 +33,14 @@ func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) 
 		host = a.Host
 	}
 
+	scheme := "https"
+
+	if a.Scheme != "" {
+		scheme = a.Scheme
+	}
+
 	url := url.URL{
-		Scheme:   "https",
+		Scheme:   scheme,
 		Host:     host,
 		Path:     path,
 		RawQuery: queryString,

@@ -75,7 +75,7 @@ func fetchConfigUrl(ctx *AppContext) (string, error) {
 		return "", err
 	}
 
-	if response.StatusCode == http.StatusOK {
+	if response.StatusCode == http.StatusNoContent {
 		linkHeader := response.Header.Get("Link")
 		result, err := parseLinkHeader(linkHeader)
 		if err != nil {
