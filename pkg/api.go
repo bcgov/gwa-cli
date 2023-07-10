@@ -10,12 +10,35 @@ import (
 )
 
 type ApiErrorResponse struct {
-	Message string `json:"message"`
-	Details struct {
+	Error        string `json:"error"`
+	ErrorMessage string `json:"error_description"`
+	Message      string `json:"message"`
+	Details      struct {
 		Item struct {
 			Message string `json:"message"`
 		} `json:"d0"`
 	} `json:"details"`
+}
+
+func (e *ApiErrorResponse) GetError() string {
+	var result []string
+	if e.Error != "" {
+		result = append(result, e.Error)
+	}
+	if e.Message != "" {
+		result = append(result, e.Message)
+	}
+	if e.Details.Item.Message != "" {
+		result = append(result, e.Details.Item.Message)
+	}
+	if e.ErrorMessage != "" {
+		result = append(result, e.ErrorMessage)
+	}
+	if len(result) == 0 {
+		result = append(result, "something broke")
+	}
+
+	return strings.Join(result, ": ")
 }
 
 type ApiResponse[T any] struct {
@@ -34,6 +57,9 @@ func Api[T any](ctx *AppContext, url string, method string, requestBody io.Reade
 	bearer := fmt.Sprintf("Bearer %s", ctx.ApiKey)
 	request.Header.Set("Authorization", bearer)
 	request.Header.Set("Content-Type", "application/json")
+	if requestBody != nil {
+		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
 	response, err := client.Do(request)
 	if err != nil {
 		return result, err
@@ -54,8 +80,7 @@ func Api[T any](ctx *AppContext, url string, method string, requestBody io.Reade
 	} else {
 		var errorResponse ApiErrorResponse
 		json.Unmarshal(body, &errorResponse)
-		errMessage := strings.Join([]string{errorResponse.Message, errorResponse.Details.Item.Message}, " ")
-		return result, errors.New(errMessage)
+		return result, errors.New(errorResponse.GetError())
 	}
 }
 
@@ -71,6 +96,6 @@ func ApiPut[T any](ctx *AppContext, url string, body io.Reader) (ApiResponse[T],
 	return Api[T](ctx, url, http.MethodPut, body)
 }
 
-// func ApiDelete(ctx *AppContext, url string) (bool, error) {
-// 	return Api[bool](ctx, url, http.MethodDelete, nil)
-// }
+func ApiDelete[T any](ctx *AppContext, url string) (ApiResponse[T], error) {
+	return Api[T](ctx, url, http.MethodDelete, nil)
+}

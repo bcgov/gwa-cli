@@ -30,6 +30,7 @@ func Execute(ctx *pkg.AppContext) {
 	// Disable these for now since they don't do anything
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-confg.yaml)")
 	// rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "only print results, ideal for CI/CD")
+	rootCmd.PersistentFlags().StringVar(&ctx.Host, "host", "", "Set the default host to use for the API")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	err := rootCmd.Execute()
 	if err != nil {

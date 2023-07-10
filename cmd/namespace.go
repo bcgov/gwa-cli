@@ -61,8 +61,8 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
-			successMessage := fmt.Sprintf("namespace %s created", namespace)
-			fmt.Println(successMessage)
+			// TODO: just returning the name, but determine if a URL would be better
+			fmt.Println(namespace)
 			return nil
 		},
 	}

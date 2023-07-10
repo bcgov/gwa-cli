@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestContxtUrl(t *testing.T) {
+func TestContextUrl(t *testing.T) {
 	x := AppContext{
 		ApiHost: "api.bc.gov.ca",
 	}
@@ -46,7 +46,71 @@ func TestContxtUrl(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		url, _ := x.CreateUrl(tt.path, tt.params)
-		assert.Equal(t, tt.expect, url, tt.name)
+		t.Run(tt.name, func(t *testing.T) {
+			url, _ := x.CreateUrl(tt.path, tt.params)
+			assert.Equal(t, tt.expect, url, tt.name)
+		})
+	}
+}
+
+func TestCreateUrl(t *testing.T) {
+	tests := []struct {
+		name   string
+		expect string
+		ctx    AppContext
+		hasErr bool
+		params interface{}
+	}{
+		{
+			name:   "ApiHost set",
+			expect: "https://api.gov.bc.ca/status",
+			ctx: AppContext{
+				ApiHost: "api.gov.bc.ca",
+			},
+		},
+		{
+			name:   "Host set",
+			expect: "https://local.test/status",
+			ctx: AppContext{
+				ApiHost: "api.gov.bc.ca",
+				Host:    "local.test",
+			},
+		},
+		{
+			name:   "Correctly formated params",
+			expect: "https://local.test/status?hello=world",
+			ctx: AppContext{
+				ApiHost: "api.gov.bc.ca",
+				Host:    "local.test",
+			},
+			params: struct {
+				Hello string `url:"hello"`
+			}{
+				Hello: "world",
+			},
+		},
+		{
+			name:   "no host",
+			ctx:    AppContext{},
+			hasErr: true,
+		},
+		{
+			name:   "incorrectly formatted params",
+			ctx:    AppContext{},
+			hasErr: true,
+			params: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			url, err := tt.ctx.CreateUrl("/status", tt.params)
+			if tt.hasErr {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+				assert.Equal(t, tt.expect, url)
+			}
+		})
 	}
 }

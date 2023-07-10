@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"errors"
 	"net/url"
 
 	"github.com/google/go-querystring/query"
@@ -13,6 +14,7 @@ type AppContext struct {
 	AppVersion int
 	ClientId   string
 	Cwd        string
+	Host       string
 }
 
 func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) {
@@ -22,9 +24,17 @@ func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) 
 	}
 	queryString := q.Encode()
 
+	if a.ApiHost == "" && a.Host == "" {
+		return "", errors.New("no host set")
+	}
+	host := a.ApiHost
+	if a.Host != "" {
+		host = a.Host
+	}
+
 	url := url.URL{
 		Scheme:   "https",
-		Host:     a.ApiHost,
+		Host:     host,
 		Path:     path,
 		RawQuery: queryString,
 	}

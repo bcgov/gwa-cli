@@ -74,13 +74,18 @@ func fetchConfigUrl(ctx *AppContext) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	linkHeader := response.Header.Get("Link")
-	result, err := parseLinkHeader(linkHeader)
-	if err != nil {
-		return "", err
+
+	if response.StatusCode == http.StatusOK {
+		linkHeader := response.Header.Get("Link")
+		result, err := parseLinkHeader(linkHeader)
+		if err != nil {
+			return "", err
+		}
+
+		return result, nil
 	}
 
-	return result, nil
+	return "", errors.New("host is not configured correctly")
 }
 
 func parseLinkHeader(link string) (string, error) {
@@ -100,7 +105,7 @@ func parseLinkHeader(link string) (string, error) {
 	}
 
 	if result == "" {
-		return result, errors.New("unable to find OpenAPI")
+		return result, errors.New("unable to find OpenAPI configuration")
 	}
 	return result, nil
 }
@@ -301,9 +306,9 @@ type CredentialError struct {
 }
 
 func clientCredentialLogin(wellKnownConfig WellKnownConfig, clientId string, clientSecret string) error {
-	data := url.Values{}
+	data := make(url.Values)
 	data.Set("client_id", clientId)
-	data.Set("client_secretn", clientSecret)
+	data.Set("client_secret", clientSecret)
 	data.Set("grant_type", "client_credentials")
 	request, err := http.NewRequest(http.MethodPost, wellKnownConfig.TokenEndpoint, strings.NewReader(data.Encode()))
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -320,6 +325,7 @@ func clientCredentialLogin(wellKnownConfig WellKnownConfig, clientId string, cli
 		if err != nil {
 			return err
 		}
+		// TODO: extract this into a function if output is the same as device login
 		var auth TokenResponse
 		json.Unmarshal(b, &auth)
 		viper.Set("api_key", auth.AccessToken)

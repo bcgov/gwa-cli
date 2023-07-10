@@ -8,9 +8,9 @@ import (
 )
 
 func NewLoginCmd(ctx *pkg.AppContext) *cobra.Command {
-
 	var clientId string
 	var clientSecret string
+
 	var loginCmd = &cobra.Command{
 		Use:   "login",
 		Short: "Log in to your IDIR account",
