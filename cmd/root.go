@@ -22,7 +22,11 @@ var rootCmd = &cobra.Command{
 func Execute(ctx *pkg.AppContext) {
 	cobra.OnInitialize(initConfig, func() {
 		ctx.ApiKey = viper.GetString("api_key")
+		ctx.Namespace = viper.GetString("namespace")
+		ctx.Host = viper.GetString("host")
+		ctx.Scheme = viper.GetString("scheme")
 	})
+	rootCmd.AddCommand(NewConfigCmd(ctx))
 	rootCmd.AddCommand(NewInit(ctx))
 	rootCmd.AddCommand(NewPublishGatewayCmd(ctx))
 	rootCmd.AddCommand(NewLoginCmd(ctx))
@@ -32,7 +36,9 @@ func Execute(ctx *pkg.AppContext) {
 	// rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "only print results, ideal for CI/CD")
 	rootCmd.PersistentFlags().StringVar(&ctx.Host, "host", "", "Set the default host to use for the API")
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
+	rootCmd.PersistentFlags().StringVar(&ctx.Namespace, "namespace", "", "Assign the namespace you would like to use")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace"))
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -48,6 +54,7 @@ func initConfig() {
 
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
+		viper.SetDefault("scheme", "https")
 		viper.SetConfigName(".gwa-config")
 
 		viper.SafeWriteConfig()

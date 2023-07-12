@@ -15,6 +15,7 @@ type AppContext struct {
 	ClientId   string
 	Cwd        string
 	Host       string
+	Namespace  string
 	Scheme     string
 }
 

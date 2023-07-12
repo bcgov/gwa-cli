@@ -206,15 +206,12 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string) error {
 		fmt.Println("\nWaiting for authentication handshake...")
 
 		for i := 0; i < 60; i++ {
-			auth, err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, device.DeviceCode)
+			fmt.Println("polling", i)
+			err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, device.DeviceCode)
 			if err == nil {
-				viper.Set("api_key", auth.AccessToken)
-				viper.Set("refresh_token", auth.RefreshToken)
-				viper.Set("refresh_expires_in", auth.RefreshExpiresIn)
-				viper.WriteConfig()
 				return nil
 			}
-			time.Sleep(time.Second * 7)
+			time.Sleep(time.Second * 8)
 		}
 		return errors.New("login request timed out")
 	} else {
@@ -253,8 +250,7 @@ func fetchWellKnown(url string) (WellKnownConfig, error) {
 	return wellKnownConfig, err
 }
 
-func pollAuthStatus(URL string, clientId string, deviceCode string) (TokenResponse, error) {
-	var tokenData TokenResponse
+func pollAuthStatus(URL string, clientId string, deviceCode string) error {
 	data := url.Values{}
 	data.Set("device_code", deviceCode)
 	data.Set("client_id", clientId)
@@ -265,14 +261,14 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) (TokenRespon
 	request.Header.Set("Accepts", "application/json")
 
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	client := http.Client{}
 	response, err := client.Do(request)
 
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
 	defer response.Body.Close()
@@ -280,24 +276,20 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) (TokenRespon
 	if response.StatusCode != http.StatusOK {
 		b, err := io.ReadAll(response.Body)
 		if err != nil {
-			return tokenData, err
+			return err
 		}
 
 		var errorResult TokenRequestError
 		json.Unmarshal(b, &errorResult)
-		return tokenData, errors.New(errorResult.ErrorDescription)
+		return errors.New(errorResult.ErrorDescription)
 	}
 
 	if response.StatusCode == http.StatusOK {
-		b, err := io.ReadAll(response.Body)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		json.Unmarshal(b, &tokenData)
-		return tokenData, nil
+		saveConfig(response.Body)
+		return nil
 	}
-	return tokenData, nil
+
+	return nil
 }
 
 type CredentialError struct {
@@ -321,19 +313,13 @@ func clientCredentialLogin(wellKnownConfig WellKnownConfig, clientId string, cli
 	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusOK {
-		b, err := io.ReadAll(response.Body)
+		err := saveConfig(response.Body)
 		if err != nil {
 			return err
 		}
-		// TODO: extract this into a function if output is the same as device login
-		var auth TokenResponse
-		json.Unmarshal(b, &auth)
-		viper.Set("api_key", auth.AccessToken)
-		viper.Set("refresh_token", auth.RefreshToken)
-		viper.Set("refresh_expires_in", auth.RefreshExpiresIn)
-		viper.WriteConfig()
 		return nil
 	}
+
 	var errorMessage CredentialError
 	b, err := io.ReadAll(response.Body)
 	json.Unmarshal(b, &errorMessage)
@@ -341,5 +327,23 @@ func clientCredentialLogin(wellKnownConfig WellKnownConfig, clientId string, cli
 	if err != nil {
 		return err
 	}
+
 	return errors.New(errorMessage.Description)
+}
+
+func saveConfig(data io.Reader) error {
+	b, err := io.ReadAll(data)
+	if err != nil {
+		return err
+	}
+	var auth TokenResponse
+	json.Unmarshal(b, &auth)
+	viper.Set("api_key", auth.AccessToken)
+	viper.Set("refresh_token", auth.RefreshToken)
+	viper.Set("refresh_expires_in", auth.RefreshExpiresIn)
+	err = viper.WriteConfig()
+	if err != nil {
+		return err
+	}
+	return nil
 }

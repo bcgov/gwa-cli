@@ -151,13 +151,23 @@ func TestErrorStruct(t *testing.T) {
 	}{
 		{
 			name:     "standard error",
-			expected: "Service Unavailable: The server is not responding",
+			expected: "Service Unavailable\nThe server is not responding",
 			payload:  `{"error": "Service Unavailable", "error_description":  "The server is not responding"}`,
 		},
 		{
 			name:     "dense error",
-			expected: "jwt invalid: you are not authorized to visit",
+			expected: "jwt invalid\nyou are not authorized to visit",
 			payload:  `{"message": "jwt invalid", "details": {"d0": {"message": "you are not authorized to visit"}}}`,
+		},
+		{
+			name:     "error only",
+			expected: "Service Unavailable",
+			payload:  `{"error": "Service Unavailable"}`,
+		},
+		{
+			name:     "description only",
+			expected: "The server is not responding",
+			payload:  `{"error_description":  "The server is not responding"}`,
 		},
 		{
 			name:     "empty payload",

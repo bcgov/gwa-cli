@@ -3,10 +3,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"path/filepath"
 
@@ -15,7 +12,6 @@ import (
 )
 
 type publishOptions struct {
-	namespace  string
 	dryRun     bool
 	configFile string
 }
@@ -23,13 +19,23 @@ type publishOptions struct {
 func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &publishOptions{}
 	var publishGatewayCmd = &cobra.Command{
-		Use:   "publish-gateway [configFile]",
-		Short: "Publish your gateway config",
-		Long:  `Publishing content to come`,
-		Args:  cobra.MinimumNArgs(1),
-		RunE: func(_ *cobra.Command, args []string) error {
-			opts.configFile = args[0]
+		Use:     "publish-gateway [configFile]",
+		Aliases: []string{"pg"},
+		Short:   "Publish your gateway config",
+		Long:    `Publishing content to come`,
+		Args:    cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
 
+			if ctx.Namespace == "" {
+				cmd.SetUsageTemplate(`
+A namespace must be set via the config command
+
+Example:
+    $ gwa config set namespace YOUR_NAMESPACE_NAME
+`)
+				return fmt.Errorf("No namespace has been set")
+			}
+			opts.configFile = args[0]
 			err := Publish(ctx, opts)
 			if err != nil {
 				return err
@@ -42,7 +48,6 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 	}
 
 	publishGatewayCmd.Flags().BoolVar(&opts.dryRun, "dry-run", false, "Dry run your API changes before committing to them")
-	publishGatewayCmd.Flags().StringVarP(&opts.namespace, "namespace", "n", "", "Publish your API to a specific namespace")
 
 	return publishGatewayCmd
 }
@@ -67,34 +72,14 @@ func Publish(ctx *pkg.AppContext, opts *publishOptions) error {
 	if err != nil {
 		return err
 	}
-	bodyReader := bytes.NewReader(jsonBody)
+	body := bytes.NewReader(jsonBody)
 
 	// Request
-	pathname := fmt.Sprintf("/namespaces/%s/gateway", opts.namespace)
+	pathname := fmt.Sprintf("/namespaces/%s/gateway", ctx.Namespace)
 	URL, _ := ctx.CreateUrl(pathname, nil)
-	request, err := http.NewRequest(http.MethodPut, URL, bodyReader)
+	_, err = pkg.ApiPut[any](ctx, URL, body)
 	if err != nil {
 		return err
-	}
-	bearer := fmt.Sprintf("bearer %s", ctx.ApiKey)
-	request.Header.Set("Authorization", bearer)
-	request.Header.Set("Content-Type", "application/json")
-
-	client := http.Client{}
-	response, err := client.Do(request)
-
-	if err != nil {
-		return err
-	}
-
-	if response.StatusCode != http.StatusOK {
-		body, err := io.ReadAll(response.Body)
-		defer response.Body.Close()
-		if err != nil {
-			return err
-		}
-		// TODO: Return a message from the error JSON if available
-		return errors.New(string(body))
 	}
 
 	return nil

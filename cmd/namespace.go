@@ -83,5 +83,5 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 	}
 	response, err := pkg.ApiPost[NamespaceResult](ctx, URL, nil)
 
-	return response.Data.Name, nil
+	return response.Data.Name, err
 }

@@ -38,7 +38,7 @@ func (e *ApiErrorResponse) GetError() string {
 		result = append(result, "something broke")
 	}
 
-	return strings.Join(result, ": ")
+	return strings.Join(result, "\n")
 }
 
 type ApiResponse[T any] struct {
