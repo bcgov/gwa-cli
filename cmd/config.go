@@ -63,7 +63,7 @@ $ gwa config set --namespace ns-sampler
 	}
 
 	configCmd.Flags().String("token", "", "set the namespace")
-	viper.BindPFlag("token", configCmd.Flags().Lookup("token"))
+	viper.BindPFlag("api_key", configCmd.Flags().Lookup("token"))
 	configCmd.Flags().String("namespace", "", "set the namespace")
 	viper.BindPFlag("namespace", configCmd.Flags().Lookup("namespace"))
 	configCmd.Flags().String("host", "", "set the host")
