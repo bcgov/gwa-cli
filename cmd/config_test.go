@@ -74,9 +74,6 @@ func TestSuccessfulConfigCommands(t *testing.T) {
 			cobra.OnInitialize(func() {
 				SetupConfig(dir)
 			})
-			mainCmd.PersistentFlags().StringVar(&ctx.Host, "host", "", "Set the default host to use for the API")
-			mainCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
-			mainCmd.PersistentFlags().StringVar(&ctx.Namespace, "namespace", "", "Assign the namespace you would like to use")
 			mainCmd.AddCommand(NewConfigCmd(ctx))
 			mainCmd.SetArgs(args)
 			out := capturer.CaptureOutput(func() {
@@ -89,6 +86,50 @@ func TestSuccessfulConfigCommands(t *testing.T) {
 				key = tt.configKey
 			}
 			assert.Equal(t, tt.args[1], viper.GetString(key))
+		})
+	}
+}
+
+func TestErrorConfigCommands(t *testing.T) {
+	dir := t.TempDir()
+	tests := []struct {
+		name   string
+		args   []string
+		expect string
+	}{
+		{
+			name:   "key doesn't exist",
+			args:   []string{"random", "akasjfowej"},
+			expect: "The key <random> is not allowed to be set",
+		},
+		{
+			name:   "no value set",
+			args:   []string{"host"},
+			expect: "No value was set for [host]",
+		},
+		{
+			name:   "no flag value set",
+			args:   []string{"--namespace"},
+			expect: "flag needs an argument: --namespace",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			args := append([]string{"config", "set"}, tt.args...)
+			ctx := &pkg.AppContext{}
+			mainCmd := &cobra.Command{
+				Use: "gwa",
+			}
+			cobra.OnInitialize(func() {
+				SetupConfig(dir)
+			})
+			mainCmd.AddCommand(NewConfigCmd(ctx))
+			mainCmd.SetArgs(args)
+			out := capturer.CaptureStderr(func() {
+				mainCmd.Execute()
+			})
+
+			assert.Contains(t, out, tt.expect)
 		})
 	}
 }
