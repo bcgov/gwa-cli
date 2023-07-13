@@ -39,15 +39,15 @@ func TestPublishCommands(t *testing.T) {
 			configFile: "config.yaml",
 			response:   httpmock.NewStringResponder(200, `{"id": 1}`),
 			expect:     "Gateway config published",
-			args:       []string{"config.yaml", "--namespace=ns-sampler"},
+			args:       []string{"config.yaml"},
 		},
 		{
 			name:       "api error",
 			setup:      nil,
 			configFile: "config.yaml",
 			response:   httpmock.NewStringResponder(500, `{"error": "something went wrong"}`),
-			expect:     `{"error": "something went wrong"}`,
-			args:       []string{"config.yaml", "--namespace=ns-sampler"},
+			expect:     "something went wrong",
+			args:       []string{"config.yaml"},
 		},
 	}
 
@@ -66,8 +66,9 @@ func TestPublishCommands(t *testing.T) {
 				os.WriteFile(filePath, []byte(configFileContents), 0644)
 			}
 			ctx := &pkg.AppContext{
-				Cwd:     cwd,
-				ApiHost: API_HOST,
+				Cwd:       cwd,
+				ApiHost:   API_HOST,
+				Namespace: "ns-sampler",
 			}
 
 			args := append([]string{"publish-gateway"}, tt.args...)
@@ -111,14 +112,14 @@ func TestPublish(t *testing.T) {
 
 	cwd := t.TempDir()
 	ctx := &pkg.AppContext{
-		ApiHost: API_HOST,
-		Cwd:     cwd,
+		ApiHost:   API_HOST,
+		Cwd:       cwd,
+		Namespace: "ns-sampler",
 	}
 	fileName := "config.yaml"
 	filePath := filepath.Join(cwd, fileName)
 	os.WriteFile(filePath, []byte(configFileContents), 0644)
 	opts := &publishOptions{
-		namespace:  "ns-sampler",
 		configFile: fileName,
 		dryRun:     true,
 	}
@@ -136,14 +137,14 @@ func TestPublishError(t *testing.T) {
 
 	cwd := t.TempDir()
 	ctx := &pkg.AppContext{
-		ApiHost: API_HOST,
-		Cwd:     cwd,
+		ApiHost:   API_HOST,
+		Cwd:       cwd,
+		Namespace: "ns-sampler",
 	}
 	fileName := "config.yaml"
 	filePath := filepath.Join(cwd, fileName)
 	os.WriteFile(filePath, []byte(configFileContents), 0644)
 	opts := &publishOptions{
-		namespace:  "ns-sampler",
 		configFile: fileName,
 		dryRun:     false,
 	}

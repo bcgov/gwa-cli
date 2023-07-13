@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -20,7 +19,7 @@ type ApiErrorResponse struct {
 	} `json:"details"`
 }
 
-func (e *ApiErrorResponse) GetError() string {
+func (e *ApiErrorResponse) GetError() error {
 	var result []string
 	if e.Error != "" {
 		result = append(result, e.Error)
@@ -38,7 +37,8 @@ func (e *ApiErrorResponse) GetError() string {
 		result = append(result, "something broke")
 	}
 
-	return strings.Join(result, "\n")
+	fullResult := strings.Join(result, "\n")
+	return fmt.Errorf(fullResult)
 }
 
 type ApiResponse[T any] struct {
@@ -57,6 +57,7 @@ func Api[T any](ctx *AppContext, url string, method string, requestBody io.Reade
 	bearer := fmt.Sprintf("Bearer %s", ctx.ApiKey)
 	request.Header.Set("Authorization", bearer)
 	request.Header.Set("Content-Type", "application/json")
+	request.Header.Set("Accepts", "application/json")
 	if requestBody != nil {
 		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	}
@@ -79,8 +80,11 @@ func Api[T any](ctx *AppContext, url string, method string, requestBody io.Reade
 		return result, err
 	} else {
 		var errorResponse ApiErrorResponse
-		json.Unmarshal(body, &errorResponse)
-		return result, errors.New(errorResponse.GetError())
+		err := json.Unmarshal(body, &errorResponse)
+		if err != nil {
+			return result, fmt.Errorf(string(body))
+		}
+		return result, errorResponse.GetError()
 	}
 }
 

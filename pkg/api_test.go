@@ -181,7 +181,7 @@ func TestErrorStruct(t *testing.T) {
 			var result ApiErrorResponse
 			json.Unmarshal([]byte(tt.payload), &result)
 
-			assert.Equal(t, tt.expected, result.GetError())
+			assert.ErrorContains(t, result.GetError(), tt.expected)
 		})
 	}
 }

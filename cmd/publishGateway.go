@@ -77,7 +77,7 @@ func Publish(ctx *pkg.AppContext, opts *publishOptions) error {
 	// Request
 	pathname := fmt.Sprintf("/namespaces/%s/gateway", ctx.Namespace)
 	URL, _ := ctx.CreateUrl(pathname, nil)
-	_, err = pkg.ApiPut[any](ctx, URL, body)
+	data, err := pkg.ApiPut[any](ctx, URL, body)
 	if err != nil {
 		return err
 	}

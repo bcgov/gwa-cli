@@ -35,7 +35,6 @@ Configurable Settings:
 $ gwa config set namespace ns-sampler
 $ gwa config set --namespace ns-sampler
     `,
-		// ValidArgs: []string{"host", "namespace", "scheme", "token"},
 		RunE: func(_ *cobra.Command, args []string) error {
 			if len(args) > 1 {
 				switch args[0] {
@@ -56,7 +55,10 @@ $ gwa config set --namespace ns-sampler
 				return fmt.Errorf("No value was set for %s", args)
 			}
 
-			viper.WriteConfig()
+			err := viper.WriteConfig()
+			if err != nil {
+				return err
+			}
 			fmt.Println("Config settings saved")
 			return nil
 		},
