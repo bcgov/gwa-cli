@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
+	"io"
+	"mime/multipart"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
@@ -36,7 +38,7 @@ Example:
 				return fmt.Errorf("No namespace has been set")
 			}
 			opts.configFile = args[0]
-			err := Publish(ctx, opts)
+			err := PublishGateway(ctx, opts)
 			if err != nil {
 				return err
 			}
@@ -52,32 +54,58 @@ Example:
 	return publishGatewayCmd
 }
 
-func Publish(ctx *pkg.AppContext, opts *publishOptions) error {
+type PublishGatewayResponse struct {
+	Message string `json:"message"`
+	Results string `json:"results"`
+	Error   string `json:"error"`
+}
+
+func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) error {
+	// Open the file
 	filePath := filepath.Join(ctx.Cwd, opts.configFile)
-	f, err := os.ReadFile(filePath)
+	file, err := os.Open(filePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	fw := multipart.NewWriter(body)
+
+	dryRunField, err := fw.CreateFormField("dryRun")
 	if err != nil {
 		return err
 	}
 
-	content := map[string]interface{}{
-		"configFile": map[string]interface{}{
-			"value": string(f),
-			"options": map[string]interface{}{
-				"filename": opts.configFile,
-			},
-		},
-		"dryRun": opts.dryRun,
-	}
-	jsonBody, err := json.Marshal(content)
+	dryRunValue := strconv.FormatBool(opts.dryRun)
+	dryRunField.Write([]byte(dryRunValue))
+
+	fileField, err := fw.CreateFormFile("configFile", file.Name())
 	if err != nil {
 		return err
 	}
-	body := bytes.NewReader(jsonBody)
 
-	// Request
-	pathname := fmt.Sprintf("/namespaces/%s/gateway", ctx.Namespace)
+	_, err = io.Copy(fileField, body)
+	if err != nil {
+		return err
+	}
+
+	pathname := fmt.Sprintf("/ds/api/v2/namespaces/%s/gateway", ctx.Namespace)
 	URL, _ := ctx.CreateUrl(pathname, nil)
-	_, err = pkg.ApiPut[any](ctx, URL, body)
+	r, err := pkg.NewApiPut[PublishGatewayResponse](ctx, URL, body)
+	if err != nil {
+		return err
+	}
+	r.Request.Header.Set("Content-Type", fw.FormDataContentType())
+	contentLength := int64(body.Len())
+	r.Request.ContentLength = contentLength
+
+	err = fw.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.Do()
 	if err != nil {
 		return err
 	}

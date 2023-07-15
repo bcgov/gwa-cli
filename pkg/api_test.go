@@ -3,8 +3,10 @@ package pkg
 import (
 	"bytes"
 	"encoding/json"
+	// "mime/multipart"
 	"net/http"
 	"net/url"
+	// "strings"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -40,7 +42,12 @@ func TestApiGet(t *testing.T) {
 		ApiKey: "123123123",
 	}
 
-	response, err := Api[BasicResponse](ctx, URL, "GET", nil)
+	r, err := NewApiGet[BasicResponse](ctx, URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := r.Do()
+
 	assert.Equal(t, 200, response.StatusCode)
 	assert.Equal(t, BasicResponse{Name: "Hello", Total: 42, Id: 1}, response.Data)
 	assert.Nil(t, err)
@@ -65,7 +72,15 @@ func TestApiPost(t *testing.T) {
 	data.Set("total", "42")
 	body := bytes.NewReader([]byte(data.Encode()))
 
-	response, err := Api[BasicResponse](ctx, URL, "POST", body)
+	r, err := NewApiPost[BasicResponse](ctx, URL, body)
+	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := r.Do()
+	if err != nil {
+		t.Fatal(err)
+	}
 	assert.Equal(t, 200, response.StatusCode)
 	assert.Equal(t, BasicResponse{Name: "Hello", Total: 42, Id: 1}, response.Data)
 	assert.Nil(t, err)
@@ -90,7 +105,15 @@ func TestApiPut(t *testing.T) {
 	data.Set("total", "42")
 	body := bytes.NewReader([]byte(data.Encode()))
 
-	response, err := Api[BasicResponse](ctx, URL, "PUT", body)
+	r, err := NewApiPut[BasicResponse](ctx, URL, body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response, err := r.Do()
+	if err != nil {
+		t.Fatal(err)
+	}
 	assert.Equal(t, 200, response.StatusCode)
 	assert.Equal(t, BasicResponse{Name: "World", Total: 42, Id: 1}, response.Data)
 	assert.Nil(t, err)
@@ -108,7 +131,12 @@ func TestApiDelete(t *testing.T) {
 		})
 	})
 
-	response, err := Api[BasicResponse](ctx, URL, "DELETE", nil)
+	r, err := NewApiDelete[BasicResponse](ctx, URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := r.Do()
+
 	assert.Equal(t, 200, response.StatusCode)
 	assert.Equal(t, BasicResponse{Name: "World", Total: 42, Id: 1}, response.Data)
 	assert.Nil(t, err)
@@ -125,7 +153,12 @@ func TestApiError(t *testing.T) {
 		})
 	})
 
-	response, err := Api[BasicResponse](ctx, URL, "GET", nil)
+	r, err := NewApiGet[BasicResponse](ctx, URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := r.Do()
+
 	assert.NotNil(t, err)
 	assert.Equal(t, 500, response.StatusCode)
 }
@@ -138,7 +171,12 @@ func TestEmptyApiError(t *testing.T) {
 		return httpmock.NewStringResponse(500, ""), nil
 	})
 
-	response, err := Api[BasicResponse](ctx, URL, "GET", nil)
+	r, err := NewApiGet[BasicResponse](ctx, URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response, err := r.Do()
+
 	assert.NotNil(t, err)
 	assert.Equal(t, 500, response.StatusCode)
 }

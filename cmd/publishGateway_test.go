@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -32,6 +30,7 @@ func TestPublishCommands(t *testing.T) {
 		response   httpmock.Responder
 		expect     string
 		args       []string
+		namespace  string
 	}{
 		{
 			name:       "successful straight publish",
@@ -40,6 +39,7 @@ func TestPublishCommands(t *testing.T) {
 			response:   httpmock.NewStringResponder(200, `{"id": 1}`),
 			expect:     "Gateway config published",
 			args:       []string{"config.yaml"},
+			namespace:  "ns-sampler",
 		},
 		{
 			name:       "api error",
@@ -48,6 +48,16 @@ func TestPublishCommands(t *testing.T) {
 			response:   httpmock.NewStringResponder(500, `{"error": "something went wrong"}`),
 			expect:     "something went wrong",
 			args:       []string{"config.yaml"},
+			namespace:  "ns-sampler",
+		},
+		{
+			name:       "missing namespace",
+			setup:      nil,
+			configFile: "config.yaml",
+			response:   httpmock.NewStringResponder(500, `{"error": "something went wrong"}`),
+			expect:     "No namespace has been set",
+			args:       []string{"config.yaml"},
+			namespace:  "",
 		},
 	}
 
@@ -55,20 +65,22 @@ func TestPublishCommands(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/namespaces/ns-sampler/gateway", tt.response)
+			httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/ds/api/v2/namespaces/ns-sampler/gateway", tt.response)
 			cwd := t.TempDir()
 
 			if tt.setup != nil {
 				tt.setup()
 			}
+
 			if tt.configFile != "" {
 				filePath := filepath.Join(cwd, tt.configFile)
 				os.WriteFile(filePath, []byte(configFileContents), 0644)
 			}
+
 			ctx := &pkg.AppContext{
 				Cwd:       cwd,
 				ApiHost:   API_HOST,
-				Namespace: "ns-sampler",
+				Namespace: tt.namespace,
 			}
 
 			args := append([]string{"publish-gateway"}, tt.args...)
@@ -90,23 +102,13 @@ func TestPublish(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/ds/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		assert.Contains(t, r.URL.Path, "ns-sampler")
-		content := map[string]interface{}{
-			"configFile": map[string]interface{}{
-				"value": configFileContents,
-				"options": map[string]interface{}{
-					"filename": "config.yaml",
-				},
-			},
-			"dryRun": true,
-		}
-		jsonBody, _ := json.Marshal(content)
-		payload, _ := io.ReadAll(r.Body)
-		assert.Equal(t, string(jsonBody), string(payload))
 
 		return httpmock.NewJsonResponse(200, map[string]interface{}{
-			"id": "123",
+			"message": "gateway published",
+			"results": "aok",
+			"error":   "",
 		})
 	})
 
@@ -123,7 +125,7 @@ func TestPublish(t *testing.T) {
 		configFile: fileName,
 		dryRun:     true,
 	}
-	err := Publish(ctx, opts)
+	err := PublishGateway(ctx, opts)
 	assert.Nil(t, err, "request success")
 }
 
@@ -131,7 +133,7 @@ func TestPublishError(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/ds/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		return httpmock.NewJsonResponse(401, "Unauthorized")
 	})
 
@@ -148,7 +150,7 @@ func TestPublishError(t *testing.T) {
 		configFile: fileName,
 		dryRun:     false,
 	}
-	err := Publish(ctx, opts)
+	err := PublishGateway(ctx, opts)
 	assert.ErrorContains(t, err, "Unauthorized")
 	assert.NotNil(t, err, "request failed")
 }

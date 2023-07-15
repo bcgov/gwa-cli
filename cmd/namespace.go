@@ -20,7 +20,7 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 type NamespaceFormData struct {
-	namespace   string
+	name        string
 	description string
 }
 
@@ -30,7 +30,11 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "List all your managed namespaces",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			URL, _ := ctx.CreateUrl("/ds/api/v2/namespaces", nil)
-			response, err := pkg.ApiGet[[]string](ctx, URL)
+			r, err := pkg.NewApiGet[[]string](ctx, URL)
+			if err != nil {
+				return err
+			}
+			response, err := r.Do()
 			if err != nil {
 				if response.StatusCode == http.StatusUnauthorized {
 					cmd.SetUsageTemplate("\nNext Steps:\nRun gwa login to obtain another auth token")
@@ -38,11 +42,15 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
+			if len(response.Data) <= 0 {
+				fmt.Println("You have no namespaces")
+			}
+
 			for _, n := range response.Data {
 				fmt.Println(n)
 			}
-			return nil
 
+			return nil
 		},
 	}
 
@@ -66,7 +74,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 			return nil
 		},
 	}
-	createCommand.Flags().StringVarP(&namespaceFormData.namespace, "namespace", "n", "", "optionally define your own namespace")
+	createCommand.Flags().StringVarP(&namespaceFormData.name, "name", "n", "", "optionally define your own namespace")
 	createCommand.Flags().StringVarP(&namespaceFormData.description, "description", "d", "", "optionally add a description")
 
 	return createCommand
@@ -81,7 +89,15 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 	if err != nil {
 		return "", err
 	}
-	response, err := pkg.ApiPost[NamespaceResult](ctx, URL, nil)
+	r, err := pkg.NewApiPost[NamespaceResult](ctx, URL, nil)
+	if err != nil {
+		return "", err
+	}
 
-	return response.Data.Name, err
+	response, err := r.Do()
+	if err != nil {
+		return "", err
+	}
+
+	return response.Data.Name, nil
 }

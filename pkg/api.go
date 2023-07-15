@@ -46,22 +46,34 @@ type ApiResponse[T any] struct {
 	Data       T
 }
 
-func Api[T any](ctx *AppContext, url string, method string, requestBody io.Reader) (ApiResponse[T], error) {
-	var data T
-	result := ApiResponse[T]{}
-	client := http.Client{}
-	request, err := http.NewRequest(method, url, requestBody)
+type NewApi[T any] struct {
+	ctx     *AppContext
+	method  string
+	url     string
+	body    io.Reader
+	Request *http.Request
+}
+
+func (m *NewApi[T]) New() (*NewApi[T], error) {
+	request, err := http.NewRequest(m.method, m.url, m.body)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-	bearer := fmt.Sprintf("Bearer %s", ctx.ApiKey)
+	bearer := fmt.Sprintf("Bearer %s", m.ctx.ApiKey)
 	request.Header.Set("Authorization", bearer)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accepts", "application/json")
-	if requestBody != nil {
-		request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	}
-	response, err := client.Do(request)
+
+	m.Request = request
+
+	return m, err
+}
+
+func (m *NewApi[T]) Do() (ApiResponse[T], error) {
+	var data T
+	result := ApiResponse[T]{}
+	client := new(http.Client)
+	response, err := client.Do(m.Request)
 	if err != nil {
 		return result, err
 	}
@@ -88,18 +100,81 @@ func Api[T any](ctx *AppContext, url string, method string, requestBody io.Reade
 	}
 }
 
-func ApiGet[T any](ctx *AppContext, url string) (ApiResponse[T], error) {
-	return Api[T](ctx, url, http.MethodGet, nil)
+func NewApiGet[T any](ctx *AppContext, url string) (*NewApi[T], error) {
+	config := NewApi[T]{ctx: ctx, method: "GET", url: url}
+	request, err := config.New()
+	return request, err
 }
 
-func ApiPost[T any](ctx *AppContext, url string, body io.Reader) (ApiResponse[T], error) {
-	return Api[T](ctx, url, http.MethodPost, body)
+func NewApiPost[T any](ctx *AppContext, url string, body io.Reader) (*NewApi[T], error) {
+	config := NewApi[T]{ctx: ctx, method: "POST", url: url, body: body}
+	request, err := config.New()
+	return request, err
 }
 
-func ApiPut[T any](ctx *AppContext, url string, body io.Reader) (ApiResponse[T], error) {
-	return Api[T](ctx, url, http.MethodPut, body)
+func NewApiPut[T any](ctx *AppContext, url string, body io.Reader) (*NewApi[T], error) {
+	config := NewApi[T]{ctx: ctx, method: "PUT", url: url, body: body}
+	request, err := config.New()
+	return request, err
 }
 
-func ApiDelete[T any](ctx *AppContext, url string) (ApiResponse[T], error) {
-	return Api[T](ctx, url, http.MethodDelete, nil)
+func NewApiDelete[T any](ctx *AppContext, url string) (*NewApi[T], error) {
+	config := NewApi[T]{ctx: ctx, method: "DELETE", url: url}
+	request, err := config.New()
+	return request, err
 }
+
+// func Api[T any](ctx *AppContext, url string, method string, requestBody io.Reader) (ApiResponse[T], error) {
+// 	var data T
+// 	result := ApiResponse[T]{}
+// 	client := http.Client{}
+// 	request, err := http.NewRequest(method, url, requestBody)
+// 	if err != nil {
+// 		return result, err
+// 	}
+// 	bearer := fmt.Sprintf("Bearer %s", ctx.ApiKey)
+// 	request.Header.Set("Authorization", bearer)
+// 	// request.Header.Set("Content-Type", contentType)
+// 	request.Header.Set("Accepts", "application/json")
+// 	response, err := client.Do(request)
+// 	if err != nil {
+// 		return result, err
+// 	}
+//
+// 	body, err := io.ReadAll(response.Body)
+// 	if err != nil {
+// 		return result, err
+// 	}
+// 	defer response.Body.Close()
+//
+// 	result.StatusCode = response.StatusCode
+// 	if response.StatusCode == http.StatusOK {
+// 		json.Unmarshal(body, &data)
+// 		result.Data = data
+//
+// 		return result, err
+// 	} else {
+// 		var errorResponse ApiErrorResponse
+// 		err := json.Unmarshal(body, &errorResponse)
+// 		if err != nil {
+// 			return result, fmt.Errorf(string(body))
+// 		}
+// 		return result, errorResponse.GetError()
+// 	}
+// }
+//
+// func ApiGet[T any](ctx *AppContext, url string) (ApiResponse[T], error) {
+// 	return Api[T](ctx, url, http.MethodGet, nil)
+// }
+//
+// func ApiPost[T any](ctx *AppContext, url string, body io.Reader) (ApiResponse[T], error) {
+// 	return Api[T](ctx, url, http.MethodPost, body)
+// }
+//
+// func ApiPut[T any](ctx *AppContext, url string, body io.Reader) (ApiResponse[T], error) {
+// 	return Api[T](ctx, url, http.MethodPut, body)
+// }
+//
+// func ApiDelete[T any](ctx *AppContext, url string) (ApiResponse[T], error) {
+// 	return Api[T](ctx, url, http.MethodDelete, nil)
+// }
