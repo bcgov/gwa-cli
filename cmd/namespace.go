@@ -16,6 +16,7 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 	}
 	namespaceCmd.AddCommand(NamespaceListCmd(ctx))
 	namespaceCmd.AddCommand(NamespaceCreateCmd(ctx))
+	namespaceCmd.AddCommand(NamespaceCurrentCmd(ctx))
 	return namespaceCmd
 }
 
@@ -100,4 +101,23 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 	}
 
 	return response.Data.Name, nil
+}
+
+func NamespaceCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
+	var currentCmd = &cobra.Command{
+		Use:   "current",
+		Short: "Display the current namespace",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if ctx.Namespace == "" {
+				cmd.SetUsageTemplate(`
+You can create a namespace by running:
+    $ gwa namespace create`)
+				return fmt.Errorf("no namespace has been defined")
+			}
+
+			fmt.Println(ctx.Namespace)
+			return nil
+		},
+	}
+	return currentCmd
 }

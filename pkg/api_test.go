@@ -3,10 +3,8 @@ package pkg
 import (
 	"bytes"
 	"encoding/json"
-	// "mime/multipart"
 	"net/http"
 	"net/url"
-	// "strings"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
