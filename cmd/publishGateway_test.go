@@ -65,7 +65,7 @@ func TestPublishCommands(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/ds/api/v2/namespaces/ns-sampler/gateway", tt.response)
+			httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", tt.response)
 			cwd := t.TempDir()
 
 			if tt.setup != nil {
@@ -102,7 +102,7 @@ func TestPublish(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/ds/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		assert.Contains(t, r.URL.Path, "ns-sampler")
 
 		return httpmock.NewJsonResponse(200, map[string]interface{}{
@@ -125,7 +125,7 @@ func TestPublish(t *testing.T) {
 		configFile: fileName,
 		dryRun:     true,
 	}
-	err := PublishGateway(ctx, opts)
+	_, err := PublishGateway(ctx, opts)
 	assert.Nil(t, err, "request success")
 }
 
@@ -133,7 +133,7 @@ func TestPublishError(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/ds/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		return httpmock.NewJsonResponse(401, "Unauthorized")
 	})
 
@@ -150,7 +150,7 @@ func TestPublishError(t *testing.T) {
 		configFile: fileName,
 		dryRun:     false,
 	}
-	err := PublishGateway(ctx, opts)
+	_, err := PublishGateway(ctx, opts)
 	assert.ErrorContains(t, err, "Unauthorized")
 	assert.NotNil(t, err, "request failed")
 }

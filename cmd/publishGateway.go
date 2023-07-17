@@ -36,12 +36,18 @@ Example:
 				return fmt.Errorf("No namespace has been set")
 			}
 			opts.configFile = args[0]
-			err := PublishGateway(ctx, opts)
+			result, err := PublishGateway(ctx, opts)
 			if err != nil {
 				return err
 			}
 
 			fmt.Println("Gateway config published")
+			fmt.Printf(`
+Details:
+  %s
+
+%s
+`, result.Message, result.Results)
 
 			return nil
 		},
@@ -58,12 +64,13 @@ type PublishGatewayResponse struct {
 	Error   string `json:"error"`
 }
 
-func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) error {
+func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) (PublishGatewayResponse, error) {
+	var result PublishGatewayResponse
 	// Open the file
 	filePath := filepath.Join(ctx.Cwd, opts.configFile)
 	file, err := os.Open(filePath)
 	if err != nil {
-		return err
+		return result, err
 	}
 	defer file.Close()
 
@@ -72,7 +79,7 @@ func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) error {
 
 	dryRunField, err := fw.CreateFormField("dryRun")
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	dryRunValue := strconv.FormatBool(opts.dryRun)
@@ -80,33 +87,35 @@ func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) error {
 
 	fileField, err := fw.CreateFormFile("configFile", file.Name())
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	_, err = io.Copy(fileField, file)
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	err = fw.Close()
 	if err != nil {
-		return err
+		return result, err
 	}
 
 	pathname := fmt.Sprintf("/gw/api/namespaces/%s/gateway", ctx.Namespace)
 	URL, _ := ctx.CreateUrl(pathname, nil)
 	r, err := pkg.NewApiPut[PublishGatewayResponse](ctx, URL, body)
 	if err != nil {
-		return err
+		return result, err
 	}
 	r.Request.Header.Set("Content-Type", fw.FormDataContentType())
 	contentLength := int64(body.Len())
 	r.Request.ContentLength = contentLength
 
-	_, err = r.Do()
+	response, err := r.Do()
 	if err != nil {
-		return err
+		return result, err
 	}
 
-	return nil
+	result = response.Data
+
+	return result, nil
 }
