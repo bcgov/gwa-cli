@@ -83,12 +83,17 @@ func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) error {
 		return err
 	}
 
-	_, err = io.Copy(fileField, body)
+	_, err = io.Copy(fileField, file)
 	if err != nil {
 		return err
 	}
 
-	pathname := fmt.Sprintf("/ds/api/v2/namespaces/%s/gateway", ctx.Namespace)
+	err = fw.Close()
+	if err != nil {
+		return err
+	}
+
+	pathname := fmt.Sprintf("/gw/api/namespaces/%s/gateway", ctx.Namespace)
 	URL, _ := ctx.CreateUrl(pathname, nil)
 	r, err := pkg.NewApiPut[PublishGatewayResponse](ctx, URL, body)
 	if err != nil {
@@ -97,11 +102,6 @@ func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) error {
 	r.Request.Header.Set("Content-Type", fw.FormDataContentType())
 	contentLength := int64(body.Len())
 	r.Request.ContentLength = contentLength
-
-	err = fw.Close()
-	if err != nil {
-		return err
-	}
 
 	_, err = r.Do()
 	if err != nil {
