@@ -98,7 +98,7 @@ func TestPublishCommands(t *testing.T) {
 	}
 }
 
-func TestPublish(t *testing.T) {
+func TestPublishGateway(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 

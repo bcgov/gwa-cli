@@ -24,7 +24,10 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:     "publish-gateway [configFile]",
 		Aliases: []string{"pg"},
 		Short:   "Publish your gateway config",
-		Args:    cobra.MinimumNArgs(1),
+		Example: `  $ gwa publish-gateway path/to/config.yaml
+  $ gwa publish-gateway path/to/config.yaml --dry-run
+    `,
+		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
 				cmd.SetUsageTemplate(`
