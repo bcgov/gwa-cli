@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewStatusCmd(ctx *pkg.AppContext) *cobra.Command {
+func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var isJSON bool
 
 	var statusCmd = &cobra.Command{
@@ -39,7 +40,7 @@ You can create a namespace by running:
 			}
 
 			if len(data) > 0 {
-				tbl := table.New("Status", "Name", "Reason", "Upstream")
+				tbl := table.New("Status", "Name", "Reason", "Upstream").WithWriter(buf)
 				for _, item := range data {
 					tbl.AddRow(item.Status, item.Name, item.Reason, item.Upstream)
 				}
