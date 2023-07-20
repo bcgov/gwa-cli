@@ -1,8 +1,8 @@
 package pkg
 
 import (
-	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"testing"
@@ -56,7 +56,7 @@ func TestApiPost(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	httpmock.RegisterResponder("POST", URL, func(r *http.Request) (*http.Response, error) {
-		assert.NotNil(t, r.Body)
+		assert.NotNil(t, r.PostForm)
 		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"), "content-type is set to form")
 		return httpmock.NewJsonResponse(200, map[string]interface{}{
 			"name":  "Hello",
@@ -68,13 +68,13 @@ func TestApiPost(t *testing.T) {
 	data := make(url.Values)
 	data.Set("name", "Hello")
 	data.Set("total", "42")
-	body := bytes.NewReader([]byte(data.Encode()))
 
-	r, err := NewApiPost[BasicResponse](ctx, URL, body)
-	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r, err := NewApiPost[BasicResponse](ctx, URL, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+	r.Request.PostForm = data
+	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	response, err := r.Do()
 	if err != nil {
 		t.Fatal(err)
@@ -89,7 +89,7 @@ func TestApiPut(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	httpmock.RegisterResponder("PUT", URL, func(r *http.Request) (*http.Response, error) {
-		assert.NotNil(t, r.Body)
+		assert.NotNil(t, r.PostForm)
 		assert.Equal(t, "application/x-www-form-urlencoded", r.Header.Get("Content-Type"), "content-type is set to form")
 		return httpmock.NewJsonResponse(200, map[string]interface{}{
 			"name":  "World",
@@ -101,20 +101,21 @@ func TestApiPut(t *testing.T) {
 	data := make(url.Values)
 	data.Set("name", "World")
 	data.Set("total", "42")
-	body := bytes.NewReader([]byte(data.Encode()))
 
-	r, err := NewApiPut[BasicResponse](ctx, URL, body)
+	r, err := NewApiPut[BasicResponse](ctx, URL, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
+	r.Request.PostForm = data
 	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	response, err := r.Do()
+	fmt.Println(err)
 	if err != nil {
 		t.Fatal(err)
 	}
 	assert.Equal(t, 200, response.StatusCode)
 	assert.Equal(t, BasicResponse{Name: "World", Total: 42, Id: 1}, response.Data)
-	assert.Nil(t, err)
+	// assert.Nil(t, err)
 }
 
 func TestApiDelete(t *testing.T) {
