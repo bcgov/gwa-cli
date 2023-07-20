@@ -40,7 +40,12 @@ You can create a namespace by running:
 			}
 
 			if len(data) > 0 {
-				tbl := table.New("Status", "Name", "Reason", "Upstream").WithWriter(buf)
+				tbl := table.New("Status", "Name", "Reason", "Upstream")
+
+				if buf != nil {
+					tbl.WithWriter(buf)
+				}
+
 				for _, item := range data {
 					tbl.AddRow(item.Status, item.Name, item.Reason, item.Upstream)
 				}
