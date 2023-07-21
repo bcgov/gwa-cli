@@ -73,9 +73,9 @@ $ gwa apply --input gw-config.yaml
 					if err != nil {
 						return err
 					}
-					fmt.Printf("%-20s %s\n", kind, data.Result)
+					fmt.Printf("%-20s %-40s %s\n", kind, configYaml["name"], data.Result)
 				} else {
-					fmt.Printf("%-20s SKIPPING\n", kind)
+					fmt.Printf("%-20s %-40s skipped\n", kind, configYaml["name"])
 				}
 			}
 			return nil
