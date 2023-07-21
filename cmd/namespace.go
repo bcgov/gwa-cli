@@ -6,6 +6,7 @@ import (
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -70,7 +71,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
-			// TODO: just returning the name, but determine if a URL would be better
+			viper.Set("namespace", namespace)
 			fmt.Println(namespace)
 			return nil
 		},

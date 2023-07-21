@@ -46,10 +46,10 @@ func NewPublishCmd(ctx *pkg.AppContext) *cobra.Command {
 		ValidArgs: []string{"content", "dataset", "product", "issuer"},
 		Args:      cobra.OnlyValidArgs,
 		Example: `
-$ gwa publish content --input content.yaml --content content.txt
-$ gwa publish dataset --input content.yaml --content content.txt
-$ gwa publish product --input content.yaml --content content.txt
-$ gwa publish issuer --input content.yaml --content content.txt
+$ gwa publish content --input content.yaml
+$ gwa publish dataset --input content.yaml
+$ gwa publish product --input content.yaml
+$ gwa publish issuer --input content.yaml
     `,
 		RunE: func(_ *cobra.Command, args []string) error {
 			body, err := opts.ParseInput(ctx)
@@ -63,15 +63,14 @@ $ gwa publish issuer --input content.yaml --content content.txt
 			}
 
 			output := fmt.Sprintf("%s successfully published", args[0])
-			fmt.Println(strings.Title(output))
+			fmt.Println(strings.ToUpper(output[0:1]) + output[1:])
 
 			return nil
 		},
 	}
 
 	publishCmd.Flags().StringVarP(&opts.input, "input", "i", "", "YAML file to convert to JSON")
-	publishCmd.Flags().StringVarP(&opts.content, "content", "c", "", "Content to add to body")
-	publishCmd.MarkFlagRequired("body")
+	publishCmd.MarkFlagRequired("input")
 
 	return publishCmd
 }

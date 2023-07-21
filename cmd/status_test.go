@@ -36,16 +36,16 @@ func TestStatusCmds(t *testing.T) {
 		{
 			name:   "prints json",
 			args:   []string{"--json"},
-			expect: `[{"name":"my-awesome-service","upstream":"upstream.host.com","status":"UP","reason":"No reason at all","host":"host.com","env_host":"host.com"}]`,
+			expect: `[{"name":"a-service-for-ns-sampler","upstream":"https://httpbin.org","status":"UP","reason":"200 Response","host":"httpbin.org","env_host":"httpbin.org"}]`,
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, []map[string]interface{}{
 					{
-						"name":     "my-awesome-service",
-						"upstream": "upstream.host.com",
+						"name":     "a-service-for-ns-sampler",
+						"upstream": "https://httpbin.org",
 						"status":   "UP",
-						"reason":   "No reason at all",
-						"env_host": "host.com",
-						"host":     "host.com",
+						"reason":   "200 Response",
+						"env_host": "httpbin.org",
+						"host":     "httpbin.org",
 					},
 				})
 			},
