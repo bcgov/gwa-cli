@@ -30,6 +30,7 @@ func Execute(ctx *pkg.AppContext) {
 	rootCmd.AddCommand(NewInit(ctx))
 	rootCmd.AddCommand(NewPublishGatewayCmd(ctx))
 	rootCmd.AddCommand(NewPublishCmd(ctx))
+	rootCmd.AddCommand(NewGenerateConfigCmd(ctx))
 	rootCmd.AddCommand(NewLoginCmd(ctx))
 	rootCmd.AddCommand(NewNamespaceCmd(ctx))
 	rootCmd.AddCommand(NewStatusCmd(ctx, nil))
