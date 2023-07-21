@@ -29,7 +29,7 @@ func capitalizeFirstLetter(s string) string {
 func appId(len int) string {
 	id := uuid.New()
     val := id.String()
-	return strings.ReplaceAll(strings.ToUpper(val[1:len]), "-", "")
+	return strings.ReplaceAll(strings.ToUpper(val), "-", "")[0:len]
 }
 
 
