@@ -69,13 +69,13 @@ func (m *NewApi[T]) makeRequest() (ApiResponse[T], error) {
 	if err != nil {
 		return result, fmt.Errorf(string(body))
 	}
+	fmt.Println("hi", result.StatusCode)
 	return result, errorResponse.GetError()
-
 }
 
 func (m *NewApi[T]) Do() (ApiResponse[T], error) {
 	response, err := m.makeRequest()
-	if err != nil {
+	if err != nil && response.StatusCode == http.StatusUnauthorized {
 		err := RefreshToken(m.ctx)
 		if err != nil {
 			return ApiResponse[T]{}, err
@@ -83,7 +83,7 @@ func (m *NewApi[T]) Do() (ApiResponse[T], error) {
 		return m.makeRequest()
 	}
 
-	return response, nil
+	return response, err
 }
 
 // Convience methods

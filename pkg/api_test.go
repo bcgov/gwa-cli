@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"testing"
@@ -109,7 +108,6 @@ func TestApiPut(t *testing.T) {
 	r.Request.PostForm = data
 	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	response, err := r.Do()
-	fmt.Println(err)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -134,7 +134,7 @@ func TestPublishError(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 
 	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
-		return httpmock.NewJsonResponse(401, "Unauthorized")
+		return httpmock.NewStringResponse(500, "Server error"), nil
 	})
 
 	cwd := t.TempDir()
@@ -151,6 +151,6 @@ func TestPublishError(t *testing.T) {
 		dryRun:     false,
 	}
 	_, err := PublishGateway(ctx, opts)
-	assert.ErrorContains(t, err, "Unauthorized")
+	assert.ErrorContains(t, err, "Server error")
 	assert.NotNil(t, err, "request failed")
 }
