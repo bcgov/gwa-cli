@@ -36,7 +36,7 @@ func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &ApplyOptions{}
 	var applyCmd = &cobra.Command{
 		Use:       "apply <type>",
-		Short:     "Apply configuration",
+		Short:     "Apply gateway resources",
 		Args:      cobra.OnlyValidArgs,
 		Example: `
 $ gwa apply --input gw-config.yaml
