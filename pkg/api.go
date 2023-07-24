@@ -27,8 +27,6 @@ func (m *NewApi[T]) New() (*NewApi[T], error) {
 	if err != nil {
 		return nil, err
 	}
-	bearer := fmt.Sprintf("Bearer %s", m.ctx.ApiKey)
-	request.Header.Set("Authorization", bearer)
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accepts", "application/json")
 
@@ -38,7 +36,12 @@ func (m *NewApi[T]) New() (*NewApi[T], error) {
 }
 
 // Run the request instantiated by `New`
-func (m *NewApi[T]) Do() (ApiResponse[T], error) {
+func (m *NewApi[T]) makeRequest() (ApiResponse[T], error) {
+	if m.ctx.ApiKey != "" {
+		bearer := fmt.Sprintf("Bearer %s", m.ctx.ApiKey)
+		m.Request.Header.Set("Authorization", bearer)
+	}
+
 	var data T
 	result := ApiResponse[T]{}
 	client := new(http.Client)
@@ -59,14 +62,28 @@ func (m *NewApi[T]) Do() (ApiResponse[T], error) {
 		result.Data = data
 
 		return result, err
-	} else {
-		var errorResponse ApiErrorResponse
-		err := json.Unmarshal(body, &errorResponse)
-		if err != nil {
-			return result, fmt.Errorf(string(body))
-		}
-		return result, errorResponse.GetError()
 	}
+
+	var errorResponse ApiErrorResponse
+	err = json.Unmarshal(body, &errorResponse)
+	if err != nil {
+		return result, fmt.Errorf(string(body))
+	}
+	return result, errorResponse.GetError()
+
+}
+
+func (m *NewApi[T]) Do() (ApiResponse[T], error) {
+	response, err := m.makeRequest()
+	if err != nil {
+		err := RefreshToken(m.ctx)
+		if err != nil {
+			return ApiResponse[T]{}, err
+		}
+		return m.makeRequest()
+	}
+
+	return response, nil
 }
 
 // Convience methods

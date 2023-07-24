@@ -29,6 +29,11 @@ func DeviceLogin(ctx *AppContext) error {
 	if err != nil {
 		return err
 	}
+	viper.Set("token_endpoint", wellKnownConfig.TokenEndpoint)
+	err = viper.WriteConfig()
+	if err != nil {
+		return err
+	}
 
 	err = deviceLogin(wellKnownConfig, ctx.ClientId)
 	if err != nil {
@@ -50,6 +55,11 @@ func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret strin
 	}
 
 	wellKnownConfig, err := fetchWellKnown(authTokenUrl)
+	if err != nil {
+		return err
+	}
+	viper.Set("token_endpoint", wellKnownConfig.TokenEndpoint)
+	err = viper.WriteConfig()
 	if err != nil {
 		return err
 	}
@@ -183,40 +193,30 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string) error {
 	data := url.Values{}
 	data.Set("client_id", clientId)
 	URL := wellKnownConfig.DeviceAuthorizationEndpoint
-	request, err := http.NewRequest(http.MethodPost, URL, strings.NewReader(data.Encode()))
-	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	client := http.Client{}
-	response, err := client.Do(request)
+	request, err := NewApiPost[DeviceData](&AppContext{}, URL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
+	request.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	if response.StatusCode == http.StatusOK {
-		b, err := io.ReadAll(response.Body)
-		if err != nil {
-			return err
-		}
-		var device DeviceData
-		json.Unmarshal(b, &device)
-		urlLine := fmt.Sprintf("\n\nPlease sign in at %s", device.VerificationUri)
-		fmt.Println(urlLine)
-		fmt.Println("Input the following code", device.UserCode)
-		fmt.Println("\nWaiting for authentication handshake...")
-
-		for i := 0; i < 60; i++ {
-			fmt.Println("polling", i)
-			err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, device.DeviceCode)
-			if err == nil {
-				return nil
-			}
-			time.Sleep(time.Second * 8)
-		}
-		return errors.New("login request timed out")
-	} else {
-		return errors.New(response.Status)
+	response, err := request.Do()
+	if err != nil {
+		return err
 	}
+
+	urlLine := fmt.Sprintf("\n\nPlease sign in at %s", response.Data.VerificationUri)
+	fmt.Println(urlLine)
+	fmt.Println("Input the following code", response.Data.UserCode)
+	fmt.Println("\nWaiting for authentication handshake...")
+
+	for i := 0; i < 60; i++ {
+		err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode)
+		if err == nil {
+			return nil
+		}
+		time.Sleep(time.Second * 8)
+	}
+	return errors.New("login request timed out")
 }
 
 type WellKnownConfig struct {
@@ -226,28 +226,16 @@ type WellKnownConfig struct {
 }
 
 func fetchWellKnown(url string) (WellKnownConfig, error) {
-	var wellKnownConfig WellKnownConfig
-	client := http.Client{}
-	request, err := http.NewRequest(http.MethodGet, url, nil)
+	request, err := NewApiGet[WellKnownConfig](&AppContext{}, url)
 	if err != nil {
-		return wellKnownConfig, err
+		return WellKnownConfig{}, err
+	}
+	response, err := request.Do()
+	if err != nil {
+		return WellKnownConfig{}, err
 	}
 
-	request.Header.Set("Content-Type", "application/json")
-	response, err := client.Do(request)
-	if err != nil {
-		return wellKnownConfig, err
-	}
-	defer response.Body.Close()
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return wellKnownConfig, err
-	}
-
-	json.Unmarshal(body, &wellKnownConfig)
-
-	return wellKnownConfig, err
+	return response.Data, nil
 }
 
 func pollAuthStatus(URL string, clientId string, deviceCode string) error {
@@ -256,40 +244,70 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) error {
 	data.Set("client_id", clientId)
 	data.Set("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
 
-	request, err := http.NewRequest(http.MethodPost, URL, strings.NewReader(data.Encode()))
+	request, err := NewApiPost[TokenResponse](&AppContext{}, URL, strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
+	}
+	request.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	request.Request.Header.Set("Accepts", "application/json")
+
+	response, err := request.Do()
+
+	if err != nil {
+		return err
+	}
+
+	saveConfig(response.Data)
+	return nil
+}
+
+func RefreshToken(ctx *AppContext) error {
+	tokenEndpoint := viper.GetString("token_endpoint")
+	refreshToken := viper.GetString("refresh_token")
+
+	data := make(url.Values)
+	data.Set("client_id", ctx.ClientId)
+	data.Set("grant_type", "refresh_token")
+	data.Set("refresh_token", refreshToken)
+	request, err := http.NewRequest(http.MethodPost, tokenEndpoint, strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
+	}
 	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	request.Header.Set("Accepts", "application/json")
 
-	if err != nil {
-		return err
-	}
-
-	client := http.Client{}
+	client := new(http.Client)
 	response, err := client.Do(request)
-
 	if err != nil {
 		return err
 	}
 
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusOK {
-		b, err := io.ReadAll(response.Body)
+	if response.StatusCode == http.StatusOK {
+		var data TokenResponse
+		json.Unmarshal(body, &data)
+
+		ctx.ApiKey = data.AccessToken
+		viper.Set("api_key", data.AccessToken)
+		viper.Set("refresh_token", data.RefreshToken)
+		err = viper.WriteConfig()
 		if err != nil {
 			return err
 		}
 
-		var errorResult TokenRequestError
-		json.Unmarshal(b, &errorResult)
-		return errors.New(errorResult.ErrorDescription)
-	}
-
-	if response.StatusCode == http.StatusOK {
-		saveConfig(response.Body)
 		return nil
 	}
 
-	return nil
+	var errorResponse ApiErrorResponse
+	err = json.Unmarshal(body, &errorResponse)
+	if err != nil {
+		return fmt.Errorf(string(body))
+	}
+	return errorResponse.GetError()
 }
 
 type CredentialError struct {
@@ -302,46 +320,28 @@ func clientCredentialLogin(wellKnownConfig WellKnownConfig, clientId string, cli
 	data.Set("client_id", clientId)
 	data.Set("client_secret", clientSecret)
 	data.Set("grant_type", "client_credentials")
-	request, err := http.NewRequest(http.MethodPost, wellKnownConfig.TokenEndpoint, strings.NewReader(data.Encode()))
-	request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	client := http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode == http.StatusOK {
-		err := saveConfig(response.Body)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-
-	var errorMessage CredentialError
-	b, err := io.ReadAll(response.Body)
-	json.Unmarshal(b, &errorMessage)
+	ctx := &AppContext{}
+	r, err := NewApiPost[TokenResponse](ctx, wellKnownConfig.TokenEndpoint, strings.NewReader(data.Encode()))
+	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	response, err := r.Do()
 
 	if err != nil {
 		return err
 	}
 
-	return errors.New(errorMessage.Description)
+	err = saveConfig(response.Data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func saveConfig(data io.Reader) error {
-	b, err := io.ReadAll(data)
-	if err != nil {
-		return err
-	}
-	var auth TokenResponse
-	json.Unmarshal(b, &auth)
-	viper.Set("api_key", auth.AccessToken)
-	viper.Set("refresh_token", auth.RefreshToken)
-	viper.Set("refresh_expires_in", auth.RefreshExpiresIn)
-	err = viper.WriteConfig()
+func saveConfig(data TokenResponse) error {
+	viper.Set("api_key", data.AccessToken)
+	viper.Set("refresh_token", data.RefreshToken)
+	viper.Set("refresh_expires_in", data.RefreshExpiresIn)
+
+	err := viper.WriteConfig()
 	if err != nil {
 		return err
 	}
