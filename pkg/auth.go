@@ -64,7 +64,7 @@ func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret strin
 		return err
 	}
 
-	err = clientCredentialLogin(wellKnownConfig, clientId, clientSecret)
+	err = clientCredentialLogin(wellKnownConfig.TokenEndpoint, clientId, clientSecret)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func fetchConfigUrl(ctx *AppContext) (string, error) {
 		return result, nil
 	}
 
-	return "", errors.New("host is not configured correctly")
+	return "", fmt.Errorf("host is not configured correctly")
 }
 
 func parseLinkHeader(link string) (string, error) {
@@ -103,7 +103,6 @@ func parseLinkHeader(link string) (string, error) {
 	links := strings.Split(link, ",")
 
 	for _, link := range links {
-
 		segments := strings.Split(link, ";")
 		if len(segments) < 2 {
 			continue
@@ -115,8 +114,9 @@ func parseLinkHeader(link string) (string, error) {
 	}
 
 	if result == "" {
-		return result, errors.New("unable to find OpenAPI configuration")
+		return result, fmt.Errorf("unable to find OpenAPI configuration")
 	}
+
 	return result, nil
 }
 
@@ -257,7 +257,7 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) error {
 		return err
 	}
 
-	saveConfig(response.Data)
+	saveConfig(&response.Data)
 	return nil
 }
 
@@ -310,33 +310,31 @@ func RefreshToken(ctx *AppContext) error {
 	return errorResponse.GetError()
 }
 
-type CredentialError struct {
-	Error       string `json:"error"`
-	Description string `json:"error_description"`
-}
-
-func clientCredentialLogin(wellKnownConfig WellKnownConfig, clientId string, clientSecret string) error {
+func clientCredentialLogin(tokenEndpoint string, clientId string, clientSecret string) error {
 	data := make(url.Values)
 	data.Set("client_id", clientId)
 	data.Set("client_secret", clientSecret)
 	data.Set("grant_type", "client_credentials")
 	ctx := &AppContext{}
-	r, err := NewApiPost[TokenResponse](ctx, wellKnownConfig.TokenEndpoint, strings.NewReader(data.Encode()))
+	r, err := NewApiPost[TokenResponse](ctx, tokenEndpoint, strings.NewReader(data.Encode()))
+	if err != nil {
+		return err
+	}
 	r.Request.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	response, err := r.Do()
 
+	response, err := r.Do()
 	if err != nil {
 		return err
 	}
 
-	err = saveConfig(response.Data)
+	err = saveConfig(&response.Data)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func saveConfig(data TokenResponse) error {
+func saveConfig(data *TokenResponse) error {
 	viper.Set("api_key", data.AccessToken)
 	viper.Set("refresh_token", data.RefreshToken)
 	viper.Set("refresh_expires_in", data.RefreshExpiresIn)
