@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,7 +34,7 @@ func DeviceLogin(ctx *AppContext) error {
 		return err
 	}
 
-	err = deviceLogin(wellKnownConfig, ctx.ClientId)
+	err = deviceLogin(wellKnownConfig, ctx.ClientId, 8)
 	if err != nil {
 		return err
 	}
@@ -64,7 +63,7 @@ func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret strin
 		return err
 	}
 
-	err = clientCredentialLogin(wellKnownConfig.TokenEndpoint, clientId, clientSecret)
+	err = ClientCredentialLogin(wellKnownConfig.TokenEndpoint, clientId, clientSecret)
 	if err != nil {
 		return err
 	}
@@ -189,7 +188,7 @@ type DeviceData struct {
 	VerificationUriComplete string `json:"verification_uri_complete"`
 }
 
-func deviceLogin(wellKnownConfig WellKnownConfig, clientId string) error {
+func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.Duration) error {
 	data := url.Values{}
 	data.Set("client_id", clientId)
 	URL := wellKnownConfig.DeviceAuthorizationEndpoint
@@ -214,9 +213,10 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string) error {
 		if err == nil {
 			return nil
 		}
-		time.Sleep(time.Second * 8)
+		time.Sleep(time.Second * timeout)
 	}
-	return errors.New("login request timed out")
+
+	return fmt.Errorf("login request timed out")
 }
 
 type WellKnownConfig struct {
@@ -252,12 +252,11 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) error {
 	request.Request.Header.Set("Accepts", "application/json")
 
 	response, err := request.Do()
-
 	if err != nil {
 		return err
 	}
 
-	saveConfig(&response.Data)
+	SaveConfig(&response.Data)
 	return nil
 }
 
@@ -307,10 +306,11 @@ func RefreshToken(ctx *AppContext) error {
 	if err != nil {
 		return fmt.Errorf(string(body))
 	}
+
 	return errorResponse.GetError()
 }
 
-func clientCredentialLogin(tokenEndpoint string, clientId string, clientSecret string) error {
+func ClientCredentialLogin(tokenEndpoint string, clientId string, clientSecret string) error {
 	data := make(url.Values)
 	data.Set("client_id", clientId)
 	data.Set("client_secret", clientSecret)
@@ -327,14 +327,10 @@ func clientCredentialLogin(tokenEndpoint string, clientId string, clientSecret s
 		return err
 	}
 
-	err = saveConfig(&response.Data)
-	if err != nil {
-		return err
-	}
-	return nil
+	return SaveConfig(&response.Data)
 }
 
-func saveConfig(data *TokenResponse) error {
+func SaveConfig(data *TokenResponse) error {
 	viper.Set("api_key", data.AccessToken)
 	viper.Set("refresh_token", data.RefreshToken)
 	viper.Set("refresh_expires_in", data.RefreshExpiresIn)

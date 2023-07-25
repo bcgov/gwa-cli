@@ -69,7 +69,6 @@ func (m *NewApi[T]) makeRequest() (ApiResponse[T], error) {
 	if err != nil {
 		return result, fmt.Errorf(string(body))
 	}
-	fmt.Println("hi", result.StatusCode)
 	return result, errorResponse.GetError()
 }
 

@@ -58,8 +58,8 @@ func initConfig() {
 
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetDefault("scheme", "https")
 		viper.SetConfigName(".gwa-config")
+		viper.SetDefault("scheme", "https")
 
 		viper.SafeWriteConfig()
 	}
