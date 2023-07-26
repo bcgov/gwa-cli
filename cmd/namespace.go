@@ -72,6 +72,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 			}
 
 			viper.Set("namespace", namespace)
+			viper.WriteConfig()
 			fmt.Println(namespace)
 			return nil
 		},
