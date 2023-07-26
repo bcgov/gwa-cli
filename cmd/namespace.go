@@ -36,6 +36,8 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 			if err != nil {
 				return err
 			}
+			loader := pkg.NewSpinner()
+			loader.Start()
 			response, err := r.Do()
 			if err != nil {
 				if response.StatusCode == http.StatusUnauthorized {
@@ -43,6 +45,7 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 				}
 				return err
 			}
+			loader.Stop()
 
 			if len(response.Data) <= 0 {
 				fmt.Println("You have no namespaces")

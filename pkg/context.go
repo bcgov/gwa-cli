@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"errors"
+	"fmt"
 	"net/url"
 
 	"github.com/google/go-querystring/query"
@@ -27,7 +27,7 @@ func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) 
 	queryString := q.Encode()
 
 	if a.ApiHost == "" && a.Host == "" {
-		return "", errors.New("no host set")
+		return "", fmt.Errorf("no host set")
 	}
 	host := a.ApiHost
 	if a.Host != "" {

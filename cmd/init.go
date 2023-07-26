@@ -1,10 +1,6 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -44,13 +40,13 @@ func (c *initOptions) getEnv() string {
 func (c *initOptions) validate() error {
 	namespaceLength := len(c.namespace)
 	if namespaceLength < 5 || namespaceLength > 15 {
-		return errors.New("namespace must be between 5 and 15 characters long")
+		return fmt.Errorf("namespace must be between 5 and 15 characters long")
 	}
 
 	namespacePattern := "^[a-zA-Z0-9-]{5,15}$"
 	regex := regexp.MustCompile(namespacePattern)
 	if regex.MatchString(c.namespace) == false {
-		return errors.New("namespace can only contain alphanumeric characters and -")
+		return fmt.Errorf("namespace can only contain alphanumeric characters and -")
 	}
 
 	return nil
@@ -112,7 +108,7 @@ func createConfig(opts *initOptions) error {
 	envPath := filepath.Join(opts.cwd, ".env")
 
 	if _, err := os.Stat(envPath); err == nil {
-		return errors.New(".env already exists")
+		return fmt.Errorf(".env already exists")
 	}
 
 	settings := struct {
