@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+	"path"
 	"testing"
 
 	"github.com/bcgov/gwa-cli/pkg"
@@ -11,12 +13,16 @@ import (
 )
 
 func SetupConfig(dir string) error {
+	fileName := ".gwa-config.yaml"
+	path := path.Join(dir, fileName)
+	configFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer configFile.Close()
 	viper.AddConfigPath(dir)
-	viper.SetConfigName(".testing")
-	viper.SetConfigType("yaml")
-	viper.SafeWriteConfig()
-	err := viper.ReadInConfig()
-	return err
+	viper.SetConfigFile(path)
+	return nil
 }
 
 func TestSuccessfulConfigCommands(t *testing.T) {

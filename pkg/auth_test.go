@@ -3,6 +3,8 @@ package pkg
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -13,15 +15,17 @@ import (
 var host = "api.gov.bc.ca"
 var tokenUrl = "https://api.gov.bc.ca/auth/token"
 
-// TODO: The tmp dir and viper aren't getting along in this test, try and investigate
-// for some more reliable results. The happy path is covered in the meantime
 func SetupAuthConfig(dir string) error {
+	fileName := ".gwa-config.yaml"
+	path := path.Join(dir, fileName)
+	configFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer configFile.Close()
 	viper.AddConfigPath(dir)
-	viper.SetConfigName(".gwa-config")
-	viper.SetConfigType("yaml")
-	viper.SafeWriteConfig()
-	err := viper.ReadInConfig()
-	return err
+	viper.SetConfigFile(path)
+	return nil
 }
 
 func TestFetchConfigUrl(t *testing.T) {

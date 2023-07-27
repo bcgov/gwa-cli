@@ -7,9 +7,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
+type LoginFlags struct {
+	clientId     string
+	clientSecret string
+}
+
+func (l *LoginFlags) IsClientCredential() bool {
+	return l.clientId != "" && l.clientSecret != ""
+}
+
 func NewLoginCmd(ctx *pkg.AppContext) *cobra.Command {
-	var clientId string
-	var clientSecret string
+	loginFlags := &LoginFlags{}
 
 	var loginCmd = &cobra.Command{
 		Use:   "login",
@@ -24,8 +32,8 @@ To use your credentials you must supply both a client-id and client-secret:
     `,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			cmd.SilenceUsage = true
-			if clientId != "" && clientSecret != "" {
-				err := pkg.ClientCredentialsLogin(ctx, clientId, clientSecret)
+			if loginFlags.IsClientCredential() {
+				err := pkg.ClientCredentialsLogin(ctx, loginFlags.clientId, loginFlags.clientSecret)
 				if err != nil {
 					return err
 				}
@@ -42,8 +50,8 @@ To use your credentials you must supply both a client-id and client-secret:
 		},
 	}
 
-	loginCmd.Flags().StringVar(&clientId, "client-id", "", "Your gateway's client ID")
-	loginCmd.Flags().StringVar(&clientSecret, "client-secret", "", "Your gateway's client secret")
+	loginCmd.Flags().StringVar(&loginFlags.clientId, "client-id", "", "Your gateway's client ID")
+	loginCmd.Flags().StringVar(&loginFlags.clientSecret, "client-secret", "", "Your gateway's client secret")
 	loginCmd.MarkFlagsRequiredTogether("client-id", "client-secret")
 
 	return loginCmd
