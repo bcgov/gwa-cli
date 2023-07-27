@@ -29,11 +29,6 @@ var commands = []struct {
 	slug   string
 }{
 	{
-		args:   []string{"content", "--input", "./target.yaml"},
-		slug:   "contents",
-		expect: "Content successfully published",
-	},
-	{
 		args:   []string{"dataset", "--input", "./target.yaml"},
 		slug:   "datasets",
 		expect: "Dataset successfully published",

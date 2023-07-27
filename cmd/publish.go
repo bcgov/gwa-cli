@@ -14,8 +14,7 @@ import (
 )
 
 type PublishOptions struct {
-	input   string
-	content string
+	input string
 }
 
 func (o *PublishOptions) ParseInput(ctx *pkg.AppContext) ([]byte, error) {
@@ -42,11 +41,10 @@ func NewPublishCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &PublishOptions{}
 	var publishCmd = &cobra.Command{
 		Use:       "publish <type>",
-		Short:     "Publish to DS API. Available commands are content, dataset, issuer and product",
-		ValidArgs: []string{"content", "dataset", "product", "issuer"},
+		Short:     "Publish to DS API. Available commands are dataset, issuer and product",
+		ValidArgs: []string{"dataset", "product", "issuer"},
 		Args:      cobra.OnlyValidArgs,
 		Example: `
-$ gwa publish content --input content.yaml
 $ gwa publish dataset --input content.yaml
 $ gwa publish product --input content.yaml
 $ gwa publish issuer --input content.yaml
