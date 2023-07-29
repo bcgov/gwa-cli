@@ -12,9 +12,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-
 type ApplyOptions struct {
-	input   string
+	input string
 }
 
 func (o *ApplyOptions) ParseInput(ctx *pkg.AppContext) ([][]byte, error) {
@@ -35,17 +34,18 @@ func (o *ApplyOptions) ParseInput(ctx *pkg.AppContext) ([][]byte, error) {
 func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &ApplyOptions{}
 	var applyCmd = &cobra.Command{
-		Use:       "apply <type>",
-		Short:     "Apply gateway resources",
-		Args:      cobra.OnlyValidArgs,
+		Use:   "apply <type>",
+		Short: "Apply gateway resources",
+		Args:  cobra.OnlyValidArgs,
 		Example: `
 $ gwa apply --input gw-config.yaml
     `,
 		RunE: func(_ *cobra.Command, args []string) error {
 			kindMapper := map[string]string{
 				"CredentialIssuer": "issuer",
-				"DraftDataset": "dataset",
-				"Product": "product",
+				"DraftDataset":     "dataset",
+				"Product":          "product",
+				"Environment":      "environment",
 			}
 
 			yamlDocs, err := opts.ParseInput(ctx)
@@ -62,7 +62,7 @@ $ gwa apply --input gw-config.yaml
 
 				var kind = configYaml["kind"].(string)
 
-				delete (configYaml, "kind")
+				delete(configYaml, "kind")
 				body, err := json.Marshal(configYaml)
 				if err != nil {
 					return err
@@ -74,6 +74,32 @@ $ gwa apply --input gw-config.yaml
 						return err
 					}
 					fmt.Printf("%-20s %-40s %s\n", kind, configYaml["name"], data.Result)
+				} else if kind == "GatewayService" {
+					fmt.Printf("%-20s %-40s publishing...", kind, configYaml["name"])
+
+					var kongConfig = struct {
+						Services []map[string]interface{} `json:"services"`
+					}{}
+
+					kongConfig.Services = append([]map[string]interface{}{}, configYaml)
+
+					body, err := json.Marshal(kongConfig)
+					if err != nil {
+						return err
+					}
+
+					_, err = PublishToGateway(ctx, false, bytes.NewReader(body))
+					if err != nil {
+						return err
+					}
+					fmt.Printf("\r")
+					fmt.Printf("%-20s %-40s published    \n", kind, configYaml["name"])
+					// fmt.Printf(`
+					// 	Details:
+					// 	%s
+					// 	%s
+					// 	`, result.Message, result.Results)
+
 				} else {
 					fmt.Printf("%-20s %-40s skipped\n", kind, configYaml["name"])
 				}

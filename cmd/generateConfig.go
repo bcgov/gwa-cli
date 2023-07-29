@@ -3,22 +3,23 @@ package cmd
 import (
 	"embed"
 	"fmt"
-	"github.com/bcgov/gwa-cli/pkg"
-	"github.com/spf13/cobra"
 	"net/url"
 	"os"
+
+	"github.com/bcgov/gwa-cli/pkg"
+	"github.com/spf13/cobra"
 )
 
 //go:embed templates/*.go.tmpl
 var templates embed.FS
 
 func check(e error) {
-    if e != nil {
-        panic(e)
-    }
+	if e != nil {
+		panic(e)
+	}
 }
 
-func port (url *url.URL) string {
+func port(url *url.URL) string {
 	if url.Port() == "" {
 		if url.Scheme == "https" {
 			return "443"
@@ -31,31 +32,31 @@ func port (url *url.URL) string {
 }
 
 type GenerateConfigOptions struct {
-	template  string
-	service   string
-	upstream  string
-	out       string
+	template string
+	service  string
+	upstream string
+	out      string
 }
 
 func NewGenerateConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &GenerateConfigOptions{}
 	var generateConfigCmd = &cobra.Command{
-		Use:       "generate-config",
-		Short:     "Generate gateway resources based on pre-defined templates",
-		Args:      cobra.OnlyValidArgs,
+		Use:   "generate-config",
+		Short: "Generate gateway resources based on pre-defined templates",
+		Args:  cobra.OnlyValidArgs,
 		Example: `
 $ gwa generate-config --template kong-httpbin --service my-service --upstream https://httpbin.org
-$ gwa generate-config --template client-credentials-shared-idp --service my-service --upstream https://httpbin.org
+$ gwa generate-config --template client-credentials-shared-idp --service my-service --upstream https://www.boredapi.com/api/activity
     `,
 		RunE: func(_ *cobra.Command, args []string) error {
 			curl, err := url.Parse(opts.upstream)
 			check(err)
-			
+
 			data := struct {
-				Namespace     string
-				Service       string
-				Upstream      *url.URL
-				UpstreamPort  string
+				Namespace    string
+				Service      string
+				Upstream     *url.URL
+				UpstreamPort string
 			}{
 				Namespace:    ctx.Namespace,
 				Service:      opts.service,
@@ -95,4 +96,3 @@ $ gwa generate-config --template client-credentials-shared-idp --service my-serv
 
 	return generateConfigCmd
 }
-

@@ -17,6 +17,7 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 	}
 	namespaceCmd.AddCommand(NamespaceListCmd(ctx))
 	namespaceCmd.AddCommand(NamespaceCreateCmd(ctx))
+	namespaceCmd.AddCommand(NamespaceDestroyCmd(ctx))
 	namespaceCmd.AddCommand(NamespaceCurrentCmd(ctx))
 	return namespaceCmd
 }
@@ -74,8 +75,12 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
-			viper.Set("namespace", namespace)
-			viper.WriteConfig()
+			err = setCurrentNamespace(namespace)
+			if err != nil {
+				cmd.SilenceUsage = true
+				return err
+			}
+
 			fmt.Println(namespace)
 			return nil
 		},
@@ -125,4 +130,77 @@ You can create a namespace by running:
 		},
 	}
 	return currentCmd
+}
+
+func setCurrentNamespace(ns string) error {
+	viper.Set("namespace", ns)
+	err := viper.WriteConfig()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type NamespaceDestroyOptions struct {
+	Force bool `url:"force"`
+}
+
+func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
+	var destroyOptions NamespaceDestroyOptions
+	var destroyCommand = &cobra.Command{
+		Use:   "destroy",
+		Short: "Destroy the current namespace",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			if ctx.Namespace == "" {
+				cmd.SetUsageTemplate(`
+A namespace must be set via the config command
+
+Example:
+    $ gwa config set namespace YOUR_NAMESPACE_NAME
+`)
+				return fmt.Errorf("No namespace has been set")
+			}
+
+			loader := pkg.NewSpinner()
+			loader.Start()
+			err := destroyNamespace(ctx, &destroyOptions)
+			loader.Stop()
+			if err != nil {
+				cmd.SilenceUsage = true
+				return err
+			}
+
+			err = setCurrentNamespace("")
+			if err != nil {
+				cmd.SilenceUsage = true
+				return err
+			}
+
+			fmt.Println("Namespace destroyed", ctx.Namespace)
+			return nil
+		},
+	}
+
+	destroyCommand.Flags().BoolVar(&destroyOptions.Force, "force", false, "force deletion")
+
+	return destroyCommand
+}
+
+func destroyNamespace(ctx *pkg.AppContext, destroyOptions *NamespaceDestroyOptions) error {
+	pathname := fmt.Sprintf("/ds/api/v2/namespaces/%s", ctx.Namespace)
+	URL, err := ctx.CreateUrl(pathname, destroyOptions)
+	if err != nil {
+		return err
+	}
+	r, err := pkg.NewApiDelete[NamespaceResult](ctx, URL)
+	if err != nil {
+		return err
+	}
+
+	_, err = r.Do()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

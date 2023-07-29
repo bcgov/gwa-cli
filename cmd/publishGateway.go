@@ -77,6 +77,12 @@ func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) (PublishGatewayRe
 	}
 	defer file.Close()
 
+	return PublishToGateway(ctx, opts.dryRun, file)
+}
+
+func PublishToGateway(ctx *pkg.AppContext, dryRun bool, configFile io.Reader) (PublishGatewayResponse, error) {
+	var result PublishGatewayResponse
+
 	body := &bytes.Buffer{}
 	fw := multipart.NewWriter(body)
 
@@ -85,15 +91,15 @@ func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) (PublishGatewayRe
 		return result, err
 	}
 
-	dryRunValue := strconv.FormatBool(opts.dryRun)
+	dryRunValue := strconv.FormatBool(dryRun)
 	dryRunField.Write([]byte(dryRunValue))
 
-	fileField, err := fw.CreateFormFile("configFile", file.Name())
+	fileField, err := fw.CreateFormFile("configFile", "config.yaml")
 	if err != nil {
 		return result, err
 	}
 
-	_, err = io.Copy(fileField, file)
+	_, err = io.Copy(fileField, configFile)
 	if err != nil {
 		return result, err
 	}
