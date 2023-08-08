@@ -23,8 +23,8 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 type NamespaceFormData struct {
-	name        string
-	description string
+	Name        string `url:"name,omitempty"`
+	Description string `url:"description,omitempty"`
 }
 
 func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -85,8 +85,8 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 			return nil
 		},
 	}
-	createCommand.Flags().StringVarP(&namespaceFormData.name, "name", "n", "", "optionally define your own namespace")
-	createCommand.Flags().StringVarP(&namespaceFormData.description, "description", "d", "", "optionally add a description")
+	createCommand.Flags().StringVarP(&namespaceFormData.Name, "name", "n", "", "optionally define your own namespace")
+	createCommand.Flags().StringVarP(&namespaceFormData.Description, "description", "d", "", "optionally add a description")
 
 	return createCommand
 }
@@ -100,6 +100,7 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 	if err != nil {
 		return "", err
 	}
+	fmt.Println(URL, data)
 	r, err := pkg.NewApiPost[NamespaceResult](ctx, URL, nil)
 	if err != nil {
 		return "", err
@@ -176,7 +177,7 @@ Example:
 				return err
 			}
 
-			fmt.Println("Namespace destroyed", ctx.Namespace)
+			fmt.Println("Namespace destroyed:", ctx.Namespace)
 			return nil
 		},
 	}

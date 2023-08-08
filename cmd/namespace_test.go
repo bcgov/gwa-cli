@@ -1,23 +1,41 @@
 package cmd
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/jarcoal/httpmock"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/zenizh/go-capturer"
 )
 
+func setup(dir string) error {
+	fileName := ".gwa-config.yaml"
+	path := path.Join(dir, fileName)
+	configFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer configFile.Close()
+	viper.AddConfigPath(dir)
+	viper.SetConfigFile(path)
+	return nil
+}
+
 func TestNamespaceCommands(t *testing.T) {
 	tests := []struct {
-		name     string
-		args     []string
-		expect   string
-		method   string
-		response httpmock.Responder
+		name      string
+		args      []string
+		expect    string
+		method    string
+		namespace string
+		response  httpmock.Responder
 	}{
 		{
 			name: "list namespaces",
@@ -87,6 +105,16 @@ ns-456`,
 			},
 		},
 		{
+			name:      "destroy namespace",
+			args:      []string{"destroy"},
+			expect:    "Namespace destroyed: ns-sampler",
+			method:    "DELETE",
+			namespace: "/ns-sampler",
+			response: func(r *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(200, map[string]interface{}{})
+			},
+		},
+		{
 			name:   "show current namespace",
 			args:   []string{"current"},
 			expect: "ns-sampler",
@@ -95,10 +123,13 @@ ns-456`,
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			setup(dir)
 			if tt.response != nil {
 				httpmock.Activate()
 				defer httpmock.DeactivateAndReset()
-				httpmock.RegisterResponder(tt.method, "https://api.gov.ca/ds/api/v2/namespaces", tt.response)
+				URL := fmt.Sprintf("https://api.gov.ca/ds/api/v2/namespaces%s", tt.namespace)
+				httpmock.RegisterResponder(tt.method, URL, tt.response)
 			}
 			ctx := &pkg.AppContext{
 				ApiHost:   "api.gov.ca",
