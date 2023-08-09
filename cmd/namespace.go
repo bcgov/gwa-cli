@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -23,8 +25,8 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 type NamespaceFormData struct {
-	Name        string `url:"name,omitempty"`
-	Description string `url:"description,omitempty"`
+	Name        string `json:"name,omitempty" url:"name,omitempty"`
+	Description string `json:"displayName,omitempty" url:"description,omitempty"`
 }
 
 func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -92,16 +94,22 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 type NamespaceResult struct {
-	Name string `json:"name"`
+	Name        string `json:"name,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
 }
 
 func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, error) {
-	URL, err := ctx.CreateUrl("/ds/api/v2/namespaces", data)
+	URL, err := ctx.CreateUrl("/ds/api/v2/namespaces", nil)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println(URL, data)
-	r, err := pkg.NewApiPost[NamespaceResult](ctx, URL, nil)
+
+	body, err := json.Marshal(data)
+	if err != nil {
+		return "", err
+	}
+
+	r, err := pkg.NewApiPost[NamespaceResult](ctx, URL, bytes.NewBuffer(body))
 	if err != nil {
 		return "", err
 	}
