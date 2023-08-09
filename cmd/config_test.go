@@ -31,48 +31,55 @@ func TestSuccessfulConfigCommands(t *testing.T) {
 		name      string
 		args      []string
 		configKey string
+		expect    string
 	}{
 		{
 			name: "set host",
-			args: []string{"host", "my.local.dev:8000"},
+			args: []string{"set", "host", "my.local.dev:8000"},
 		},
 		{
 			name: "set namespace",
-			args: []string{"namespace", "ns-sampler"},
+			args: []string{"set", "namespace", "ns-sampler"},
 		},
 		{
 			name: "set scheme",
-			args: []string{"scheme", "http"},
+			args: []string{"set", "scheme", "http"},
 		},
 		{
 			name:      "set token",
-			args:      []string{"token", "q1w2e3r4t5y6"},
+			args:      []string{"set", "token", "q1w2e3r4t5y6"},
 			configKey: "api_key",
 		},
 		{
 			name:      "set host flag",
-			args:      []string{"--host", "my.local.dev:8000"},
+			args:      []string{"set", "--host", "my.local.dev:8000"},
 			configKey: "host",
 		},
 		{
 			name:      "set namespace flag",
-			args:      []string{"--namespace", "ns-sampler"},
+			args:      []string{"set", "--namespace", "ns-sampler"},
 			configKey: "namespace",
 		},
 		{
 			name:      "set scheme flag",
-			args:      []string{"--scheme", "http"},
+			args:      []string{"set", "--scheme", "http"},
 			configKey: "scheme",
 		},
 		{
 			name:      "set token flag",
-			args:      []string{"--token", "q1w2e3r4t5y6"},
+			args:      []string{"set", "--token", "q1w2e3r4t5y6"},
 			configKey: "api_key",
+		},
+		{
+			name: "get namespace",
+			args: []string{"get", "namespace"},
+			expect: `ns-sampler
+`,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			args := append([]string{"config", "set"}, tt.args...)
+			args := append([]string{"config"}, tt.args...)
 			ctx := &pkg.AppContext{}
 			mainCmd := &cobra.Command{
 				Use: "gwa",
@@ -86,12 +93,17 @@ func TestSuccessfulConfigCommands(t *testing.T) {
 				mainCmd.Execute()
 			})
 
-			assert.Contains(t, out, "Config settings saved", "Expect: %v\nActual: %v\n")
-			key := args[2]
-			if tt.configKey != "" {
-				key = tt.configKey
+			if tt.args[1] == "set" {
+				assert.Contains(t, out, "Config settings saved", "Expect: %v\nActual: %v\n")
+				key := args[3]
+				if tt.configKey != "" {
+					key = tt.configKey
+				}
+				assert.Equal(t, tt.args[2], viper.GetString(key))
 			}
-			assert.Equal(t, tt.args[1], viper.GetString(key))
+			if tt.args[0] == "get" {
+				assert.Equal(t, tt.expect, out)
+			}
 		})
 	}
 }
@@ -105,23 +117,23 @@ func TestErrorConfigCommands(t *testing.T) {
 	}{
 		{
 			name:   "key doesn't exist",
-			args:   []string{"random", "akasjfowej"},
+			args:   []string{"set", "random", "akasjfowej"},
 			expect: "The key <random> is not allowed to be set",
 		},
 		{
 			name:   "no value set",
-			args:   []string{"host"},
+			args:   []string{"set", "host"},
 			expect: "No value was set for [host]",
 		},
 		{
 			name:   "no flag value set",
-			args:   []string{"--namespace"},
+			args:   []string{"set", "--namespace"},
 			expect: "flag needs an argument: --namespace",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			args := append([]string{"config", "set"}, tt.args...)
+			args := append([]string{"config"}, tt.args...)
 			ctx := &pkg.AppContext{}
 			mainCmd := &cobra.Command{
 				Use: "gwa",
