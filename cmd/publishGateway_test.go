@@ -104,6 +104,7 @@ func TestPublishGateway(t *testing.T) {
 
 	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		assert.Contains(t, r.URL.Path, "ns-sampler")
+		assert.Empty(t, r.FormValue("qualifier"))
 
 		return httpmock.NewJsonResponse(200, map[string]interface{}{
 			"message": "gateway published",
@@ -121,8 +122,41 @@ func TestPublishGateway(t *testing.T) {
 	fileName := "config.yaml"
 	filePath := filepath.Join(cwd, fileName)
 	os.WriteFile(filePath, []byte(configFileContents), 0644)
-	opts := &publishOptions{
+	opts := &PublishGatewayOptions{
 		configFile: fileName,
+		dryRun:     true,
+	}
+	_, err := PublishGateway(ctx, opts)
+	assert.Nil(t, err, "request success")
+}
+
+func TestPublishGatewayWithQualifier(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+		assert.Contains(t, r.URL.Path, "ns-sampler")
+		assert.Equal(t, "myqualifier", r.FormValue("qualifier"))
+
+		return httpmock.NewJsonResponse(200, map[string]interface{}{
+			"message": "gateway published",
+			"results": "aok",
+			"error":   "",
+		})
+	})
+
+	cwd := t.TempDir()
+	ctx := &pkg.AppContext{
+		ApiHost:   API_HOST,
+		Cwd:       cwd,
+		Namespace: "ns-sampler",
+	}
+	fileName := "config.yaml"
+	filePath := filepath.Join(cwd, fileName)
+	os.WriteFile(filePath, []byte(configFileContents), 0644)
+	opts := &PublishGatewayOptions{
+		configFile: fileName,
+		qualifier:  "myqualifier",
 		dryRun:     true,
 	}
 	_, err := PublishGateway(ctx, opts)
@@ -146,7 +180,7 @@ func TestPublishError(t *testing.T) {
 	fileName := "config.yaml"
 	filePath := filepath.Join(cwd, fileName)
 	os.WriteFile(filePath, []byte(configFileContents), 0644)
-	opts := &publishOptions{
+	opts := &PublishGatewayOptions{
 		configFile: fileName,
 		dryRun:     false,
 	}

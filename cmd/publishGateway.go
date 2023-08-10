@@ -13,13 +13,14 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type publishOptions struct {
+type PublishGatewayOptions struct {
 	dryRun     bool
+	qualifier  string
 	configFile string
 }
 
 func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
-	opts := &publishOptions{}
+	opts := &PublishGatewayOptions{}
 	var publishGatewayCmd = &cobra.Command{
 		Use:     "publish-gateway [configFile]",
 		Aliases: []string{"pg"},
@@ -57,6 +58,7 @@ Details:
 	}
 
 	publishGatewayCmd.Flags().BoolVar(&opts.dryRun, "dry-run", false, "Dry run your API changes before committing to them")
+	publishGatewayCmd.Flags().StringVar(&opts.qualifier, "qualifier", "", "Sets a tag qualifier, which specifies that the gateway configuration is a partial set of configuration")
 
 	return publishGatewayCmd
 }
@@ -67,7 +69,7 @@ type PublishGatewayResponse struct {
 	Error   string `json:"error"`
 }
 
-func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) (PublishGatewayResponse, error) {
+func PublishGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions) (PublishGatewayResponse, error) {
 	var result PublishGatewayResponse
 	// Open the file
 	filePath := filepath.Join(ctx.Cwd, opts.configFile)
@@ -77,10 +79,10 @@ func PublishGateway(ctx *pkg.AppContext, opts *publishOptions) (PublishGatewayRe
 	}
 	defer file.Close()
 
-	return PublishToGateway(ctx, opts.dryRun, file)
+	return PublishToGateway(ctx, opts, file)
 }
 
-func PublishToGateway(ctx *pkg.AppContext, dryRun bool, configFile io.Reader) (PublishGatewayResponse, error) {
+func PublishToGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions, configFile io.Reader) (PublishGatewayResponse, error) {
 	var result PublishGatewayResponse
 
 	body := &bytes.Buffer{}
@@ -91,8 +93,16 @@ func PublishToGateway(ctx *pkg.AppContext, dryRun bool, configFile io.Reader) (P
 		return result, err
 	}
 
-	dryRunValue := strconv.FormatBool(dryRun)
+	dryRunValue := strconv.FormatBool(opts.dryRun)
 	dryRunField.Write([]byte(dryRunValue))
+
+	if opts.qualifier != "" {
+		qualifierField, err := fw.CreateFormField("qualifier")
+		if err != nil {
+			return result, err
+		}
+		qualifierField.Write([]byte(opts.qualifier))
+	}
 
 	fileField, err := fw.CreateFormFile("configFile", "config.yaml")
 	if err != nil {
