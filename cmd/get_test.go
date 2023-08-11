@@ -111,6 +111,13 @@ func productsResponse(r *http.Request) (*http.Response, error) {
 					"flow":     "public",
 					"appId":    "00000000",
 				},
+				{
+					"name":     "prod",
+					"active":   false,
+					"approval": true,
+					"flow":     "public",
+					"appId":    "00000001",
+				},
 			},
 		},
 	})
@@ -146,7 +153,7 @@ func TestGetCmdTables(t *testing.T) {
 			args: []string{"products"},
 			expect: []string{
 				"Name     App ID  Environments",
-				"DemoNet  132QWE  1",
+				"DemoNet  132QWE  2",
 			},
 			response: productsResponse,
 		},
@@ -256,7 +263,7 @@ func TestGetJsonYamlCmd(t *testing.T) {
 		{
 			name: "get products json",
 			args: []string{"products", "--json"},
-			expect: `[{"appId":"132QWE","environments":[{"active":false,"appId":"00000000","approval":false,"flow":"public","name":"dev"}],"name":"DemoNet"}]
+			expect: `[{"appId":"132QWE","environments":[{"active":false,"appId":"00000000","approval":false,"flow":"public","name":"dev"},{"active":false,"appId":"00000001","approval":true,"flow":"public","name":"prod"}],"name":"DemoNet"}]
 `,
 			response: productsResponse,
 		},
@@ -270,6 +277,11 @@ func TestGetJsonYamlCmd(t *testing.T) {
       approval: false
       flow: public
       name: dev
+    - active: false
+      appId: "00000001"
+      approval: true
+      flow: public
+      name: prod
   name: DemoNet
 
 `,

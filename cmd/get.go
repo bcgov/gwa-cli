@@ -13,6 +13,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type payload map[string]interface{}
+
 type OutputFlags struct {
 	Json bool
 	Yaml bool
@@ -39,7 +41,7 @@ $ gwa get datasets --yaml`,
 			if err != nil {
 				return err
 			}
-			// outputOptions.Print(data, buf)
+
 			if outputOptions.Json {
 				json, err := json.Marshal(data)
 				if err != nil {
@@ -73,7 +75,13 @@ $ gwa get datasets --yaml`,
 			case "products":
 				tbl = table.New("Name", "App ID", "Environments")
 				for _, product := range data {
-					tbl.AddRow(product["name"], product["appId"], 1)
+					var totalEnvironments int
+					if envs, ok := product["environments"].([]interface{}); ok {
+						totalEnvironments = len(envs)
+					} else {
+						totalEnvironments = 0
+					}
+					tbl.AddRow(product["name"], product["appId"], totalEnvironments)
 				}
 				break
 			}
@@ -91,7 +99,7 @@ $ gwa get datasets --yaml`,
 	return getCmd
 }
 
-func CreateAction(ctx *pkg.AppContext, operator string) ([]map[string]interface{}, error) {
+func CreateAction(ctx *pkg.AppContext, operator string) ([]payload, error) {
 	var path = fmt.Sprintf("/ds/api/v2/namespaces/%s/%s", ctx.Namespace, operator)
 	if operator == "datasets" {
 		path = fmt.Sprintf("/ds/api/v2/namespaces/%s/directory", ctx.Namespace)
@@ -105,7 +113,7 @@ func CreateAction(ctx *pkg.AppContext, operator string) ([]map[string]interface{
 	return data, nil
 }
 
-func GetRequest(ctx *pkg.AppContext, url string) ([]map[string]interface{}, error) {
+func GetRequest(ctx *pkg.AppContext, url string) ([]payload, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	bearer := fmt.Sprintf("Bearer %s", ctx.ApiKey)
@@ -122,7 +130,7 @@ func GetRequest(ctx *pkg.AppContext, url string) ([]map[string]interface{}, erro
 		return nil, err
 	}
 	if res.StatusCode == http.StatusOK {
-		var result []map[string]interface{}
+		var result []payload
 		json.Unmarshal(body, &result)
 		return result, nil
 	}
