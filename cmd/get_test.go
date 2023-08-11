@@ -35,19 +35,65 @@ func setupGetTests(args []string, response httpmock.Responder, buf *bytes.Buffer
 func datasetsResponse(r *http.Request) (*http.Response, error) {
 	return httpmock.NewJsonResponse(200, []map[string]interface{}{
 		{
-			"name":  "full-dataset",
-			"title": "Full Dataset",
+			"license_title": "Access Only",
+			"name":          "a-unit-test-dataset",
+			"notes":         "Used for unit tests :)",
+			"organization": map[string]interface{}{
+				"name":  "ministry-of-citizen-services",
+				"title": "Ministry of Citizen Services",
+			},
+			"organizationUnit": map[string]interface{}{
+				"name":  "data-innovation-program",
+				"title": "Data Innovation Program",
+			},
+			"products": map[string]interface{}{
+				"environments": []map[string]interface{}{
+					{"active": false,
+						"flow": "client-credentials",
+						"name": "dev"},
+				},
+				"id":   123,
+				"name": "ABCDEF",
+			},
+			"record_publish_date": "2014-12-15",
+			"security_class":      "LOW-PUBLIC",
+			"tags":                []string{"BC", "Canada"},
+			"title":               "A Unit Test Dataset",
+			"view_audience":       "Government",
 		},
 	})
+
 }
 
 func issuersResponse(r *http.Request) (*http.Response, error) {
 	return httpmock.NewJsonResponse(200, []map[string]interface{}{
 		{
-			"name":  "Ministry IdP",
-			"flow":  "client-credentials",
-			"mode":  "auto",
-			"owner": "janis@idir",
+			"apiKeyName":          "X-API-KEY",
+			"availableScopes":     []string{},
+			"clientAuthenticator": "client-jwt-jwks-url",
+			"clientMappers": []map[string]interface{}{
+				{
+					"defaultValue": "https://aps.gov.bc.ca",
+					"name":         "audience",
+				},
+			},
+			"clientRoles": []string{"read", "write"},
+			"environmentDetails": []map[string]interface{}{
+				{
+					"clientId":           "aps-team",
+					"clientRegistration": "managed",
+					"clientSecret":       "****",
+					"environment":        "dev",
+					"exists":             true,
+					"issuerUrl":          "https://aps.gov.bc.ca/auth/realms/issuer",
+				},
+			},
+			"flow":           "client-credentials",
+			"isShared":       false,
+			"mode":           "auto",
+			"name":           "APS IdP",
+			"owner":          "janis@idir",
+			"resourceScopes": []string{},
 		},
 	})
 }
@@ -58,7 +104,13 @@ func productsResponse(r *http.Request) (*http.Response, error) {
 			"name":  "DemoNet",
 			"appId": "132QWE",
 			"environments": []map[string]interface{}{
-				{"id": "e1", "name": "dev"},
+				{
+					"name":     "dev",
+					"active":   false,
+					"approval": false,
+					"flow":     "public",
+					"appId":    "00000000",
+				},
 			},
 		},
 	})
@@ -75,8 +127,8 @@ func TestGetCmdTables(t *testing.T) {
 			name: "get datasets",
 			args: []string{"datasets"},
 			expect: []string{
-				"Name          Title",
-				"full-dataset  Full Dataset",
+				"Name                 Title",
+				"a-unit-test-dataset  A Unit Test Dataset",
 			},
 			response: datasetsResponse,
 		},
@@ -84,8 +136,8 @@ func TestGetCmdTables(t *testing.T) {
 			name: "get issuers",
 			args: []string{"issuers"},
 			expect: []string{
-				"Name          Flow                Mode  Owner",
-				"Ministry IdP  client-credentials  auto  janis@idir",
+				"Name     Flow                Mode  Owner",
+				"APS IdP  client-credentials  auto  janis@idir",
 			},
 			response: issuersResponse,
 		},
@@ -93,7 +145,7 @@ func TestGetCmdTables(t *testing.T) {
 			name: "get products",
 			args: []string{"products"},
 			expect: []string{
-				"Name     AppId   Environments",
+				"Name     App ID  Environments",
 				"DemoNet  132QWE  1",
 			},
 			response: productsResponse,
@@ -131,17 +183,36 @@ func TestGetJsonYamlCmd(t *testing.T) {
 		{
 			name: "get datasets json",
 			args: []string{"datasets", "--json"},
-			expect: `[{"name":"full-dataset","title":"Full Dataset"}]
+			expect: `[{"license_title":"Access Only","name":"a-unit-test-dataset","notes":"Used for unit tests :)","organization":{"name":"ministry-of-citizen-services","title":"Ministry of Citizen Services"},"organizationUnit":{"name":"data-innovation-program","title":"Data Innovation Program"},"products":{"environments":[{"active":false,"flow":"client-credentials","name":"dev"}],"id":123,"name":"ABCDEF"},"record_publish_date":"2014-12-15","security_class":"LOW-PUBLIC","tags":["BC","Canada"],"title":"A Unit Test Dataset","view_audience":"Government"}]
 `,
 			response: datasetsResponse,
 		},
 		{
 			name: "get datasets yaml",
 			args: []string{"datasets", "--yaml"},
-			expect: `- name: full-dataset
-  organization: ""
-  tags: []
-  title: Full Dataset
+			expect: `- license_title: Access Only
+  name: a-unit-test-dataset
+  notes: Used for unit tests :)
+  organization:
+    name: ministry-of-citizen-services
+    title: Ministry of Citizen Services
+  organizationUnit:
+    name: data-innovation-program
+    title: Data Innovation Program
+  products:
+    environments:
+        - active: false
+          flow: client-credentials
+          name: dev
+    id: 123
+    name: ABCDEF
+  record_publish_date: "2014-12-15"
+  security_class: LOW-PUBLIC
+  tags:
+    - BC
+    - Canada
+  title: A Unit Test Dataset
+  view_audience: Government
 
 `,
 			response: datasetsResponse,
@@ -149,20 +220,35 @@ func TestGetJsonYamlCmd(t *testing.T) {
 		{
 			name: "get issuers json",
 			args: []string{"issuers", "--json"},
-			expect: `[{"name":"Ministry IdP","description":"","flow":"client-credentials","clientAuthenicator":"","mode":"auto","environmentDetails":null,"owner":"janis@idir"}]
+			expect: `[{"apiKeyName":"X-API-KEY","availableScopes":[],"clientAuthenticator":"client-jwt-jwks-url","clientMappers":[{"defaultValue":"https://aps.gov.bc.ca","name":"audience"}],"clientRoles":["read","write"],"environmentDetails":[{"clientId":"aps-team","clientRegistration":"managed","clientSecret":"****","environment":"dev","exists":true,"issuerUrl":"https://aps.gov.bc.ca/auth/realms/issuer"}],"flow":"client-credentials","isShared":false,"mode":"auto","name":"APS IdP","owner":"janis@idir","resourceScopes":[]}]
 `,
 			response: issuersResponse,
 		},
 		{
 			name: "get issuers yaml",
 			args: []string{"issuers", "--yaml"},
-			expect: `- name: Ministry IdP
-  description: ""
+			expect: `- apiKeyName: X-API-KEY
+  availableScopes: []
+  clientAuthenticator: client-jwt-jwks-url
+  clientMappers:
+    - defaultValue: https://aps.gov.bc.ca
+      name: audience
+  clientRoles:
+    - read
+    - write
+  environmentDetails:
+    - clientId: aps-team
+      clientRegistration: managed
+      clientSecret: '****'
+      environment: dev
+      exists: true
+      issuerUrl: https://aps.gov.bc.ca/auth/realms/issuer
   flow: client-credentials
-  clientAuthenticator: ""
+  isShared: false
   mode: auto
-  environmentDetails: []
+  name: APS IdP
   owner: janis@idir
+  resourceScopes: []
 
 `,
 			response: issuersResponse,
@@ -170,7 +256,7 @@ func TestGetJsonYamlCmd(t *testing.T) {
 		{
 			name: "get products json",
 			args: []string{"products", "--json"},
-			expect: `[{"appId":"132QWE","environments":[{"name":"dev"}],"name":"DemoNet"}]
+			expect: `[{"appId":"132QWE","environments":[{"active":false,"appId":"00000000","approval":false,"flow":"public","name":"dev"}],"name":"DemoNet"}]
 `,
 			response: productsResponse,
 		},
@@ -180,9 +266,9 @@ func TestGetJsonYamlCmd(t *testing.T) {
 			expect: `- appId: 132QWE
   environments:
     - active: false
-      appId: ""
+      appId: "00000000"
       approval: false
-      flow: ""
+      flow: public
       name: dev
   name: DemoNet
 
