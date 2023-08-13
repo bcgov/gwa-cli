@@ -40,7 +40,7 @@ func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 		Example: `
 $ gwa apply --input gw-config.yaml
     `,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			kindMapper := map[string]string{
 				"CredentialIssuer": "issuer",
 				"DraftDataset":     "dataset",
@@ -87,8 +87,7 @@ $ gwa apply --input gw-config.yaml
 					if err != nil {
 						return err
 					}
-
-					_, err = PublishToGateway(ctx, false, bytes.NewReader(body))
+					_, err = PublishToGateway(ctx, &PublishGatewayOptions{}, bytes.NewReader(body))
 					if err != nil {
 						return err
 					}
