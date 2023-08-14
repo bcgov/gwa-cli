@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"os"
+	"path"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/zenizh/go-capturer"
 
@@ -15,6 +18,21 @@ import (
 )
 
 var apiHost = "api.gov.bc.ca"
+var authHost = "https://api.gov.bc.ca/auth/token"
+
+func setupConfig(dir string) error {
+	fileName := ".gwa-config.yaml"
+	path := path.Join(dir, fileName)
+	configFile, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer configFile.Close()
+	viper.AddConfigPath(dir)
+	viper.SetConfigFile(path)
+	viper.SetDefault("token_endpoint", authHost)
+	return nil
+}
 
 func setupGetTests(args []string, response httpmock.Responder, buf *bytes.Buffer) *cobra.Command {
 	ctx := &pkg.AppContext{
@@ -124,6 +142,7 @@ func productsResponse(r *http.Request) (*http.Response, error) {
 }
 
 func TestGetCmdTables(t *testing.T) {
+	setupConfig(t.TempDir())
 	tests := []struct {
 		name     string
 		args     []string
@@ -168,6 +187,13 @@ func TestGetCmdTables(t *testing.T) {
 				operator = "directory"
 			}
 			URL := fmt.Sprintf("https://%s/ds/api/v2/namespaces/ns-sampler/%s", host, operator)
+			httpmock.RegisterResponder("POST", authHost, func(r *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(200, map[string]interface{}{
+					"access_token":       "123ABC",
+					"refresh_token":      "refresh",
+					"refresh_expires_in": 0,
+				})
+			})
 			httpmock.RegisterResponder("GET", URL, tt.response)
 			buf := &bytes.Buffer{}
 			mainCmd := setupGetTests(tt.args, tt.response, buf)
@@ -181,6 +207,7 @@ func TestGetCmdTables(t *testing.T) {
 }
 
 func TestGetJsonYamlCmd(t *testing.T) {
+	setupConfig(t.TempDir())
 	tests := []struct {
 		name     string
 		args     []string
@@ -290,6 +317,7 @@ func TestGetJsonYamlCmd(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			var operator = tt.args[0]
@@ -297,6 +325,13 @@ func TestGetJsonYamlCmd(t *testing.T) {
 				operator = "directory"
 			}
 			URL := fmt.Sprintf("https://%s/ds/api/v2/namespaces/ns-sampler/%s", host, operator)
+			httpmock.RegisterResponder("POST", authHost, func(r *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(200, map[string]interface{}{
+					"access_token":       "123ABC",
+					"refresh_token":      "refresh",
+					"refresh_expires_in": 0,
+				})
+			})
 			httpmock.RegisterResponder("GET", URL, tt.response)
 			mainCmd := setupGetTests(tt.args, tt.response, nil)
 			out := capturer.CaptureOutput(func() {

@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/rodaine/table"
@@ -22,17 +20,18 @@ type OutputFlags struct {
 
 func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var outputOptions = new(OutputFlags)
+	var validArgs = []string{"datasets", "issuers", "organizations", "products"}
 	var getCmd = &cobra.Command{
 		Use:   "get [type] <flags>",
-		Short: "Retrieve a table of a namespace's datasets, issuers and products",
+		Short: fmt.Sprintf("Retrieve a table of a namespace's %s", pkg.ArgumentsSliceToString(validArgs, "or")),
 		Example: `$ gwa get datasets
 $ gwa get datasets --json
 $ gwa get datasets --yaml`,
-		ValidArgs: []string{"datasets", "issuers", "products"},
+		ValidArgs: validArgs,
 		Args:      cobra.OnlyValidArgs,
 		RunE: func(_ *cobra.Command, args []string) error {
 			if len(args) == 0 {
-				return fmt.Errorf("Must provide an argument of datasets, issuers or products to get command")
+				return fmt.Errorf("Must provide an argument of %s to get command", pkg.ArgumentsSliceToString(validArgs, "or"))
 			}
 			if ctx.Namespace == "" {
 				return fmt.Errorf("no namespace selected")
@@ -61,9 +60,11 @@ $ gwa get datasets --yaml`,
 			var tbl table.Table
 			switch args[0] {
 			case "datasets":
+				fallthrough
+			case "organizations":
 				tbl = table.New("Name", "Title")
-				for _, dataset := range data {
-					tbl.AddRow(dataset["name"], dataset["title"])
+				for _, item := range data {
+					tbl.AddRow(item["name"], item["title"])
 				}
 				break
 			case "issuers":
@@ -100,44 +101,30 @@ $ gwa get datasets --yaml`,
 }
 
 func CreateAction(ctx *pkg.AppContext, operator string) ([]payload, error) {
-	var path = fmt.Sprintf("/ds/api/v2/namespaces/%s/%s", ctx.Namespace, operator)
-	if operator == "datasets" {
+	var path string
+	switch operator {
+	case "datasets":
 		path = fmt.Sprintf("/ds/api/v2/namespaces/%s/directory", ctx.Namespace)
+		break
+	case "organizations":
+		path = "/ds/api/v2/organizations"
+		break
+	default:
+		path = fmt.Sprintf("/ds/api/v2/namespaces/%s/%s", ctx.Namespace, operator)
 	}
 	url, _ := ctx.CreateUrl(path, nil)
 
-	data, err := GetRequest(ctx, url)
+	err := pkg.RefreshToken(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return data, nil
-}
-
-func GetRequest(ctx *pkg.AppContext, url string) ([]payload, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	bearer := fmt.Sprintf("Bearer %s", ctx.ApiKey)
-	req.Header.Set("Authorization", bearer)
+	req, err := pkg.NewApiGet[[]payload](ctx, url)
 	if err != nil {
 		return nil, err
 	}
-	res, err := client.Do(req)
+	data, err := req.Do()
 	if err != nil {
 		return nil, err
 	}
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	if res.StatusCode == http.StatusOK {
-		var result []payload
-		json.Unmarshal(body, &result)
-		return result, nil
-	}
-	var errorResponse pkg.ApiErrorResponse
-	err = json.Unmarshal(body, &errorResponse)
-	if err != nil {
-		return nil, fmt.Errorf(string(body))
-	}
-	return nil, errorResponse.GetError()
+	return data.Data, nil
 }
