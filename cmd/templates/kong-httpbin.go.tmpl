@@ -1,15 +1,15 @@
 services:
-  - name: {{ snakecase .Service }}-dev
+  - name: {{ kebabCase .Service }}-dev
     tags: [ ns.{{ .Namespace }} ]
-    host: {{ .Upstream.Host }}
+    host: {{ .UpstreamUrl.Host }}
     port: {{ .UpstreamPort }}
-    protocol: {{ .Upstream.Scheme }}
+    protocol: {{ .UpstreamUrl.Scheme }}
     retries: 0
     routes:
-      - name: {{ snakecase .Service }}-dev
+      - name: {{ kebabCase .Service }}-dev
         tags: [ ns.{{ .Namespace }} ]
         hosts:
-        - {{ snakecase .Service }}.dev.api.gov.bc.ca
+        - {{ kebabCase .Service }}.dev.api.gov.bc.ca
         paths:
         - /
         methods:
