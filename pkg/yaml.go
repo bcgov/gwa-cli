@@ -2,9 +2,9 @@ package pkg
 
 import (
 	"bytes"
-	"log"
-	"io"
 	yaml "gopkg.in/yaml.v3"
+	"io"
+	"log"
 )
 
 type T struct {
@@ -12,7 +12,6 @@ type T struct {
 }
 
 func SplitYAML(resources []byte) ([][]byte, error) {
-
 	dec := yaml.NewDecoder(bytes.NewReader(resources))
 
 	var res [][]byte
@@ -34,10 +33,10 @@ func SplitYAML(resources []byte) ([][]byte, error) {
 	return res, nil
 }
 
-func LookupKind(data []byte) (string) {
+func LookupKind(data []byte) string {
 	t := T{}
-    
-    err := yaml.Unmarshal([]byte(data), &t)
+
+	err := yaml.Unmarshal([]byte(data), &t)
 	if err != nil {
 		log.Fatalf("error: %v", err)
 	}

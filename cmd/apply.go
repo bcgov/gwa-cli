@@ -6,18 +6,26 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
 
+type parsedConfig map[string]interface{}
+
 type ApplyOptions struct {
 	input string
 }
 
-func (o *ApplyOptions) ParseInput(ctx *pkg.AppContext) ([][]byte, error) {
-	filePath := filepath.Join(ctx.Cwd, o.input)
+// Takes a dir to locate the input file and returns a slice of each doc contained in the YAML file
+func (o *ApplyOptions) Parse(cwd string) ([][]byte, error) {
+	filePath := filepath.Join(cwd, o.input)
+	ext := filepath.Ext(filePath)
+	if ext != ".yaml" && ext != ".yml" {
+		return nil, fmt.Errorf("Invalid file type. %s is not a YAML file", o.input)
+	}
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
@@ -31,6 +39,27 @@ func (o *ApplyOptions) ParseInput(ctx *pkg.AppContext) ([][]byte, error) {
 	return splitDocs, nil
 }
 
+type PublishCounter struct {
+	Success int
+	Failed  int
+	Skipped int
+}
+
+func (p *PublishCounter) AddSkipped() {
+	p.Skipped += 1
+}
+func (p *PublishCounter) AddFailed() {
+	p.Failed += 1
+}
+func (p *PublishCounter) AddSuccess() {
+	p.Success += 1
+}
+
+func (p *PublishCounter) Print() string {
+	total := p.Success + p.Failed
+	return fmt.Sprintf("%d/%d Published, %d Skipped\n", p.Success, total, p.Skipped)
+}
+
 func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &ApplyOptions{}
 	var applyCmd = &cobra.Command{
@@ -41,68 +70,62 @@ func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 $ gwa apply --input gw-config.yaml
     `,
 		RunE: func(_ *cobra.Command, _ []string) error {
-			kindMapper := map[string]string{
-				"CredentialIssuer": "issuer",
-				"DraftDataset":     "dataset",
-				"Product":          "product",
-				"Environment":      "environment",
-			}
-
-			yamlDocs, err := opts.ParseInput(ctx)
+			yamlDocs, err := opts.Parse(ctx.Cwd)
 			if err != nil {
 				return err
 			}
 
-			for _, v := range yamlDocs {
-				var configYaml map[string]interface{}
-				err = yaml.Unmarshal(v, &configYaml)
+			counter := &PublishCounter{}
+			for _, doc := range yamlDocs {
+				// Step 1: Parse the yaml
+				config, err := ExtractResourceConfig(doc)
 				if err != nil {
 					return err
 				}
-
-				var kind = configYaml["kind"].(string)
-
-				delete(configYaml, "kind")
-				body, err := json.Marshal(configYaml)
-				if err != nil {
-					return err
-				}
-
-				if apiPath, ok := kindMapper[kind]; ok {
-					data, err := Put(ctx, body, apiPath)
+				// Step 2: Get the action type
+				action := config.Action()
+				// Step 3: Handle the action. Printing is done here
+				switch action {
+				case "publishGateway":
+					fmt.Printf("↑ %s %s", config.Kind, config.Config["name"])
+					err := PublishGatewayService(ctx, config.Config)
 					if err != nil {
-						return err
+						counter.AddFailed()
+						fmt.Print("\r")
+						fmt.Printf("✓ %s %s\n", config.Kind, config.Config["name"])
+						break
 					}
-					fmt.Printf("%-20s %-40s %s\n", kind, configYaml["name"], data.Result)
-				} else if kind == "GatewayService" {
-					fmt.Printf("%-20s %-40s publishing...", kind, configYaml["name"])
 
-					var kongConfig = struct {
-						Services []map[string]interface{} `json:"services"`
-					}{}
+					counter.AddSuccess()
+					fmt.Print("\r")
+					fmt.Printf("x %s %s\n", config.Kind, config.Config["name"])
+					break
 
-					kongConfig.Services = append([]map[string]interface{}{}, configYaml)
+				case "skip":
+					counter.AddSkipped()
+					fmt.Println("-", config.Config["name"])
+					break
 
-					body, err := json.Marshal(kongConfig)
+				default:
+					fmt.Printf("↑ %s %s", config.Kind, config.Config["name"])
+					result, err := PublishResource(ctx, config.Config, action)
 					if err != nil {
-						return err
+						counter.AddFailed()
+						fmt.Print("\r")
+						fmt.Printf("x %s %s\n", config.Kind, config.Config["name"])
+						break
 					}
-					_, err = PublishToGateway(ctx, &PublishGatewayOptions{}, bytes.NewReader(body))
-					if err != nil {
-						return err
-					}
-					fmt.Printf("\r")
-					fmt.Printf("%-20s %-40s published    \n", kind, configYaml["name"])
-					// fmt.Printf(`
-					// 	Details:
-					// 	%s
-					// 	%s
-					// 	`, result.Message, result.Results)
 
-				} else {
-					fmt.Printf("%-20s %-40s skipped\n", kind, configYaml["name"])
+					counter.AddSuccess()
+					fmt.Print("\r")
+					fmt.Printf("✓ %s %s: %s\n", config.Kind, config.Config["name"], result)
+					break
 				}
 			}
+
+			fmt.Println("\nApply complete:")
+			fmt.Println(counter.Print())
+
 			return nil
 		},
 	}
@@ -110,6 +133,44 @@ $ gwa apply --input gw-config.yaml
 	applyCmd.Flags().StringVarP(&opts.input, "input", "i", "gw-config.yml", "YAML file containing your configuration")
 
 	return applyCmd
+}
+
+func Tester() string {
+	time.Sleep(time.Second * 1)
+	return "Hi"
+}
+
+type ResourceConfig struct {
+	Config map[string]interface{}
+	Kind   string
+}
+
+func (r *ResourceConfig) Action() string {
+	var kindMapper = map[string]string{
+		"CredentialIssuer": "issuer",
+		"DraftDataset":     "dataset",
+		"Product":          "product",
+		"Environment":      "environment",
+	}
+
+	if slug, ok := kindMapper[r.Kind]; ok {
+		return slug
+	} else if r.Kind == "GatewayService" {
+		return "publishGateway"
+	}
+	return "skip"
+}
+
+// doc is a single yaml document
+func ExtractResourceConfig(doc []byte) (*ResourceConfig, error) {
+	var result = &ResourceConfig{}
+	err := yaml.Unmarshal(doc, &result.Config)
+	if err != nil {
+		return result, err
+	}
+	result.Kind = result.Config["kind"].(string)
+	delete(result.Config, "kind")
+	return result, nil
 }
 
 type PutResponse struct {
@@ -121,18 +182,42 @@ type PutResponse struct {
 	ChildResults string
 }
 
-func Put(ctx *pkg.AppContext, body []byte, arg string) (*PutResponse, error) {
+func PublishResource(ctx *pkg.AppContext, doc parsedConfig, arg string) (string, error) {
+	body, err := json.Marshal(doc)
+	if err != nil {
+		return "", err
+	}
 	route := fmt.Sprintf("/ds/api/v2/namespaces/%s/%ss", ctx.Namespace, arg)
 	URL, _ := ctx.CreateUrl(route, nil)
+	fmt.Println(URL)
 	request, err := pkg.NewApiPut[PutResponse](ctx, URL, bytes.NewBuffer(body))
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	res, err := request.Do()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &res.Data, nil
+	return res.Data.Result, nil
+}
+
+func PublishGatewayService(ctx *pkg.AppContext, doc parsedConfig) error {
+	var kongConfig = struct {
+		Services []map[string]interface{} `json:"services"`
+	}{}
+
+	kongConfig.Services = append([]map[string]interface{}{}, doc)
+
+	body, err := json.Marshal(kongConfig)
+	if err != nil {
+		return err
+	}
+	_, err = PublishToGateway(ctx, &PublishGatewayOptions{}, bytes.NewReader(body))
+	if err != nil {
+		return err
+	}
+
+	return err
 }
