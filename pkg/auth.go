@@ -9,9 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
+
+var boldText = lipgloss.NewStyle().Bold(true)
 
 func DeviceLogin(ctx *AppContext) error {
 	openApiPathname, err := fetchConfigUrl(ctx)
@@ -205,8 +208,8 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.
 
 	urlLine := fmt.Sprintf("\n\nPlease sign in at %s", response.Data.VerificationUri)
 	fmt.Println(urlLine)
-	fmt.Println("Input the following code", response.Data.UserCode)
-	fmt.Println("\nWaiting for authentication handshake...")
+	fmt.Println("Input the following code", boldText.Render(response.Data.UserCode))
+	fmt.Print("\nWaiting for authentication handshake...")
 
 	for i := 0; i < 60; i++ {
 		err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode)

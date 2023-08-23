@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/basvdlei/envfile v0.0.1
 	github.com/briandowns/spinner v1.23.0
+	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/google/go-querystring v1.1.0
 	github.com/google/uuid v1.1.2
 	github.com/jarcoal/httpmock v1.3.0
@@ -18,7 +19,6 @@ require (
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/lipgloss v0.7.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect

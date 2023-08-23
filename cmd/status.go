@@ -47,7 +47,11 @@ You can create a namespace by running:
 				}
 
 				for _, item := range data {
-					tbl.AddRow(item.Status, item.Name, item.Reason, item.Upstream)
+					var statusText = pkg.SuccessStyle.Render(item.Status)
+					if item.Status == "DOWN" {
+						statusText = pkg.ErrorStyle.Render(item.Status)
+					}
+					tbl.AddRow(statusText, item.Name, item.Reason, item.Upstream)
 				}
 				tbl.Print()
 			} else {

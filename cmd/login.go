@@ -16,6 +16,8 @@ func (l *LoginFlags) IsClientCredential() bool {
 	return l.clientId != "" && l.clientSecret != ""
 }
 
+// TODO: Instead of printing from the auth service's methods, use a goroutine and
+// post back status updates to this function to keep in line with other methods
 func NewLoginCmd(ctx *pkg.AppContext) *cobra.Command {
 	loginFlags := &LoginFlags{}
 
@@ -44,7 +46,7 @@ To use your credentials you must supply both a client-id and client-secret:
 				}
 			}
 
-			fmt.Println("Logged in")
+			fmt.Println(pkg.Checkmark(), pkg.PrintSuccess("Successfully logged in"))
 
 			return nil
 		},

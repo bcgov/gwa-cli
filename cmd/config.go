@@ -79,7 +79,7 @@ $ gwa config set --namespace ns-sampler
 			if err != nil {
 				return err
 			}
-			fmt.Println("Config settings saved")
+			fmt.Println(pkg.Checkmark(), pkg.PrintSuccess("Config settings saved"))
 			return nil
 		},
 	}

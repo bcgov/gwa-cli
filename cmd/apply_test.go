@@ -159,7 +159,7 @@ func TestCounter(t *testing.T) {
 	assert.Equal(t, 2, c.Success)
 	assert.Equal(t, 1, c.Skipped)
 	assert.Equal(t, 1, c.Failed)
-	assert.Equal(t, "2/3 Published, 1 Skipped\n", c.Print())
+	assert.Equal(t, "2/3 Published, 1 Skipped", c.Print())
 }
 
 func TestPublishResource(t *testing.T) {

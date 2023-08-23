@@ -85,7 +85,8 @@ $ gwa generate-config --template client-credentials-shared-idp --service my-serv
 				return err
 			}
 
-			fmt.Println("File " + opts.Out + " created")
+			output := fmt.Sprintf("File %s created", opts.Out)
+			fmt.Println(pkg.PrintSuccess(output))
 
 			return nil
 		},

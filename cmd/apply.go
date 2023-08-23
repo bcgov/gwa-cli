@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
@@ -57,7 +56,7 @@ func (p *PublishCounter) AddSuccess() {
 
 func (p *PublishCounter) Print() string {
 	total := p.Success + p.Failed
-	return fmt.Sprintf("%d/%d Published, %d Skipped\n", p.Success, total, p.Skipped)
+	return fmt.Sprintf("%d/%d Published, %d Skipped", p.Success, total, p.Skipped)
 }
 
 func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -92,18 +91,18 @@ $ gwa apply --input gw-config.yaml
 					if err != nil {
 						counter.AddFailed()
 						fmt.Print("\r")
-						fmt.Printf("✓ %s %s\n", config.Kind, config.Config["name"])
+						fmt.Printf("%s %s %s\n", pkg.Times(), config.Kind, config.Config["name"])
 						break
 					}
 
 					counter.AddSuccess()
+					fmt.Printf("%s %s %s\n", pkg.Checkmark(), config.Kind, config.Config["name"])
 					fmt.Print("\r")
-					fmt.Printf("x %s %s\n", config.Kind, config.Config["name"])
 					break
 
 				case "skip":
 					counter.AddSkipped()
-					fmt.Println("-", config.Config["name"])
+					fmt.Println(pkg.Indeterminate(), config.Config["name"])
 					break
 
 				default:
@@ -112,18 +111,18 @@ $ gwa apply --input gw-config.yaml
 					if err != nil {
 						counter.AddFailed()
 						fmt.Print("\r")
-						fmt.Printf("x %s %s\n", config.Kind, config.Config["name"])
+						fmt.Printf("%s %s %s\n", pkg.Times(), config.Kind, config.Config["name"])
 						break
 					}
 
 					counter.AddSuccess()
 					fmt.Print("\r")
-					fmt.Printf("✓ %s %s: %s\n", config.Kind, config.Config["name"], result)
+					fmt.Printf("%s %s %s: %s\n", pkg.Checkmark(), config.Kind, config.Config["name"], result)
 					break
 				}
 			}
 
-			fmt.Println("\nApply complete:")
+			fmt.Println()
 			fmt.Println(counter.Print())
 
 			return nil
@@ -133,11 +132,6 @@ $ gwa apply --input gw-config.yaml
 	applyCmd.Flags().StringVarP(&opts.input, "input", "i", "gw-config.yml", "YAML file containing your configuration")
 
 	return applyCmd
-}
-
-func Tester() string {
-	time.Sleep(time.Second * 1)
-	return "Hi"
 }
 
 type ResourceConfig struct {
@@ -189,7 +183,6 @@ func PublishResource(ctx *pkg.AppContext, doc parsedConfig, arg string) (string,
 	}
 	route := fmt.Sprintf("/ds/api/v2/namespaces/%s/%ss", ctx.Namespace, arg)
 	URL, _ := ctx.CreateUrl(route, nil)
-	fmt.Println(URL)
 	request, err := pkg.NewApiPut[PutResponse](ctx, URL, bytes.NewBuffer(body))
 	if err != nil {
 		return "", err

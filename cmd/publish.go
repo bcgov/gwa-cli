@@ -61,7 +61,7 @@ $ gwa publish issuer --input content.yaml
 			}
 
 			output := fmt.Sprintf("%s successfully published", args[0])
-			fmt.Println(strings.ToUpper(output[0:1]) + output[1:])
+			fmt.Println(pkg.Checkmark(), strings.ToUpper(output[0:1])+output[1:])
 
 			return nil
 		},

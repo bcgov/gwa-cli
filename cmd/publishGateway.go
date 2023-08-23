@@ -45,7 +45,7 @@ Example:
 				return err
 			}
 
-			fmt.Println("Gateway config published")
+			fmt.Println(pkg.Checkmark(), "Gateway config published")
 			fmt.Printf(`
 Details:
   %s

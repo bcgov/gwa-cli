@@ -160,5 +160,5 @@ func TestClientCredentialLogin(t *testing.T) {
 	out := capturer.CaptureOutput(func() {
 		mainCmd.Execute()
 	})
-	assert.Contains(t, out, "Logged in")
+	assert.Contains(t, out, "Successfully logged in")
 }
