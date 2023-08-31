@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -65,9 +66,9 @@ func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:   "apply <type>",
 		Short: "Apply gateway resources",
 		Args:  cobra.OnlyValidArgs,
-		Example: `
+		Example: heredoc.Doc(`
 $ gwa apply --input gw-config.yaml
-    `,
+    `),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			yamlDocs, err := opts.Parse(ctx.Cwd)
 			if err != nil {

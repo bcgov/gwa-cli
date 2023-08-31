@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
 )
@@ -25,9 +26,10 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:     "publish-gateway [configFile]",
 		Aliases: []string{"pg"},
 		Short:   "Publish your gateway config",
-		Example: `  $ gwa publish-gateway path/to/config.yaml
-  $ gwa publish-gateway path/to/config.yaml --dry-run
-    `,
+		Example: heredoc.Doc(`
+    $ gwa publish-gateway path/to/config.yaml
+    $ gwa publish-gateway path/to/config.yaml --dry-run
+    `),
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {

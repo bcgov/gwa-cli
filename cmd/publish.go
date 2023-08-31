@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -44,11 +45,11 @@ func NewPublishCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short:     "Publish to DS API. Available commands are dataset, issuer and product",
 		ValidArgs: []string{"dataset", "product", "issuer"},
 		Args:      cobra.OnlyValidArgs,
-		Example: `
-$ gwa publish dataset --input content.yaml
-$ gwa publish product --input content.yaml
-$ gwa publish issuer --input content.yaml
-    `,
+		Example: heredoc.Doc(`
+    $ gwa publish dataset --input content.yaml
+    $ gwa publish product --input content.yaml
+    $ gwa publish issuer --input content.yaml
+    `),
 		RunE: func(_ *cobra.Command, args []string) error {
 			body, err := opts.ParseInput(ctx)
 			if err != nil {

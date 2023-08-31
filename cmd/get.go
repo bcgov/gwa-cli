@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/rodaine/table"
 	"github.com/spf13/cobra"
@@ -24,9 +25,11 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var getCmd = &cobra.Command{
 		Use:   "get [type] <flags>",
 		Short: fmt.Sprintf("Retrieve a table of a namespace's %s", pkg.ArgumentsSliceToString(validArgs, "or")),
-		Example: `$ gwa get datasets
-$ gwa get datasets --json
-$ gwa get datasets --yaml`,
+		Example: heredoc.Doc(`
+  $ gwa get datasets
+  $ gwa get datasets --json
+  $ gwa get datasets --yaml
+    `),
 		ValidArgs: validArgs,
 		Args:      cobra.OnlyValidArgs,
 		RunE: func(_ *cobra.Command, args []string) error {

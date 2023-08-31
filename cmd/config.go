@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -41,20 +43,20 @@ func NewConfigSetCmd(_ *pkg.AppContext) *cobra.Command {
 	var configSetCmd = &cobra.Command{
 		Use:   "set [key] [value]",
 		Short: "Write a specific global setting",
-		Long: `
+		Long: heredoc.Docf(`
 Exposes some specific config values that can be defined by the user.
 
-Configurable Settings:
+%s
   namespace:       The default namespace used
   token:           Use only if you have a token you know is authenticated
   host:            The API host you wish to communicate with
   scheme:          http or https
 
-`,
-		Example: `
+    `, lipgloss.NewStyle().Bold(true).Render("Configurable Settings:")),
+		Example: heredoc.Doc(`
 $ gwa config set namespace ns-sampler
 $ gwa config set --namespace ns-sampler
-    `,
+    `),
 		RunE: func(_ *cobra.Command, args []string) error {
 			if len(args) > 1 {
 				switch args[0] {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/rodaine/table"
 	"github.com/spf13/cobra"
@@ -16,8 +17,8 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var statusCmd = &cobra.Command{
 		Use:   "status",
 		Short: "Check the status of your configs",
-		Example: `  $ gwa status
-  $ gwa status --json`,
+		Example: heredoc.Doc(`$ gwa status
+  $ gwa status --json`),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
 				cmd.SetUsageTemplate(`

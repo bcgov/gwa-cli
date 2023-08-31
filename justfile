@@ -12,5 +12,9 @@ build:
 run *args:
   go run -ldflags="-X 'main.ApiHost=$GWA_API_HOST' -X 'main.ClientId=$GWA_CLIENT_ID'" main.go {{args}}
 
+docs:
+  go run build/gen-docs.go
+  echo "Documentation generated"
+
 test:
   go test ./...

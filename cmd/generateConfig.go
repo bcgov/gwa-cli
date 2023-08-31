@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
 )
@@ -69,10 +70,10 @@ func NewGenerateConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:   "generate-config",
 		Short: "Generate gateway resources based on pre-defined templates",
 		Args:  cobra.OnlyValidArgs,
-		Example: `
+		Example: heredoc.Doc(`
 $ gwa generate-config --template kong-httpbin --service my-service --upstream https://httpbin.org
 $ gwa generate-config --template client-credentials-shared-idp --service my-service --upstream https://www.boredapi.com/api/activity
-    `,
+    `),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			opts.Namespace = ctx.Namespace
 			err := opts.Exec()

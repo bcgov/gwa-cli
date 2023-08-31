@@ -12,20 +12,13 @@ import (
 var cfgFile string
 var quiet bool
 
-var rootCmd = &cobra.Command{
-	Use:     "gwa <command> <subcommand> [flags]",
-	Short:   "CLI tool supported by the APS team",
-	Long:    `GWA CLI is a tool for composing, validating and generating Kong Gateway configuration files from OpenAPI (aka Swagger) specs and managing Kong Plugins.`,
-	Version: "2.0.0-beta",
-}
-
-func Execute(ctx *pkg.AppContext) {
-	cobra.OnInitialize(initConfig, func() {
-		ctx.ApiKey = viper.GetString("api_key")
-		ctx.Namespace = viper.GetString("namespace")
-		ctx.Host = viper.GetString("host")
-		ctx.Scheme = viper.GetString("scheme")
-	})
+func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
+	var rootCmd = &cobra.Command{
+		Use:     "gwa <command> <subcommand> [flags]",
+		Short:   "CLI tool supported by the APS team",
+		Long:    `GWA CLI is a tool for composing, validating and generating Kong Gateway configuration files from OpenAPI (aka Swagger) specs and managing Kong Plugins.`,
+		Version: "2.0.0-beta",
+	}
 	rootCmd.AddCommand(NewConfigCmd(ctx))
 	rootCmd.AddCommand(NewInit(ctx))
 	rootCmd.AddCommand(NewPublishGatewayCmd(ctx))
@@ -43,11 +36,24 @@ func Execute(ctx *pkg.AppContext) {
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
 	rootCmd.PersistentFlags().StringVar(&ctx.Namespace, "namespace", "", "Assign the namespace you would like to use")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+
+	return rootCmd
+}
+
+func Execute(ctx *pkg.AppContext) *cobra.Command {
+	rootCmd := NewRootCommand(ctx)
+	cobra.OnInitialize(initConfig, func() {
+		ctx.ApiKey = viper.GetString("api_key")
+		ctx.Namespace = viper.GetString("namespace")
+		ctx.Host = viper.GetString("host")
+		ctx.Scheme = viper.GetString("scheme")
+	})
 	viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace"))
 	err := rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
 	}
+	return rootCmd
 }
 
 func initConfig() {

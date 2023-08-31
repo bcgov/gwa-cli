@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -70,6 +71,10 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 	var createCommand = &cobra.Command{
 		Use:   "create",
 		Short: "Create a new namespace",
+		Example: heredoc.Doc(`
+    $ gwa namspace create
+    $ gwa namespace create --name my-namespace --description="This is my namespace"
+    `),
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			namespace, err := createNamespace(ctx, &namespaceFormData)
 			if err != nil {
