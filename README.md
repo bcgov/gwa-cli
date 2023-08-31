@@ -12,7 +12,7 @@
 
 Currently documentation is limited to the APS [USER-JOURNEY.md](https://github.com/bcgov/gwa-api/blob/dev/USER-JOURNEY.md) and via the installed executable's help commands. A hosted website option is in the works and will be available soon.
 
-To run help on any command:
+To run help on any command while using the CLI:
 
 ```sh
 $ gwa-cli login --help
@@ -26,6 +26,8 @@ To use your credentials you must supply both a client-id and client-secret:
 ...
 
 ```
+
+To generate a Markdown-formatted string of every command's documentation to `stdout`, run `$ just docs`. You could then pipe it to a file like so `$ just docs > gwa-commands.md`, though this will be just a temporary solution.
 
 ## Development
 
