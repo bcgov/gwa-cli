@@ -14,7 +14,6 @@ run *args:
 
 docs:
   go run build/gen-docs.go
-  echo "Documentation generated"
 
 test:
   go test ./...
