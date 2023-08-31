@@ -162,6 +162,9 @@ func ExtractResourceConfig(doc []byte) (*ResourceConfig, error) {
 	if err != nil {
 		return result, err
 	}
+	if result.Config["kind"] == nil {
+		return result, fmt.Errorf("This config template is not supported")
+	}
 	result.Kind = result.Config["kind"].(string)
 	delete(result.Config, "kind")
 	return result, nil
