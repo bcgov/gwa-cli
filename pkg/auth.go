@@ -267,6 +267,10 @@ func RefreshToken(ctx *AppContext) error {
 	tokenEndpoint := viper.GetString("token_endpoint")
 	refreshToken := viper.GetString("refresh_token")
 
+	if refreshToken == "" {
+		return nil
+	}
+
 	data := make(url.Values)
 	data.Set("client_id", ctx.ClientId)
 	data.Set("grant_type", "refresh_token")
