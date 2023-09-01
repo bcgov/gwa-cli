@@ -20,6 +20,7 @@ func main() {
 func writeDocument(rootCmd *cobra.Command) string {
 	var output strings.Builder
 	output.WriteString("# GWA CLI Commands\n\n")
+	output.WriteString(fmt.Sprintf("%s\n", rootCmd.Long))
 
 	for _, cmd := range rootCmd.Commands() {
 		renderCommand(cmd, &output)
@@ -43,9 +44,11 @@ func renderCommand(cmd *cobra.Command, output *strings.Builder) {
 		}
 	}
 
-	output.WriteString(fmt.Sprintf("\n\n## %s\n\n", title))
-	output.WriteString(fmt.Sprintf("%s\n\n", strings.ReplaceAll(cmd.Long, "\n", "  \n")))
+	output.WriteString(fmt.Sprintf("\n## %s\n\n", title))
 	output.WriteString(fmt.Sprintf("**Usage:** `%s`\n\n", cmd.UseLine()))
+	if cmd.Long != "" {
+		output.WriteString(fmt.Sprintf("%s\n\n", strings.ReplaceAll(cmd.Long, "\n", "  \n")))
+	}
 
 	flagUsages := cmd.Flags().FlagUsages()
 	if flagUsages != "" {

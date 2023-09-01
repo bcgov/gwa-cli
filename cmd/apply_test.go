@@ -67,6 +67,14 @@ func TestNonYamlFile(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestUnsupportedYamlFile(t *testing.T) {
+	input := []byte(`services:
+- name: my-service-dev
+`)
+	_, err := ExtractResourceConfig(input)
+	assert.Error(t, err, "throws an error because there's no `kind` to parse")
+}
+
 func TestExtractResouceConfig(t *testing.T) {
 	input := []byte(`kind: GatewayService
 name: my-service-dev
