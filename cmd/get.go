@@ -117,10 +117,6 @@ func CreateAction(ctx *pkg.AppContext, operator string) ([]payload, error) {
 	}
 	url, _ := ctx.CreateUrl(path, nil)
 
-	// err := pkg.RefreshToken(ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
 	req, err := pkg.NewApiGet[[]payload](ctx, url)
 	if err != nil {
 		return nil, err

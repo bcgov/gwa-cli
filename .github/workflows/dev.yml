@@ -1,101 +1,40 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
-on: 
+on:
   push:
     branches:
       - dev
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         with:
-          # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
-          
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - uses: extractions/setup-just@v1
+      - uses: actions/setup-go@v4
+      - name: test
+        run: just test
 
-      - name: NPM build
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          # registry-url: https://npm.pkg.github.com/
-          # scope: '@bcgov'
-
-      - run: |
-          npm install
-          npm run build
-          npm run bundle
-
-          (cd sbin && ls -l)
-          (cd sbin && cp gwa-cli-linux gwa && zip -mqj gwa_EDGE_linux_x64.zip gwa)
-          (cd sbin && cp -f gwa-cli-macos gwa && zip -mqj gwa_EDGE_macos_x64.zip gwa)
-          (cd sbin && cp gwa-cli-win.exe gwa.exe && zip -mqj gwa_EDGE_win_x64.zip gwa.exe)
-          (cd sbin && rm gwa-cli-*)
-
-      - uses: meeDamian/github-release@2.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: Edge Builds
-          tag: edge
-          body: >
-            This release is a build of the latest dev branch. 
-            It will update often so check back for new versions.
-          files: >
-            sbin/gwa_EDGE_linux_x64.zip
-            sbin/gwa_EDGE_macos_x64.zip
-            sbin/gwa_EDGE_win_x64.zip
-          gzip: 'false'
-          allow_override: 'true'
-          prerelease: 'true'
-
-      # # Setup .npmrc file to publish to npm
-      # - uses: actions/setup-node@v1
+      # - uses: meeDamian/github-release@2.0
       #   with:
-      #     node-version: '10.x'
-      #     registry-url: 'https://registry.npmjs.org'
-      # - run: npm install
-      # # Publish to npm
-      # - run: npm publish --access public
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      # # Setup .npmrc file to publish to GitHub Packages
-      # - uses: actions/setup-node@v1
-      #   with:
-      #     registry-url: 'https://npm.pkg.github.com'
-      #     # Defaults to the user or organization that owns the workflow file
-      #     scope: '@octocat'
-      # # Publish to GitHub Packages
-      # - run: npm publish
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  
-      # install and publish new config
-      # - name: NPM package
-      #   run: |
-      #     # GITHUB_REF=refs/heads/dev
-      #     # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
-      #     # GITHUB_RUN_ID=193633377
-      #     echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
-
-      #     export TAG=`echo $GITHUB_SHA | cut -c1-7`
-      #     npm version "0.0.0-$TAG" --git-tag-version=false
-      #     npm install
-      #     npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: Edge Builds
+      #     tag: edge
+      #     body: >
+      #       This release is a build of the latest dev branch.
+      #       It will update often so check back for new versions.
+      #     files: >
+      #       sbin/gwa_EDGE_linux_x64.zip
+      #       sbin/gwa_EDGE_macos_x64.zip
+      #       sbin/gwa_EDGE_win_x64.zip
+      #     gzip: 'false'
+      #     allow_override: 'true'
+      #     prerelease: 'true'
