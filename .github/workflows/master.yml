@@ -1,89 +1,50 @@
 name: Release from master
 
-on: 
+on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        required: true
+        type: string
 
 jobs:
-  release-on-push:
+  goreleaser:
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
-          # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
-
-      - name: Get Package Version
-        uses: nyaayaya/package-info@v1
-
-      - name: Check Output Parameters
-        run: |
-          echo "Preparing to release v${{ env.PACKAGE_VERSION }}"
-
-      - name: NPM build
-        uses: actions/setup-node@v1
+      - run: git fetch --force --tags
+      - name: Make envfile
+        uses: SpicyPizza/create-envfile@v2.0
         with:
-          node-version: 12
-
-      # Build and zip the binaries
-      - run: |
-          VER="v${{ env.PACKAGE_VERSION }}"
-
-          npm install
-          npm run build
-          npm run bundle
-
-          (cd sbin && ls -l)
-          (cd sbin && cp gwa-cli-linux gwa && zip -mqj gwa_${VER}_linux_x64.zip gwa)
-          (cd sbin && cp -f gwa-cli-macos gwa && zip -mqj gwa_${VER}_macos_x64.zip gwa)
-          (cd sbin && cp gwa-cli-win.exe gwa.exe && zip -mqj gwa_${VER}_win_x64.zip gwa.exe)
-          (cd sbin && rm gwa-cli-*)
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        id: release
+          GWA_API_HOST: ${{ secrets.GWA_API_HOST }}
+          GWA_CLIENT_ID: ${{ secrets.GWA_CLIENT_ID }}
+          GWA_VERSION: ${{ inputs.tag_name }}
+      - uses: actions/setup-go@v4
+        with:
+          go-version: stable
+      - name: test
+        run: just test
+      - name: generate commands documentation
+        run: just docs
+      - name: Commit docs
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: 'Generate new docs'
+          add: 'docs/*.md'
+      - uses: goreleaser/goreleaser-action@v4
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.PACKAGE_VERSION }}
-          release_name: Release ${{ env.PACKAGE_VERSION }}
+          GWA_API_HOST: ${{ secrets.GWA_API_HOST }}
+          GWA_CLIENT_ID: ${{ secrets.GWA_CLIENT_ID }}
+          GWA_VERSION: ${{ inputs.tag_name }}
 
-      - name: Upload binaries to release
-        uses: svenstaro/upload-release-action@v2
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: ./sbin/gwa_*.zip
-          tag: v${{ env.PACKAGE_VERSION }}
-          file_glob: true
-
-
-      # - name: Deploy
-      #   uses: peaceiris/actions-gh-pages@v3
-      #   with:
-      #     github_token: ${{ secrets.GITHUB_TOKEN }}
-      #     publish_dir: ./sbin
-      #     keep_files: true
-
-      # install and publish new config
-      - name: NPM package containing Terraform configuration
-        uses: actions/setup-node@v1
-        with:
-          node-version: 12
-          registry-url: https://npm.pkg.github.com/
-          scope: '@bcgov'
-      - run: |
-          # GITHUB_REF=refs/heads/dev
-          # GITHUB_SHA=eff817eeb0292c32f4f7f74892f9f0b0ffe15615
-          # GITHUB_RUN_ID=193633377
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
-
-          npm version "${{ steps.release.outputs.version }}" --git-tag-version=false
-          npm install
-          npm publish --tag `echo $GITHUB_REF | tr '/' '\n' | tail -1`
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  

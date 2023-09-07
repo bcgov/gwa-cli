@@ -1,0 +1,65 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - id: macos
+    binary: gwa
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+    goarch:
+      - amd64
+    ldflags:
+      - -X main.ApiHost={{ .Env.GWA_API_HOST }} -X main.ClientId={{ .Env.GWA_CLIENT_ID }} -X main.Version={{ .Env.GWA_VERSION }}
+  - id: linux
+    binary: gwa
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+      - arm
+    ldflags:
+      - -X main.ApiHost={{ .Env.GWA_API_HOST }} -X main.ClientId={{ .Env.GWA_CLIENT_ID }} -X main.Version={{ .Env.GWA_VERSION }}
+  - id: windows
+    binary: gwa
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - 386
+      - amd64
+      - arm64
+    ldflags:
+      - -X main.ApiHost={{ .Env.GWA_API_HOST }} -X main.ClientId={{ .Env.GWA_CLIENT_ID }} -X main.Version={{ .Env.GWA_VERSION }}
+
+archives:
+  - format: zip
+    # this name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      gwa_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+# The lines beneath this are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj

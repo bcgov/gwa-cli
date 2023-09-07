@@ -3,6 +3,7 @@ module github.com/bcgov/gwa-cli
 go 1.20
 
 require (
+	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/basvdlei/envfile v0.0.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/charmbracelet/lipgloss v0.7.1
@@ -18,7 +19,6 @@ require (
 )
 
 require (
-	github.com/MakeNowJust/heredoc/v2 v2.0.1 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect

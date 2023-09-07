@@ -17,6 +17,7 @@ type AppContext struct {
 	Host       string
 	Namespace  string
 	Scheme     string
+	Version    string
 }
 
 func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) {

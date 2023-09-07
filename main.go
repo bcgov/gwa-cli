@@ -9,6 +9,7 @@ import (
 
 var ApiHost string
 var ClientId string
+var Version string
 
 func main() {
 	cwd, _ := os.Getwd()
@@ -16,6 +17,7 @@ func main() {
 		ApiHost:  ApiHost,
 		ClientId: ClientId,
 		Cwd:      cwd,
+		Version:  Version,
 	}
 	cmd.Execute(ctx)
 }

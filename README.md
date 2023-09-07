@@ -34,9 +34,10 @@ To generate a Markdown-formatted string of every command's documentation to `std
 Prerequisites:
 - [Go](https://go.dev) 1.20 or higher
 - [Just](https://github.com/casey/just) (alternative to `make`)
+- [GoReleaser](https://goreleaser.com)
 
 Tools:
-- [Cobra](https://cobra.dev/) Command line argument parser
+- [Cobra] Command line argument parser
 - [Viper](https://github.com/spf13/viper) Configuration file manager, integrates tightly with Cobra
 - [Lipgloss](https://github.com/charmbracelet/lipgloss) Styles and colours
 
@@ -54,8 +55,11 @@ Tools:
    ```sh
    $ git clone git@github.com:bcgov/gwa-cli.git
    $ cd gwa-cli
+   $ mv env.exampler .env
    ```
    **Note** Some local environments require Go projects are run from the `$HOME/go/src` directory. If any `module not found` errors are reported, try moving it.
+
+   Also be sure to fill in the environment variables before running a command.
 
 3. Run commands
 
@@ -76,6 +80,16 @@ Tools:
 
    - **VSCode:** Install the [official Go extension](https://marketplace.visualstudio.com/items?itemName=golang.Go)
    - **NeoVim:** [go.nvim](https://github.com/ray-x/go.nvim) is a great plugin
+
+## Deployment
+
+Details on how the deployment process work are coming soon as we migrate codebase languages.
+
+Make sure you have GoReleaser installed to test locally.
+
+###### Tip
+
+A dry-run of the build process can be executed by running `$ just release`. This will compile your source code into a `/dist` folder where you can run any platform's executable.
 
 ## Installation
 
