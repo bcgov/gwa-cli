@@ -1,9 +1,0 @@
-name: "Referrer Restriction"
-url: "https://github.com/eyolas/kong-plugin-referer"
-author: eyolas
-description: |
-  Easily add referer access to your API by enabling this plugin.
-
-  NOTE: This is not a secure plugin! it is based on the referer header that anyone could spoof. For security consider real authentication plugins.
----
-referers: ""

@@ -1,0 +1,21 @@
+services:
+  - name: {{ kebabCase .Service }}-dev
+    tags: [ ns.{{ .Namespace }} ]
+    host: {{ .UpstreamUrl.Host }}
+    port: {{ .UpstreamPort }}
+    protocol: {{ .UpstreamUrl.Scheme }}
+    retries: 0
+    routes:
+      - name: {{ kebabCase .Service }}-dev
+        tags: [ ns.{{ .Namespace }} ]
+        hosts:
+        - {{ kebabCase .Service }}.dev.api.gov.bc.ca
+        paths:
+        - /
+        methods:
+        - GET
+        strip_path: false
+        https_redirect_status_code: 426
+        path_handling: v0
+        request_buffering: true
+        response_buffering: true

@@ -1,7 +1,0 @@
-name: "Kong Spec Expose"
-url: "https://docs.konghq.com/hub/optum/kong-spec-expose/"
-author: Optum
-description: |
-  Will expose the OpenAPI Spec (OAS), Swagger, or other specification of auth protected API services fronted by the Kong gateway.
----
-spec_url: "https://raw.githubusercontent.com/bcgov/api-specs/master/gwells/gwells.yaml"
