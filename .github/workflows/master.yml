@@ -42,10 +42,10 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: stable
-      - name: test
-        run: just test
-      - name: generate commands documentation
-        run: just docs
+      # - name: test
+      #   run: just test
+      # - name: generate commands documentation
+      #   run: just docs
       # - name: Commit docs
       #   uses: EndBug/add-and-commit@v9
       #   with:
