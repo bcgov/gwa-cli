@@ -8,6 +8,7 @@ on:
 env:
   GWA_API_HOST: api.gov.bc.ca
   GWA_CLIENT_ID: gwa-cli
+  GWA_VERSION: v2
 
 jobs:
   release-tag:
@@ -45,12 +46,12 @@ jobs:
         run: just test
       - name: generate commands documentation
         run: just docs
-      - name: Commit docs
-        uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          message: 'Generate new docs'
-          add: 'docs/*.md'
+      # - name: Commit docs
+      #   uses: EndBug/add-and-commit@v9
+      #   with:
+      #     default_author: github_actions
+      #     message: 'Generate new docs'
+      #     add: 'docs/*.md'
       - uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
