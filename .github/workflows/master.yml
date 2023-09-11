@@ -8,6 +8,10 @@ on:
 env:
   GWA_API_HOST: api.gov.bc.ca
   GWA_CLIENT_ID: gwa-cli
+<<<<<<< HEAD
+=======
+  GWA_VERSION: v2
+>>>>>>> master
 
 jobs:
   release-tag:
@@ -34,22 +38,23 @@ jobs:
       - name: Make envfile
         uses: SpicyPizza/create-envfile@v2.0
         with:
-          GWA_API_HOST: ${{ env.GWA_API_HOST }}
-          GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
-          GWA_VERSION: ${{ needs.release-tag.outputs.version_number }}
+          envkey_GWA_API_HOST: ${{ env.GWA_API_HOST }}
+          envkey_GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
+          envkey_GWA_VERSION: ${{ needs.release-tag.outputs.version_number }}
+      - uses: extractions/setup-just@v1
       - uses: actions/setup-go@v4
         with:
           go-version: stable
-      - name: test
-        run: just test
-      - name: generate commands documentation
-        run: just docs
-      - name: Commit docs
-        uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          message: 'Generate new docs'
-          add: 'docs/*.md'
+      # - name: test
+      #   run: just test
+      # - name: generate commands documentation
+      #   run: just docs
+      # - name: Commit docs
+      #   uses: EndBug/add-and-commit@v9
+      #   with:
+      #     default_author: github_actions
+      #     message: 'Generate new docs'
+      #     add: 'docs/*.md'
       - uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
