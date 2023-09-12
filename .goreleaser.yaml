@@ -11,7 +11,7 @@ builds:
     goarch:
       - amd64
     ldflags:
-      - -X main.ApiHost={{ .Env.GWA_API_HOST }}
+      - '-X "main.ApiHost={{ .Env.GWA_API_HOST }}"'
       - -X main.ClientId={{ .Env.GWA_CLIENT_ID }}
       - -X main.Version={{ .Env.GWA_VERSION }}
   - id: linux
