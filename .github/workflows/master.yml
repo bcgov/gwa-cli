@@ -59,6 +59,7 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GWA_API_HOST: 'api.gov.bc.ca'
           # GWA_API_HOST: ${{ env.GWA_API_HOST }}
           # GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
           # GWA_VERSION: ${{ env.GWA_VERSION }}
