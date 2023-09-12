@@ -1,5 +1,5 @@
 env:
-  - GWA_API_HOST={{ .Env.GWA_API_HOST }}
+  - GWA_API_HOST=api.gov.bc.ca
 before:
   hooks:
     - go mod tidy
@@ -33,7 +33,7 @@ builds:
     goos:
       - windows
     goarch:
-      - 386
+      - '386'
       - amd64
       - arm64
     ldflags:
