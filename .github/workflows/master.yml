@@ -32,12 +32,12 @@ jobs:
         with:
           fetch-depth: 0
       - run: git fetch --force --tags
-      - name: Make envfile
-        uses: SpicyPizza/create-envfile@v2.0
-        with:
-          GWA_API_HOST: ${{ env.GWA_API_HOST }}
-          GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
-          GWA_VERSION: ${{ needs.release-tag.outputs.version_number }}
+      # - name: Make envfile
+      #   uses: SpicyPizza/create-envfile@v2.0
+      #   with:
+      #     GWA_API_HOST: ${{ env.GWA_API_HOST }}
+      #     GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
+      #     GWA_VERSION: ${{ needs.release-tag.outputs.version_number }}
       - uses: extractions/setup-just@v1
       - uses: actions/setup-go@v4
         with:
@@ -55,10 +55,10 @@ jobs:
       - uses: goreleaser/goreleaser-action@v4
         with:
           distribution: goreleaser
-          version: latest
+          version: v1.20.0
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GWA_API_HOST: ${{ env.GWA_API_HOST }}
-          GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
-          GWA_VERSION: ${{ needs.release-tag.outputs.version_number }}
+          # GWA_API_HOST: ${{ env.GWA_API_HOST }}
+          # GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
+          # GWA_VERSION: ${{ env.GWA_VERSION }}
