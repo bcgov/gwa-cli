@@ -1,5 +1,3 @@
-env:
-  - GWA_API_HOST=api.gov.bc.ca
 before:
   hooks:
     - go mod tidy
@@ -13,7 +11,9 @@ builds:
     goarch:
       - amd64
     ldflags:
-      - -X main.ApiHost={{ .Env.GWA_API_HOST }} -X main.ClientId={{ .Env.GWA_CLIENT_ID }} -X main.Version={{ .Env.GWA_VERSION }}
+      - -X main.ApiHost={{ .Env.GWA_API_HOST }}
+      - -X main.ClientId={{ .Env.GWA_CLIENT_ID }}
+      - -X main.Version={{ .Env.GWA_VERSION }}
   - id: linux
     binary: gwa
     env:
@@ -25,7 +25,9 @@ builds:
       - arm64
       - arm
     ldflags:
-      - -X main.ApiHost={{ .Env.GWA_API_HOST }} -X main.ClientId={{ .Env.GWA_CLIENT_ID }} -X main.Version={{ .Env.GWA_VERSION }}
+      - -X main.ApiHost={{ .Env.GWA_API_HOST }}
+      - -X main.ClientId={{ .Env.GWA_CLIENT_ID }}
+      - -X main.Version={{ .Env.GWA_VERSION }}
   - id: windows
     binary: gwa
     env:
@@ -37,7 +39,9 @@ builds:
       - amd64
       - arm64
     ldflags:
-      - -X main.ApiHost={{ .Env.GWA_API_HOST }} -X main.ClientId={{ .Env.GWA_CLIENT_ID }} -X main.Version={{ .Env.GWA_VERSION }}
+      - -X main.ApiHost={{ .Env.GWA_API_HOST }}
+      - -X main.ClientId={{ .Env.GWA_CLIENT_ID }}
+      - -X main.Version={{ .Env.GWA_VERSION }}
 
 archives:
   - format: zip
