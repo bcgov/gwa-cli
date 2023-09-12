@@ -20,7 +20,7 @@ jobs:
       - id: release
         uses: rymndhng/release-on-push-action@v0.28.0
         with:
-          bump_version_scheme: minor
+          bump_version_scheme: patch
     outputs:
       version_number: ${{ steps.release.outputs.tag_name }}
 
