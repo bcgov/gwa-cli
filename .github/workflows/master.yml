@@ -52,7 +52,7 @@ jobs:
       #     default_author: github_actions
       #     message: 'Generate new docs'
       #     add: 'docs/*.md'
-      - uses: goreleaser/goreleaser-action@v4
+      - uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: v1.20.0
