@@ -57,7 +57,8 @@ archives:
       {{- else }}{{ .Arch }}{{ end }}
       {{- if .Arm }}v{{ .Arm }}{{ end }}
 
-  - format: tgz
+  - id: tar-gz
+    format: tgz
     builds:
       - linux
     # this name template makes the OS and Arch compatible with the results of uname.
