@@ -21,15 +21,25 @@ func NewConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 func NewConfigGetCmd(_ *pkg.AppContext) *cobra.Command {
+	args := []string{"api_key", "host", "namespace"}
+	argsSentence := pkg.ArgumentsSliceToString(args, "and")
+
 	var configGetCmd = &cobra.Command{
-		Use:       "get [key]",
-		Short:     "Look up a specific global setting",
-		ValidArgs: []string{"api_key", "host", "namespace"},
+		Use:   "get [key]",
+		Short: fmt.Sprintf("Look what value is set for %s", argsSentence),
+		Long: heredoc.Docf(`
+      This is a convenience getter to print out the currently stored global setting for the following arguments
+
+      - api_key
+      - host
+      - namespace
+    `),
+		ValidArgs: args,
 		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		RunE: func(_ *cobra.Command, args []string) error {
 			result := viper.Get(args[0])
 			if result == "" {
-				return fmt.Errorf("Nothing set for %s", args[0])
+				return nil
 			}
 			fmt.Println(result)
 			return nil
