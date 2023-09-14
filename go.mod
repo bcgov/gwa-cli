@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
-	github.com/basvdlei/envfile v0.0.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/charmbracelet/lipgloss v0.7.1
 	github.com/google/go-querystring v1.1.0

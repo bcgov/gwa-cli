@@ -115,6 +115,7 @@ type ApiErrorResponse struct {
 	Error        string `json:"error"`
 	ErrorMessage string `json:"error_description"`
 	Message      string `json:"message"`
+	Results      string `json:"results"`
 	Details      struct {
 		Item struct {
 			Message string `json:"message"`
@@ -129,6 +130,9 @@ func (e *ApiErrorResponse) GetError() error {
 	}
 	if e.Message != "" {
 		result = append(result, e.Message)
+	}
+	if e.Results != "" {
+		result = append(result, e.Results)
 	}
 	if e.Details.Item.Message != "" {
 		result = append(result, e.Details.Item.Message)

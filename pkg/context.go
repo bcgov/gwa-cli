@@ -11,7 +11,7 @@ type AppContext struct {
 	ApiHost    string
 	ApiKey     string
 	Auth       AuthDetails
-	AppVersion int
+	ApiVersion string
 	ClientId   string
 	Cwd        string
 	Host       string
@@ -30,6 +30,7 @@ func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) 
 	if a.ApiHost == "" && a.Host == "" {
 		return "", fmt.Errorf("no host set")
 	}
+
 	host := a.ApiHost
 	if a.Host != "" {
 		host = a.Host
