@@ -59,6 +59,7 @@ jobs:
           args: release --verbose --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CLI_VERSION: ${{ needs.release-tag.outputs.version_number }}
           # GWA_API_HOST: ${{ env.GWA_API_HOST }}
           # GWA_CLIENT_ID: ${{ env.GWA_CLIENT_ID }}
           # GWA_VERSION: ${{ env.GWA_VERSION }}

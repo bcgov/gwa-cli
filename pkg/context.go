@@ -11,7 +11,7 @@ type AppContext struct {
 	ApiHost    string
 	ApiKey     string
 	Auth       AuthDetails
-	AppVersion int
+	ApiVersion string
 	ClientId   string
 	Cwd        string
 	Host       string
