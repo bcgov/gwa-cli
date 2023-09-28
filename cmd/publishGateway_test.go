@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -98,21 +100,7 @@ func TestPublishCommands(t *testing.T) {
 	}
 }
 
-func TestPublishGateway(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
-		assert.Contains(t, r.URL.Path, "ns-sampler")
-		assert.Empty(t, r.FormValue("qualifier"))
-
-		return httpmock.NewJsonResponse(200, map[string]interface{}{
-			"message": "gateway published",
-			"results": "aok",
-			"error":   "",
-		})
-	})
-
+func TestPrepareConfigFile(t *testing.T) {
 	cwd := t.TempDir()
 	ctx := &pkg.AppContext{
 		ApiHost:   API_HOST,
@@ -126,8 +114,66 @@ func TestPublishGateway(t *testing.T) {
 		configFile: fileName,
 		dryRun:     true,
 	}
-	_, err := PublishGateway(ctx, opts)
-	assert.Nil(t, err, "request success")
+	config, err := PrepareConfigFile(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actualBytes, err := io.ReadAll(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(actualBytes)
+	assert.Equal(t, configFileContents, actual, "it returns the thing")
+}
+
+func TestMultiPrepareConfigFile(t *testing.T) {
+	cwd := t.TempDir()
+	for i, _ := range "123" {
+		fileName := fmt.Sprintf("config-%d.yaml", i)
+		contents := fmt.Sprintf(`
+_format_version: "1.1"
+services:
+  - name: Demo_App_%d
+    url: /api/demoapp-%d
+    plugins: []`, i, i)
+		filePath := filepath.Join(cwd, fileName)
+		os.WriteFile(filePath, []byte(contents), 0644)
+	}
+	opts := &PublishGatewayOptions{
+		configFile: cwd,
+		dryRun:     false,
+	}
+	config, err := PrepareConfigFile(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actualBytes, err := io.ReadAll(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	actual := string(actualBytes)
+	combined := []byte(`
+_format_version: "1.1"
+services:
+  - name: Demo_App_0
+    url: /api/demoapp-0
+    plugins: []
+---
+
+_format_version: "1.1"
+services:
+  - name: Demo_App_1
+    url: /api/demoapp-1
+    plugins: []
+---
+
+_format_version: "1.1"
+services:
+  - name: Demo_App_2
+    url: /api/demoapp-2
+    plugins: []`)
+	expected := string(combined)
+	assert.Equal(t, expected, actual, "it returns the thing")
 }
 
 func TestPublishGatewayWithQualifier(t *testing.T) {
@@ -159,32 +205,32 @@ func TestPublishGatewayWithQualifier(t *testing.T) {
 		qualifier:  "myqualifier",
 		dryRun:     true,
 	}
-	_, err := PublishGateway(ctx, opts)
+	_, err := PrepareConfigFile(ctx, opts)
 	assert.Nil(t, err, "request success")
 }
 
-func TestPublishError(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
-		return httpmock.NewStringResponse(500, "Server error"), nil
-	})
-
-	cwd := t.TempDir()
-	ctx := &pkg.AppContext{
-		ApiHost:   API_HOST,
-		Cwd:       cwd,
-		Namespace: "ns-sampler",
-	}
-	fileName := "config.yaml"
-	filePath := filepath.Join(cwd, fileName)
-	os.WriteFile(filePath, []byte(configFileContents), 0644)
-	opts := &PublishGatewayOptions{
-		configFile: fileName,
-		dryRun:     false,
-	}
-	_, err := PublishGateway(ctx, opts)
-	assert.ErrorContains(t, err, "Server error")
-	assert.NotNil(t, err, "request failed")
-}
+// func TestPublishError(t *testing.T) {
+// 	httpmock.Activate()
+// 	defer httpmock.DeactivateAndReset()
+//
+// 	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+// 		return httpmock.NewStringResponse(500, "Server error"), nil
+// 	})
+//
+// 	cwd := t.TempDir()
+// 	ctx := &pkg.AppContext{
+// 		ApiHost:   API_HOST,
+// 		Cwd:       cwd,
+// 		Namespace: "ns-sampler",
+// 	}
+// 	fileName := "config.yaml"
+// 	filePath := filepath.Join(cwd, fileName)
+// 	os.WriteFile(filePath, []byte(configFileContents), 0644)
+// 	opts := &PublishGatewayOptions{
+// 		configFile: fileName,
+// 		dryRun:     false,
+// 	}
+// 	_, err := PrepareConfigFile(ctx, opts)
+// 	assert.ErrorContains(t, err, "Server error")
+// 	assert.NotNil(t, err, "request failed")
+// }

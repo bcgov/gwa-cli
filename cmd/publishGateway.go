@@ -42,7 +42,11 @@ Example:
 				return fmt.Errorf("No namespace has been set")
 			}
 			opts.configFile = args[0]
-			result, err := PublishGateway(ctx, opts)
+			config, err := PrepareConfigFile(ctx, opts)
+			if err != nil {
+				return err
+			}
+			result, err := PublishToGateway(ctx, opts, config)
 			if err != nil {
 				return err
 			}
@@ -71,17 +75,53 @@ type PublishGatewayResponse struct {
 	Error   string `json:"error"`
 }
 
-func PublishGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions) (PublishGatewayResponse, error) {
-	var result PublishGatewayResponse
-	// Open the file
+func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Reader, error) {
+	// Determine directory or file passed
 	filePath := filepath.Join(ctx.Cwd, opts.configFile)
-	file, err := os.Open(filePath)
+	info, err := os.Stat(filePath)
 	if err != nil {
-		return result, err
+		return nil, err
 	}
-	defer file.Close()
 
-	return PublishToGateway(ctx, opts, file)
+	// Stitch together a directory first
+	if info.IsDir() {
+		// This is where we'll write our combined configs
+		uploadFile, err := os.Open(".temp.yaml")
+		defer uploadFile.Close()
+
+		var buf = []byte("")
+
+		files, err := os.ReadDir(filePath)
+		if err != nil {
+			return nil, err
+		}
+
+		for i, f := range files {
+			filename := f.Name()
+			ext := filepath.Ext(filename)
+
+			if ext == ".yaml" || ext == ".yml" {
+				fullPath := filepath.Join(filePath, filename)
+				content, err := os.ReadFile(fullPath)
+				if err != nil {
+					return nil, err
+				}
+				if i > 0 {
+					buf = append(buf, []byte("\n---\n")...)
+				}
+				buf = append(buf, content...)
+			}
+		}
+		return bytes.NewReader(buf), nil
+	}
+
+	// Single file
+	file, err := os.ReadFile(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes.NewReader(file), nil
 }
 
 func PublishToGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions, configFile io.Reader) (PublishGatewayResponse, error) {
