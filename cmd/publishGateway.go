@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/fs"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -30,7 +31,6 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa publish-gateway path/to/config.yaml
     $ gwa publish-gateway path/to/config.yaml --dry-run
     `),
-		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
 				cmd.SetUsageTemplate(`
@@ -39,9 +39,11 @@ A namespace must be set via the config command
 Example:
     $ gwa config set namespace YOUR_NAMESPACE_NAME
 `)
-				return fmt.Errorf("No namespace has been set")
+				return fmt.Errorf("No namespace has been set\n")
 			}
-			opts.configFile = args[0]
+			if len(args) > 0 {
+				opts.configFile = args[0]
+			}
 			config, err := PrepareConfigFile(ctx, opts)
 			if err != nil {
 				return err
@@ -75,6 +77,15 @@ type PublishGatewayResponse struct {
 	Error   string `json:"error"`
 }
 
+func isYamlFile(filename string) bool {
+	ext := filepath.Ext(filename)
+
+	if ext == ".yaml" || ext == ".yml" {
+		return true
+	}
+	return false
+}
+
 func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Reader, error) {
 	// Determine directory or file passed
 	filePath := filepath.Join(ctx.Cwd, opts.configFile)
@@ -85,10 +96,6 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 
 	// Stitch together a directory first
 	if info.IsDir() {
-		// This is where we'll write our combined configs
-		uploadFile, err := os.Open(".temp.yaml")
-		defer uploadFile.Close()
-
 		var buf = []byte("")
 
 		files, err := os.ReadDir(filePath)
@@ -96,26 +103,38 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 			return nil, err
 		}
 
-		for i, f := range files {
+		var yamlFiles []fs.DirEntry
+		for _, f := range files {
 			filename := f.Name()
-			ext := filepath.Ext(filename)
-
-			if ext == ".yaml" || ext == ".yml" {
-				fullPath := filepath.Join(filePath, filename)
-				content, err := os.ReadFile(fullPath)
-				if err != nil {
-					return nil, err
-				}
-				if i > 0 {
-					buf = append(buf, []byte("\n---\n")...)
-				}
-				buf = append(buf, content...)
+			if isYamlFile(filename) {
+				yamlFiles = append(yamlFiles, f)
 			}
+		}
+
+		if len(yamlFiles) == 0 {
+			return nil, fmt.Errorf("This directory contains no yaml config files\n")
+		}
+
+		for i, f := range yamlFiles {
+			filename := f.Name()
+
+			fullPath := filepath.Join(filePath, filename)
+			content, err := os.ReadFile(fullPath)
+			if err != nil {
+				return nil, err
+			}
+			if i > 0 {
+				buf = append(buf, []byte("\n---\n")...)
+			}
+			buf = append(buf, content...)
 		}
 		return bytes.NewReader(buf), nil
 	}
 
 	// Single file
+	if !isYamlFile(filePath) {
+		return nil, fmt.Errorf("%s is not an accepted file type\n", opts.configFile)
+	}
 	file, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err

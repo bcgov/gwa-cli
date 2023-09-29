@@ -173,7 +173,26 @@ services:
     url: /api/demoapp-2
     plugins: []`)
 	expected := string(combined)
-	assert.Equal(t, expected, actual, "it returns the thing")
+	assert.Equal(t, expected, actual, "it returns a multi-document yaml file")
+}
+
+func TestMultPrepareEmptyDir(t *testing.T) {
+	cwd := t.TempDir()
+	opts := &PublishGatewayOptions{
+		configFile: cwd,
+	}
+
+	_, err := PrepareConfigFile(ctx, opts)
+	assert.Error(t, err, "There is no yaml files in this directory")
+}
+
+func TestIncorrectFileType(t *testing.T) {
+	opts := &PublishGatewayOptions{
+		configFile: "test.json",
+	}
+
+	_, err := PrepareConfigFile(ctx, opts)
+	assert.Error(t, err, "non-yaml file types not allowed")
 }
 
 func TestPublishGatewayWithQualifier(t *testing.T) {
