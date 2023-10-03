@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/fs"
 	"mime/multipart"
 	"os"
 	"path/filepath"
@@ -18,7 +17,7 @@ import (
 type PublishGatewayOptions struct {
 	dryRun     bool
 	qualifier  string
-	configFile string
+	configFile []string
 }
 
 func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -41,13 +40,13 @@ Example:
 `)
 				return fmt.Errorf("No namespace has been set\n")
 			}
-			if len(args) > 0 {
-				opts.configFile = args[0]
-			}
+
+			opts.configFile = args
 			config, err := PrepareConfigFile(ctx, opts)
 			if err != nil {
 				return err
 			}
+
 			result, err := PublishToGateway(ctx, opts, config)
 			if err != nil {
 				return err
@@ -56,7 +55,7 @@ Example:
 			fmt.Println(pkg.Checkmark(), "Gateway config published")
 			fmt.Printf(`
 Details:
-  %s
+   %s
 
 %s
 `, result.Message, result.Results)
@@ -87,60 +86,57 @@ func isYamlFile(filename string) bool {
 }
 
 func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Reader, error) {
-	// Determine directory or file passed
-	filePath := filepath.Join(ctx.Cwd, opts.configFile)
-	info, err := os.Stat(filePath)
-	if err != nil {
-		return nil, err
-	}
+	var resultBuffer = []byte("")
+	var validFiles = []string{}
 
-	// Stitch together a directory first
-	if info.IsDir() {
-		var buf = []byte("")
-
-		files, err := os.ReadDir(filePath)
+	// validate all the args are YAML, if directory loop through
+	for _, arg := range opts.configFile {
+		filePath := filepath.Join(ctx.Cwd, arg)
+		// var filePath = arg
+		info, err := os.Stat(filePath)
 		if err != nil {
 			return nil, err
 		}
 
-		var yamlFiles []fs.DirEntry
-		for _, f := range files {
-			filename := f.Name()
-			if isYamlFile(filename) {
-				yamlFiles = append(yamlFiles, f)
-			}
-		}
-
-		if len(yamlFiles) == 0 {
-			return nil, fmt.Errorf("This directory contains no yaml config files\n")
-		}
-
-		for i, f := range yamlFiles {
-			filename := f.Name()
-
-			fullPath := filepath.Join(filePath, filename)
-			content, err := os.ReadFile(fullPath)
+		if info.IsDir() {
+			files, err := os.ReadDir(filePath)
 			if err != nil {
 				return nil, err
 			}
-			if i > 0 {
-				buf = append(buf, []byte("\n---\n")...)
+
+			for _, f := range files {
+				filename := f.Name()
+				if isYamlFile(filename) {
+					fileInFolder := filepath.Join(arg, filename)
+					validFiles = append(validFiles, fileInFolder)
+				}
 			}
-			buf = append(buf, content...)
+		} else {
+			if isYamlFile(arg) {
+				validFiles = append(validFiles, filePath)
+			}
 		}
-		return bytes.NewReader(buf), nil
 	}
 
-	// Single file
-	if !isYamlFile(filePath) {
-		return nil, fmt.Errorf("%s is not an accepted file type\n", opts.configFile)
-	}
-	file, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, err
+	if len(validFiles) == 0 {
+		return nil, fmt.Errorf("This directory contains no yaml config files\n")
 	}
 
-	return bytes.NewReader(file), nil
+	fmt.Println("files", validFiles)
+	for i, file := range validFiles {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			return nil, err
+		}
+
+		if i > 0 {
+			resultBuffer = append(resultBuffer, []byte("\n---\n")...)
+		}
+
+		resultBuffer = append(resultBuffer, content...)
+	}
+
+	return bytes.NewReader(resultBuffer), nil
 }
 
 func PublishToGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions, configFile io.Reader) (PublishGatewayResponse, error) {
