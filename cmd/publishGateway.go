@@ -42,6 +42,9 @@ Example:
 			}
 
 			opts.configFile = args
+			if len(args) == 0 {
+				opts.configFile = []string{""}
+			}
 			config, err := PrepareConfigFile(ctx, opts)
 			if err != nil {
 				return err
@@ -92,7 +95,6 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 	// validate all the args are YAML, if directory loop through
 	for _, arg := range opts.configFile {
 		filePath := filepath.Join(ctx.Cwd, arg)
-		// var filePath = arg
 		info, err := os.Stat(filePath)
 		if err != nil {
 			return nil, err
@@ -122,7 +124,6 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 		return nil, fmt.Errorf("This directory contains no yaml config files\n")
 	}
 
-	fmt.Println("files", validFiles)
 	for i, file := range validFiles {
 		content, err := os.ReadFile(file)
 		if err != nil {
