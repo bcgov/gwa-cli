@@ -78,7 +78,7 @@ type StatusJson struct {
 }
 
 func FetchStatus(ctx *pkg.AppContext) ([]StatusJson, error) {
-	path := fmt.Sprintf("/gw/api/namespaces/%s/services", ctx.Namespace)
+	path := fmt.Sprintf("/gw/api/%s/namespaces/%s/services", ctx.ApiVersion, ctx.Namespace)
 	URL, _ := ctx.CreateUrl(path, nil)
 	request, err := pkg.NewApiGet[[]StatusJson](ctx, URL)
 	if err != nil {

@@ -121,8 +121,8 @@ func PublishToGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions, configFi
 		return result, err
 	}
 
-	pathname := fmt.Sprintf("/gw/api/namespaces/%s/gateway", ctx.Namespace)
-	URL, _ := ctx.CreateUrl(pathname, nil)
+	path := fmt.Sprintf("/gw/api/%s/namespaces/%s/gateway", ctx.ApiVersion, ctx.Namespace)
+	URL, _ := ctx.CreateUrl(path, nil)
 	r, err := pkg.NewApiPut[PublishGatewayResponse](ctx, URL, body)
 	if err != nil {
 		return result, err
