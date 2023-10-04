@@ -23,21 +23,38 @@ type PublishGatewayOptions struct {
 func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &PublishGatewayOptions{}
 	var publishGatewayCmd = &cobra.Command{
-		Use:     "publish-gateway [configFile]",
+		Use:     "publish-gateway [configFiles...]",
 		Aliases: []string{"pg"},
 		Short:   "Publish your gateway config",
+		Long: heredoc.Doc(`
+    Once you have a gateway configuration file ready to publih, you can run the following command to reflect your changes in the gateway:
+
+      $ gwa pg sample.yaml
+
+    If you want to see the expected changes but not actually apply them, you can run:
+
+      $ gwa pg --dry-run sample.yaml
+
+    configFiles accepts a wide variety of formats, for example:
+
+      1. Empty, which means find all the possible YAML files in the current directory and publish them
+      2. A space-separated list of specific YAML files in the current directory, or
+      3. A directory relative to the current directory
+    `),
 		Example: heredoc.Doc(`
-    $ gwa publish-gateway path/to/config.yaml
+    $ gwa publish-gateway
+    $ gwa publish-gateway path/to/config1.yaml other-path/to/config2.yaml
+    $ gwa publish-gateway path/to/directory/containing-configs/
     $ gwa publish-gateway path/to/config.yaml --dry-run
     `),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
-				cmd.SetUsageTemplate(`
-A namespace must be set via the config command
+				cmd.SetUsageTemplate(heredoc.Doc(`
+          A namespace must be set via the config command
 
-Example:
-    $ gwa config set namespace YOUR_NAMESPACE_NAME
-`)
+          Example:
+            $ gwa config set namespace YOUR_NAMESPACE_NAME
+        `))
 				return fmt.Errorf("No namespace has been set\n")
 			}
 
