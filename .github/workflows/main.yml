@@ -3,7 +3,7 @@ name: Release from master
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   GWA_API_HOST: api.gov.bc.ca
