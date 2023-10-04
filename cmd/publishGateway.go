@@ -15,15 +15,15 @@ import (
 )
 
 type PublishGatewayOptions struct {
-	dryRun     bool
-	qualifier  string
-	configFile []string
+	dryRun    bool
+	qualifier string
+	inputs    []string
 }
 
 func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &PublishGatewayOptions{}
 	var publishGatewayCmd = &cobra.Command{
-		Use:     "publish-gateway [configFiles...]",
+		Use:     "publish-gateway [inputs...]",
 		Aliases: []string{"pg"},
 		Short:   "Publish your gateway config",
 		Long: heredoc.Doc(`
@@ -35,7 +35,7 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 
       $ gwa pg --dry-run sample.yaml
 
-    configFiles accepts a wide variety of formats, for example:
+    inputs accepts a wide variety of formats, for example:
 
       1. Empty, which means find all the possible YAML files in the current directory and publish them
       2. A space-separated list of specific YAML files in the current directory, or
@@ -58,9 +58,9 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 				return fmt.Errorf("No namespace has been set\n")
 			}
 
-			opts.configFile = args
+			opts.inputs = args
 			if len(args) == 0 {
-				opts.configFile = []string{""}
+				opts.inputs = []string{""}
 			}
 			config, err := PrepareConfigFile(ctx, opts)
 			if err != nil {
@@ -109,9 +109,9 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 	var resultBuffer = []byte("")
 	var validFiles = []string{}
 
-	// validate all the args are YAML, if directory loop through
-	for _, arg := range opts.configFile {
-		filePath := filepath.Join(ctx.Cwd, arg)
+	// validate all the inputs are YAML, if directory loop through
+	for _, input := range opts.inputs {
+		filePath := filepath.Join(ctx.Cwd, input)
 		info, err := os.Stat(filePath)
 		if err != nil {
 			return nil, err
@@ -123,15 +123,16 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 				return nil, err
 			}
 
+			// Filter all the files in the dir
 			for _, f := range files {
 				filename := f.Name()
 				if isYamlFile(filename) {
-					fileInFolder := filepath.Join(arg, filename)
+					fileInFolder := filepath.Join(ctx.Cwd, input, filename)
 					validFiles = append(validFiles, fileInFolder)
 				}
 			}
 		} else {
-			if isYamlFile(arg) {
+			if isYamlFile(input) {
 				validFiles = append(validFiles, filePath)
 			}
 		}
