@@ -42,14 +42,22 @@ func renderCommand(cmd *cobra.Command, output *strings.Builder) {
 		description = cmd.Short
 	}
 
+	heading := "##"
 	if cmd.HasParent() {
 		parentName := cmd.Parent().Name()
 		if parentName != "gwa" {
 			title = fmt.Sprintf("%s.%s", cmd.Parent().Name(), title)
+			heading = "###"
 		}
 	}
 
-	output.WriteString(fmt.Sprintf("\n## %s\n\n", title))
+	output.WriteString(fmt.Sprintf("\n%s %s\n\n", heading, title))
+
+	if len(cmd.Deprecated) > 0 {
+		output.WriteString(fmt.Sprintf("> _Command '%s' is deprecated.  %s_\n\n", title, cmd.Deprecated))
+		return
+	}
+
 	output.WriteString(fmt.Sprintf("**Usage:** `%s`\n\n", cmd.UseLine()))
 	if len(description) > 0 {
 		output.WriteString(fmt.Sprintf("%s\n\n", strings.ReplaceAll(description, "\n", "  \n")))

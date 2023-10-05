@@ -72,7 +72,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:   "create",
 		Short: "Create a new namespace",
 		Example: heredoc.Doc(`
-    $ gwa namspace create
+    $ gwa namespace create
     $ gwa namespace create --name my-namespace --description="This is my namespace"
     `),
 		RunE: func(cmd *cobra.Command, _ []string) error {

@@ -63,7 +63,7 @@ func (p *PublishCounter) Print() string {
 func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &ApplyOptions{}
 	var applyCmd = &cobra.Command{
-		Use:   "apply <type>",
+		Use:   "apply",
 		Short: "Apply gateway resources",
 		Long:  "Apply your GatewayService, CredentialIssuer, DraftDataset, and Product resources.  Use the `generate-config` command to see examples of these resources.",
 		Args:  cobra.OnlyValidArgs,
