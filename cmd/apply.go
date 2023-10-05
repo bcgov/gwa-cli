@@ -65,6 +65,7 @@ func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 	var applyCmd = &cobra.Command{
 		Use:   "apply <type>",
 		Short: "Apply gateway resources",
+		Long:  "Apply your GatewayService, CredentialIssuer, DraftDataset, and Product resources.  Use the `generate-config` command to see examples of these resources.",
 		Args:  cobra.OnlyValidArgs,
 		Example: heredoc.Doc(`
 $ gwa apply --input gw-config.yaml

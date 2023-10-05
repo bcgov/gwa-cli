@@ -16,7 +16,7 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 	var namespaceCmd = &cobra.Command{
 		Use:   "namespace",
 		Short: "Manage your namespaces",
-		Long:  `Longer explanation to come...`,
+		Long:  `Namespaces are used to organize your services.`,
 	}
 	namespaceCmd.AddCommand(NamespaceListCmd(ctx))
 	namespaceCmd.AddCommand(NamespaceCreateCmd(ctx))
