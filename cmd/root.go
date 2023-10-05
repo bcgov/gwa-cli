@@ -16,7 +16,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	var rootCmd = &cobra.Command{
 		Use:     "gwa <command> <subcommand> [flags]",
 		Short:   "CLI tool supported by the APS team",
-		Long:    `GWA CLI helps manage API Services Portal's and Kong's configuration in a declarative fashion.`,
+		Long:    `GWA CLI helps manage gateway resources in a declarative fashion.`,
 		Version: ctx.Version,
 	}
 	rootCmd.AddCommand(NewConfigCmd(ctx))
