@@ -16,12 +16,19 @@ var kongConfig = `services:
   - name: my-service-dev
     tags: [ ns.aps-moh-proto ]
 `
-var clientCredConfig = `kind: Namespace
+
+func TestApplyOptions(t *testing.T) {
+	var input = `kind: Namespace
 name: ns-sampler
 displayName: ns-sampler Display Name
 ---
 kind: GatewayService
-name: my-service-dev
+name: service-1
+host: api.co1.com
+---
+kind: GatewayService
+name: service-2
+host: api.co2.com
 ---
 kind: CredentialIssuer
 name: aps-moh-proto default
@@ -32,24 +39,36 @@ name: my-service-dataset
 kind: Product
 name: my-service API
 `
-
-func TestApplyOptions(t *testing.T) {
 	fileName := "gw-config.yaml"
 	dir := t.TempDir()
 	config, err := os.Create(filepath.Join(dir, fileName))
-	io.WriteString(config, clientCredConfig)
+	io.WriteString(config, input)
 	defer config.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
 	o := &ApplyOptions{
+		cwd:   dir,
 		input: fileName,
 	}
-	output, err := o.Parse(dir)
+	err = o.Parse()
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, 5, len(output))
+
+	expected := []interface{}{
+		Skipped{},
+		Resource{Kind: "CredentialIssuer", Config: map[string]interface{}{"name": "aps-moh-proto default"}},
+		Resource{Kind: "DraftDataset", Config: map[string]interface{}{"name": "my-service-dataset"}},
+		Resource{Kind: "Product", Config: map[string]interface{}{"name": "my-service API"}},
+		GatewayService{Config: []map[string]interface{}{
+			{"name": "service-1",
+				"host": "api.co1.com"},
+			{"name": "service-2",
+				"host": "api.co2.com"}}},
+	}
+
+	assert.Equal(t, expected, o.output, "outputs a map keyed by type, with grouped gateways")
 }
 
 func TestNonYamlFile(t *testing.T) {
@@ -61,35 +80,11 @@ func TestNonYamlFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	o := &ApplyOptions{
+		cwd:   dir,
 		input: fileName,
 	}
-	_, err = o.Parse(dir)
+	err = o.Parse()
 	assert.Error(t, err)
-}
-
-func TestUnsupportedYamlFile(t *testing.T) {
-	input := []byte(`services:
-- name: my-service-dev
-`)
-	_, err := ExtractResourceConfig(input)
-	assert.Error(t, err, "throws an error because there's no `kind` to parse")
-}
-
-func TestExtractResouceConfig(t *testing.T) {
-	input := []byte(`kind: GatewayService
-name: my-service-dev
-`)
-	result, err := ExtractResourceConfig(input)
-	if err != nil {
-		t.Fatal(err)
-	}
-	expect := &ResourceConfig{
-		Kind: "GatewayService",
-		Config: map[string]interface{}{
-			"name": "my-service-dev",
-		},
-	}
-	assert.Equal(t, expect, result)
 }
 
 func TestResourceConfigAction(t *testing.T) {
@@ -131,29 +126,21 @@ func TestResourceConfigAction(t *testing.T) {
 			expect: "environment",
 		},
 		{
-			name: "GatewayService",
-			input: map[string]interface{}{
-				"kind": "CredentialIssuer",
-				"name": "my-service",
-			},
-			expect: "publishGateway",
-		},
-		{
 			name: "AnotherItem",
 			input: map[string]interface{}{
 				"kind": "CredentialIssuer",
 				"name": "my-service",
 			},
-			expect: "skip",
+			expect: "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := &ResourceConfig{
+			e := &Resource{
 				Kind:   tt.name,
 				Config: tt.input,
 			}
-			assert.Equal(t, tt.expect, e.Action())
+			assert.Equal(t, tt.expect, e.GetAction())
 		})
 	}
 }
@@ -182,7 +169,7 @@ func TestPublishResource(t *testing.T) {
 		Namespace: "ns-sampler",
 		Host:      "aps.gov.bc.ca",
 	}
-	doc := parsedConfig{
+	doc := map[string]interface{}{
 		"name": "my-service",
 	}
 	result, err := PublishResource(ctx, doc, "issuer")
@@ -195,7 +182,7 @@ func TestPublishResource(t *testing.T) {
 func TestPublishGatewayService(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	httpmock.RegisterResponder("PUT", "https://aps.gov.bc.ca/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+	httpmock.RegisterResponder("PUT", "https://aps.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
 			return nil, err
@@ -210,19 +197,25 @@ func TestPublishGatewayService(t *testing.T) {
 		if err != nil {
 			return nil, err
 		}
-		assert.Equal(t, string(c), `{"services":[{"name":"my-service","routes":[{"name":"my-route"}]}]}`)
+		assert.Equal(t, string(c), `{"services":[{"name":"service-1","routes":[{"name":"api.co1.com/route"}]},{"name":"service-2","routes":[{"name":"api.co2.com/route"}]}]}`)
 		return httpmock.NewJsonResponse(200, "{}")
 	})
-	doc := parsedConfig{
-		"name": "my-service",
-		"routes": []map[string]interface{}{
-			{"name": "my-route"},
-		},
+	doc := []map[string]interface{}{
+		{"name": "service-1",
+			"routes": []map[string]interface{}{
+				{"name": "api.co1.com/route"},
+			}},
+		{"name": "service-2",
+			"routes": []map[string]interface{}{
+				{"name": "api.co2.com/route"},
+			}},
 	}
 	ctx := &pkg.AppContext{
-		Namespace: "ns-sampler",
-		Host:      "aps.gov.bc.ca",
+		ApiVersion: "v2",
+		Namespace:  "ns-sampler",
+		Host:       "aps.gov.bc.ca",
 	}
-	err := PublishGatewayService(ctx, doc)
+	res, err := PublishGatewayService(ctx, doc)
 	assert.NoError(t, err)
+	assert.Equal(t, "", res.Results, "returns a successful gateway service resposne like in publish-gateway")
 }
