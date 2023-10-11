@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -9,16 +10,16 @@ import (
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/jarcoal/httpmock"
+	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
+	"github.com/zenizh/go-capturer"
 )
 
 var kongConfig = `services:
   - name: my-service-dev
     tags: [ ns.aps-moh-proto ]
 `
-
-func TestApplyOptions(t *testing.T) {
-	var input = `kind: Namespace
+var input = `kind: Namespace
 name: ns-sampler
 displayName: ns-sampler Display Name
 ---
@@ -39,6 +40,8 @@ name: my-service-dataset
 kind: Product
 name: my-service API
 `
+
+func TestApplyOptions(t *testing.T) {
 	fileName := "gw-config.yaml"
 	dir := t.TempDir()
 	config, err := os.Create(filepath.Join(dir, fileName))
@@ -57,7 +60,7 @@ name: my-service API
 	}
 
 	expected := []interface{}{
-		Skipped{},
+		Skipped{Name: "ns-sampler", Kind: "Namespace"},
 		Resource{Kind: "CredentialIssuer", Config: map[string]interface{}{"name": "aps-moh-proto default"}},
 		Resource{Kind: "DraftDataset", Config: map[string]interface{}{"name": "my-service-dataset"}},
 		Resource{Kind: "Product", Config: map[string]interface{}{"name": "my-service API"}},
@@ -218,4 +221,62 @@ func TestPublishGatewayService(t *testing.T) {
 	res, err := PublishGatewayService(ctx, doc)
 	assert.NoError(t, err)
 	assert.Equal(t, "", res.Results, "returns a successful gateway service resposne like in publish-gateway")
+}
+
+func TestApplyOutput(t *testing.T) {
+	// Mocks
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	regexPattern := `=~^https://api\.gov\.bc\.ca/ds/api/v2/namespaces/ns-sampler/\w+$`
+	httpmock.RegisterResponder("PUT", regexPattern, func(_ *http.Request) (*http.Response, error) {
+		fmt.Println("Resource publish")
+		return httpmock.NewJsonResponse(200, map[string]interface{}{
+			"result": "Published",
+		})
+	})
+	httpmock.RegisterResponder("PUT", "https://api.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway", func(_ *http.Request) (*http.Response, error) {
+		fmt.Println("gateway publish")
+		return httpmock.NewJsonResponse(200, map[string]interface{}{
+			"results": "Pubished: 2\nSkipped: 1",
+		})
+	})
+
+	// Setup
+	cwd := t.TempDir()
+	ctx := &pkg.AppContext{
+		Cwd:        cwd,
+		Namespace:  "ns-sampler",
+		ApiHost:    "api.gov.bc.ca",
+		ApiVersion: "v2",
+	}
+	filename := "gw-config.yaml"
+	os.WriteFile(filepath.Join(cwd, filename), []byte(input), 0644)
+
+	args := []string{"apply", "--input", filename}
+
+	mainCmd := &cobra.Command{
+		Use: "gwa",
+	}
+	mainCmd.AddCommand(NewApplyCmd(ctx))
+	mainCmd.SetArgs(args)
+	out := capturer.CaptureOutput(func() {
+		mainCmd.Execute()
+	})
+	expected := []string{
+		"- [Namespace] ns-sampler",
+		"↑ [CredentialIssuer] aps-moh-proto default",
+		"✓ [CredentialIssuer] aps-moh-proto default: Published",
+		"↑ [DraftDataset] my-service-dataset",
+		"✓ [DraftDataset] my-service-dataset: Published",
+		"↑ [Product] my-service API",
+		"✓ [Product] my-service API: Published",
+		"↑ Publishing Gateway Services",
+		"✓ Gateway Services published",
+		"Pubished: 2\nSkipped: 1",
+		"4/4 Published, 1 Skipped",
+	}
+	for _, e := range expected {
+		assert.Contains(t, out, e)
+	}
 }
