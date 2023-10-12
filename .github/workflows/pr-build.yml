@@ -1,6 +1,6 @@
 on:
   # Trigger analysis when pushing in master or pull requests, and when creating
-  # a pull request. 
+  # a pull request.
   push:
     branches:
       - master
@@ -15,6 +15,10 @@ jobs:
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
+    - uses: extractions/setup-just@v1
+    - uses: actions/setup-go@v4
+    - name: test
+      run: just test
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
       env:
