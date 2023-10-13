@@ -24,7 +24,7 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var validArgs = []string{"datasets", "issuers", "organizations", "products"}
 	var getCmd = &cobra.Command{
 		Use:   "get [type] <flags>",
-		Short: fmt.Sprintf("Retrieve a table of a namespace's %s", pkg.ArgumentsSliceToString(validArgs, "or")),
+		Short: fmt.Sprintf("Get gateway resources.  Retrieve a table of %s.", pkg.ArgumentsSliceToString(validArgs, "or")),
 		Example: heredoc.Doc(`
   $ gwa get datasets
   $ gwa get datasets --json

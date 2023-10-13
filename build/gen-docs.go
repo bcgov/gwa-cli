@@ -37,17 +37,30 @@ func writeDocument(rootCmd *cobra.Command) string {
 func renderCommand(cmd *cobra.Command, output *strings.Builder) {
 	title := cmd.Name()
 
+	description := cmd.Long
+	if len(description) == 0 {
+		description = cmd.Short
+	}
+
+	heading := "##"
 	if cmd.HasParent() {
 		parentName := cmd.Parent().Name()
 		if parentName != "gwa" {
 			title = fmt.Sprintf("%s.%s", cmd.Parent().Name(), title)
+			heading = "###"
 		}
 	}
 
-	output.WriteString(fmt.Sprintf("\n## %s\n\n", title))
+	output.WriteString(fmt.Sprintf("\n%s %s\n\n", heading, title))
+
+	if len(cmd.Deprecated) > 0 {
+		output.WriteString(fmt.Sprintf("> _Command '%s' is deprecated.  %s_\n\n", title, cmd.Deprecated))
+		return
+	}
+
 	output.WriteString(fmt.Sprintf("**Usage:** `%s`\n\n", cmd.UseLine()))
-	if cmd.Long != "" {
-		output.WriteString(fmt.Sprintf("%s\n\n", strings.ReplaceAll(cmd.Long, "\n", "  \n")))
+	if len(description) > 0 {
+		output.WriteString(fmt.Sprintf("%s\n\n", strings.ReplaceAll(description, "\n", "  \n")))
 	}
 
 	flagUsages := cmd.Flags().FlagUsages()

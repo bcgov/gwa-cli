@@ -16,7 +16,7 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 
 	var statusCmd = &cobra.Command{
 		Use:   "status",
-		Short: "Check the status of your configs",
+		Short: "Check the status of your services configured on the Kong gateway",
 		Example: heredoc.Doc(`$ gwa status
   $ gwa status --json`),
 		RunE: func(cmd *cobra.Command, _ []string) error {

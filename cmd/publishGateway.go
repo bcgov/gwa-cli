@@ -25,10 +25,11 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 	var publishGatewayCmd = &cobra.Command{
 		Use:     "publish-gateway [configFile]",
 		Aliases: []string{"pg"},
-		Short:   "Publish your gateway config",
+		Short:   "Publish your kong configuration",
 		Example: heredoc.Doc(`
     $ gwa publish-gateway path/to/config.yaml
     $ gwa publish-gateway path/to/config.yaml --dry-run
+    $ gwa publish-gateway path/to/config.yaml --qualifier dev
     `),
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
