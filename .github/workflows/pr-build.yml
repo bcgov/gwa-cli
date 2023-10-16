@@ -3,21 +3,20 @@ on:
   # a pull request.
   push:
     branches:
-      - master
+      - main
   pull_request:
       types: [opened, synchronize, reopened]
 name: Main Workflow
 jobs:
-  sonarcloud:
+  tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
       with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
     - uses: extractions/setup-just@v1
     - uses: actions/setup-go@v4
-    - name: test
+    - name: Run Unit Tests
       run: just test
     - name: SonarCloud Scan
       uses: sonarsource/sonarcloud-github-action@master
