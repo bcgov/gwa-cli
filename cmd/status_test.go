@@ -57,13 +57,14 @@ func TestStatusCmds(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			host := "api.gov.bc.ca"
-			URL := fmt.Sprintf("https://%s/gw/api/namespaces/ns-sampler/services", host)
+			URL := fmt.Sprintf("https://%s/gw/api/v2/namespaces/ns-sampler/services", host)
 			httpmock.RegisterResponder("GET", URL, tt.response)
 
 			args := append([]string{"status"}, tt.args...)
 			ctx := &pkg.AppContext{
-				Namespace: "ns-sampler",
-				ApiHost:   host,
+				Namespace:  "ns-sampler",
+				ApiHost:    host,
+				ApiVersion: "v2",
 			}
 
 			if tt.noNamespace {
@@ -125,13 +126,14 @@ func TestTableOutput(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			host := "api.gov.bc.ca"
-			URL := fmt.Sprintf("https://%s/gw/api/namespaces/ns-sampler/services", host)
+			URL := fmt.Sprintf("https://%s/gw/api/v2/namespaces/ns-sampler/services", host)
 			httpmock.RegisterResponder("GET", URL, tt.response)
 
 			args := []string{"status"}
 			ctx := &pkg.AppContext{
-				Namespace: "ns-sampler",
-				ApiHost:   host,
+				Namespace:  "ns-sampler",
+				ApiHost:    host,
+				ApiVersion: "v2",
 			}
 
 			mainCmd := &cobra.Command{
