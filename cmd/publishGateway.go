@@ -25,9 +25,9 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 	var publishGatewayCmd = &cobra.Command{
 		Use:     "publish-gateway [inputs...]",
 		Aliases: []string{"pg"},
-		Short:   "Publish your gateway config",
+		Short:   "Publish your Kong gateway configuration",
 		Long: heredoc.Doc(`
-    Once you have a gateway configuration file ready to publih, you can run the following command to reflect your changes in the gateway:
+    Once you have a gateway configuration file ready to publish, you can run the following command to reflect your changes in the gateway:
 
       $ gwa pg sample.yaml
 
@@ -46,6 +46,7 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa publish-gateway path/to/config1.yaml other-path/to/config2.yaml
     $ gwa publish-gateway path/to/directory/containing-configs/
     $ gwa publish-gateway path/to/config.yaml --dry-run
+    $ gwa publish-gateway path/to/config.yaml --qualifier dev
     `),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
@@ -195,8 +196,8 @@ func PublishToGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions, configFi
 		return result, err
 	}
 
-	pathname := fmt.Sprintf("/gw/api/namespaces/%s/gateway", ctx.Namespace)
-	URL, _ := ctx.CreateUrl(pathname, nil)
+	path := fmt.Sprintf("/gw/api/%s/namespaces/%s/gateway", ctx.ApiVersion, ctx.Namespace)
+	URL, _ := ctx.CreateUrl(path, nil)
 	r, err := pkg.NewApiPut[PublishGatewayResponse](ctx, URL, body)
 	if err != nil {
 		return result, err

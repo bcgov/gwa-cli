@@ -71,8 +71,13 @@ func NewGenerateConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "Generate gateway resources based on pre-defined templates",
 		Args:  cobra.OnlyValidArgs,
 		Example: heredoc.Doc(`
-$ gwa generate-config --template kong-httpbin --service my-service --upstream https://httpbin.org
-$ gwa generate-config --template client-credentials-shared-idp --service my-service --upstream https://www.boredapi.com/api/activity
+$ gwa generate-config --template kong-httpbin \
+    --service my-service \
+	--upstream https://httpbin.org
+
+$ gwa generate-config --template client-credentials-shared-idp \
+    --service my-service \
+	--upstream https://httpbin.org
     `),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			opts.Namespace = ctx.Namespace
