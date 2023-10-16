@@ -175,7 +175,7 @@ $ gwa apply --input gw-config.yaml
 					if err != nil {
 						counter.AddFailed()
 						fmt.Print("\r")
-						fmt.Printf("%s [%s] %s\n", pkg.Times(), c.Kind, c.Config["name"])
+						fmt.Printf("%s [%s] %s failed\n", pkg.Times(), c.Kind, c.Config["name"])
 						break
 					}
 
@@ -194,6 +194,7 @@ $ gwa apply --input gw-config.yaml
 	}
 
 	applyCmd.Flags().StringVarP(&opts.input, "input", "i", "gw-config.yml", "YAML file containing your configuration")
+	applyCmd.MarkFlagRequired("input")
 
 	return applyCmd
 }

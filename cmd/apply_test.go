@@ -19,6 +19,7 @@ var kongConfig = `services:
   - name: my-service-dev
     tags: [ ns.aps-moh-proto ]
 `
+
 var input = `kind: Namespace
 name: ns-sampler
 displayName: ns-sampler Display Name
@@ -65,10 +66,15 @@ func TestApplyOptions(t *testing.T) {
 		Resource{Kind: "DraftDataset", Config: map[string]interface{}{"name": "my-service-dataset"}},
 		Resource{Kind: "Product", Config: map[string]interface{}{"name": "my-service API"}},
 		GatewayService{Config: []map[string]interface{}{
-			{"name": "service-1",
-				"host": "api.co1.com"},
-			{"name": "service-2",
-				"host": "api.co2.com"}}},
+			{
+				"name": "service-1",
+				"host": "api.co1.com",
+			},
+			{
+				"name": "service-2",
+				"host": "api.co2.com",
+			},
+		}},
 	}
 
 	assert.Equal(t, expected, o.output, "outputs a map keyed by type, with grouped gateways")
@@ -163,11 +169,15 @@ func TestCounter(t *testing.T) {
 func TestPublishResource(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	httpmock.RegisterResponder("PUT", "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/issuers", func(r *http.Request) (*http.Response, error) {
-		return httpmock.NewJsonResponse(200, map[string]interface{}{
-			"result": "Issuer published",
-		})
-	})
+	httpmock.RegisterResponder(
+		"PUT",
+		"https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/issuers",
+		func(r *http.Request) (*http.Response, error) {
+			return httpmock.NewJsonResponse(200, map[string]interface{}{
+				"result": "Issuer published",
+			})
+		},
+	)
 	ctx := &pkg.AppContext{
 		Namespace: "ns-sampler",
 		Host:      "aps.gov.bc.ca",
@@ -185,33 +195,45 @@ func TestPublishResource(t *testing.T) {
 func TestPublishGatewayService(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	httpmock.RegisterResponder("PUT", "https://aps.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
-		err := r.ParseMultipartForm(10 << 20)
-		if err != nil {
-			return nil, err
-		}
-		configFile := r.MultipartForm.File["configFile"]
-		contents, err := configFile[0].Open()
-		defer contents.Close()
-		if err != nil {
-			return nil, err
-		}
-		c, err := io.ReadAll(contents)
-		if err != nil {
-			return nil, err
-		}
-		assert.Equal(t, string(c), `{"services":[{"name":"service-1","routes":[{"name":"api.co1.com/route"}]},{"name":"service-2","routes":[{"name":"api.co2.com/route"}]}]}`)
-		return httpmock.NewJsonResponse(200, "{}")
-	})
+	httpmock.RegisterResponder(
+		"PUT",
+		"https://aps.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway",
+		func(r *http.Request) (*http.Response, error) {
+			err := r.ParseMultipartForm(10 << 20)
+			if err != nil {
+				return nil, err
+			}
+			configFile := r.MultipartForm.File["configFile"]
+			contents, err := configFile[0].Open()
+			defer contents.Close()
+			if err != nil {
+				return nil, err
+			}
+			c, err := io.ReadAll(contents)
+			if err != nil {
+				return nil, err
+			}
+			assert.Equal(
+				t,
+				string(c),
+				`{"services":[{"name":"service-1","routes":[{"name":"api.co1.com/route"}]},{"name":"service-2","routes":[{"name":"api.co2.com/route"}]}]}`,
+			)
+			return httpmock.NewJsonResponse(200, "{}")
+		},
+	)
 	doc := []map[string]interface{}{
-		{"name": "service-1",
+		{
+			"name": "service-1",
 			"routes": []map[string]interface{}{
 				{"name": "api.co1.com/route"},
-			}},
-		{"name": "service-2",
+			},
+		},
+		{
+			"name": "service-2",
 			"routes": []map[string]interface{}{
 				{"name": "api.co2.com/route"},
-			}},
+			},
+		},
 	}
 	ctx := &pkg.AppContext{
 		ApiVersion: "v2",
@@ -223,60 +245,93 @@ func TestPublishGatewayService(t *testing.T) {
 	assert.Equal(t, "", res.Results, "returns a successful gateway service resposne like in publish-gateway")
 }
 
-func TestApplyOutput(t *testing.T) {
-	// Mocks
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+func TestApplyStdout(t *testing.T) {
+	tests := []struct {
+		name         string
+		responseCode int
+		expected     []string
+	}{
+		{
+			name:         "Success output",
+			responseCode: 200,
+			expected: []string{
+				"- [Namespace] ns-sampler",
+				"↑ [CredentialIssuer] aps-moh-proto default",
+				"✓ [CredentialIssuer] aps-moh-proto default: Published",
+				"↑ [DraftDataset] my-service-dataset",
+				"✓ [DraftDataset] my-service-dataset: Published",
+				"↑ [Product] my-service API",
+				"✓ [Product] my-service API: Published",
+				"↑ Publishing Gateway Services",
+				"✓ Gateway Services published",
+				"Pubished: 2\nSkipped: 1",
+				"4/4 Published, 1 Skipped",
+			},
+		},
+		{
+			name:         "Failed output",
+			responseCode: 401,
+			expected: []string{
+				"- [Namespace] ns-sampler",
+				"↑ [CredentialIssuer] aps-moh-proto default",
+				"x [CredentialIssuer] aps-moh-proto default failed",
+				"↑ [DraftDataset] my-service-dataset",
+				"x [DraftDataset] my-service-dataset failed",
+				"↑ [Product] my-service API",
+				"x [Product] my-service API failed",
+				"↑ Publishing Gateway Services",
+				"x Gateway Services publish failed",
+				"0/4 Published, 1 Skipped",
+			},
+		},
+	}
 
-	regexPattern := `=~^https://api\.gov\.bc\.ca/ds/api/v2/namespaces/ns-sampler/\w+$`
-	httpmock.RegisterResponder("PUT", regexPattern, func(_ *http.Request) (*http.Response, error) {
-		fmt.Println("Resource publish")
-		return httpmock.NewJsonResponse(200, map[string]interface{}{
-			"result": "Published",
+	for _, tt := range tests {
+		// Mocks
+		httpmock.Activate()
+		defer httpmock.DeactivateAndReset()
+
+		regexPattern := `=~^https://api\.gov\.bc\.ca/ds/api/v2/namespaces/ns-sampler/\w+$`
+		httpmock.RegisterResponder("PUT", regexPattern, func(_ *http.Request) (*http.Response, error) {
+			fmt.Println("Resource publish")
+			return httpmock.NewJsonResponse(tt.responseCode, map[string]interface{}{
+				"result": "Published",
+			})
 		})
-	})
-	httpmock.RegisterResponder("PUT", "https://api.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway", func(_ *http.Request) (*http.Response, error) {
-		fmt.Println("gateway publish")
-		return httpmock.NewJsonResponse(200, map[string]interface{}{
-			"results": "Pubished: 2\nSkipped: 1",
+		httpmock.RegisterResponder(
+			"PUT",
+			"https://api.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway",
+			func(_ *http.Request) (*http.Response, error) {
+				fmt.Println("gateway publish")
+				return httpmock.NewJsonResponse(tt.responseCode, map[string]interface{}{
+					"results": "Pubished: 2\nSkipped: 1",
+				})
+			},
+		)
+
+		// Setup
+		cwd := t.TempDir()
+		ctx := &pkg.AppContext{
+			Cwd:        cwd,
+			Namespace:  "ns-sampler",
+			ApiHost:    "api.gov.bc.ca",
+			ApiVersion: "v2",
+		}
+		filename := "gw-config.yaml"
+		os.WriteFile(filepath.Join(cwd, filename), []byte(input), 0644)
+
+		args := []string{"apply", "--input", filename}
+
+		mainCmd := &cobra.Command{
+			Use: "gwa",
+		}
+		mainCmd.AddCommand(NewApplyCmd(ctx))
+		mainCmd.SetArgs(args)
+		out := capturer.CaptureOutput(func() {
+			mainCmd.Execute()
 		})
-	})
-
-	// Setup
-	cwd := t.TempDir()
-	ctx := &pkg.AppContext{
-		Cwd:        cwd,
-		Namespace:  "ns-sampler",
-		ApiHost:    "api.gov.bc.ca",
-		ApiVersion: "v2",
-	}
-	filename := "gw-config.yaml"
-	os.WriteFile(filepath.Join(cwd, filename), []byte(input), 0644)
-
-	args := []string{"apply", "--input", filename}
-
-	mainCmd := &cobra.Command{
-		Use: "gwa",
-	}
-	mainCmd.AddCommand(NewApplyCmd(ctx))
-	mainCmd.SetArgs(args)
-	out := capturer.CaptureOutput(func() {
-		mainCmd.Execute()
-	})
-	expected := []string{
-		"- [Namespace] ns-sampler",
-		"↑ [CredentialIssuer] aps-moh-proto default",
-		"✓ [CredentialIssuer] aps-moh-proto default: Published",
-		"↑ [DraftDataset] my-service-dataset",
-		"✓ [DraftDataset] my-service-dataset: Published",
-		"↑ [Product] my-service API",
-		"✓ [Product] my-service API: Published",
-		"↑ Publishing Gateway Services",
-		"✓ Gateway Services published",
-		"Pubished: 2\nSkipped: 1",
-		"4/4 Published, 1 Skipped",
-	}
-	for _, e := range expected {
-		assert.Contains(t, out, e)
+		for _, e := range tt.expected {
+			assert.Contains(t, out, e)
+		}
 	}
 }
