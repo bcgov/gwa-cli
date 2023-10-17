@@ -81,6 +81,12 @@ Tools:
    - **VSCode:** Install the [official Go extension](https://marketplace.visualstudio.com/items?itemName=golang.Go)
    - **NeoVim:** [go.nvim](https://github.com/ray-x/go.nvim) is a great plugin
 
+#### Nix develop (optional)
+
+Instead of installing Go on your system you can alternatively use Nix to manage Go and other dependencies for you. This option assumes you already running NixOS or have Nix installed.
+
+Simply run `$ nix develop` in the project root. This will pull all the dependencies needed to work on this project. Remember to run `exit` to leave the Nix shell when done.
+
 ## Deployment
 
 Details on how the deployment process work are coming soon as we migrate codebase languages.

@@ -15,34 +15,60 @@ import (
 )
 
 type PublishGatewayOptions struct {
-	dryRun     bool
-	qualifier  string
-	configFile string
+	dryRun    bool
+	qualifier string
+	inputs    []string
 }
 
 func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &PublishGatewayOptions{}
 	var publishGatewayCmd = &cobra.Command{
-		Use:     "publish-gateway [configFile]",
+		Use:     "publish-gateway [inputs...]",
 		Aliases: []string{"pg"},
-		Short:   "Publish your gateway config",
-		Example: heredoc.Doc(`
-    $ gwa publish-gateway path/to/config.yaml
-    $ gwa publish-gateway path/to/config.yaml --dry-run
+		Short:   "Publish your Kong gateway configuration",
+		Long: heredoc.Doc(`
+    Once you have a gateway configuration file ready to publish, you can run the following command to reflect your changes in the gateway:
+
+      $ gwa pg sample.yaml
+
+    If you want to see the expected changes but not actually apply them, you can run:
+
+      $ gwa pg --dry-run sample.yaml
+
+    inputs accepts a wide variety of formats, for example:
+
+      1. Empty, which means find all the possible YAML files in the current directory and publish them
+      2. A space-separated list of specific YAML files in the current directory, or
+      3. A directory relative to the current directory
     `),
-		Args: cobra.MinimumNArgs(1),
+		Example: heredoc.Doc(`
+    $ gwa publish-gateway
+    $ gwa publish-gateway path/to/config1.yaml other-path/to/config2.yaml
+    $ gwa publish-gateway path/to/directory/containing-configs/
+    $ gwa publish-gateway path/to/config.yaml --dry-run
+    $ gwa publish-gateway path/to/config.yaml --qualifier dev
+    `),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
-				cmd.SetUsageTemplate(`
-A namespace must be set via the config command
+				cmd.SetUsageTemplate(heredoc.Doc(`
+          A namespace must be set via the config command
 
-Example:
-    $ gwa config set namespace YOUR_NAMESPACE_NAME
-`)
-				return fmt.Errorf("No namespace has been set")
+          Example:
+            $ gwa config set namespace YOUR_NAMESPACE_NAME
+        `))
+				return fmt.Errorf("No namespace has been set\n")
 			}
-			opts.configFile = args[0]
-			result, err := PublishGateway(ctx, opts)
+
+			opts.inputs = args
+			if len(args) == 0 {
+				opts.inputs = []string{""}
+			}
+			config, err := PrepareConfigFile(ctx, opts)
+			if err != nil {
+				return err
+			}
+
+			result, err := PublishToGateway(ctx, opts, config)
 			if err != nil {
 				return err
 			}
@@ -50,7 +76,7 @@ Example:
 			fmt.Println(pkg.Checkmark(), "Gateway config published")
 			fmt.Printf(`
 Details:
-  %s
+   %s
 
 %s
 `, result.Message, result.Results)
@@ -71,17 +97,66 @@ type PublishGatewayResponse struct {
 	Error   string `json:"error"`
 }
 
-func PublishGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions) (PublishGatewayResponse, error) {
-	var result PublishGatewayResponse
-	// Open the file
-	filePath := filepath.Join(ctx.Cwd, opts.configFile)
-	file, err := os.Open(filePath)
-	if err != nil {
-		return result, err
-	}
-	defer file.Close()
+func isYamlFile(filename string) bool {
+	ext := filepath.Ext(filename)
 
-	return PublishToGateway(ctx, opts, file)
+	if ext == ".yaml" || ext == ".yml" {
+		return true
+	}
+	return false
+}
+
+func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Reader, error) {
+	var resultBuffer = []byte("")
+	var validFiles = []string{}
+
+	// validate all the inputs are YAML, if directory loop through
+	for _, input := range opts.inputs {
+		filePath := filepath.Join(ctx.Cwd, input)
+		info, err := os.Stat(filePath)
+		if err != nil {
+			return nil, err
+		}
+
+		if info.IsDir() {
+			files, err := os.ReadDir(filePath)
+			if err != nil {
+				return nil, err
+			}
+
+			// Filter all the files in the dir
+			for _, f := range files {
+				filename := f.Name()
+				if isYamlFile(filename) {
+					fileInFolder := filepath.Join(ctx.Cwd, input, filename)
+					validFiles = append(validFiles, fileInFolder)
+				}
+			}
+		} else {
+			if isYamlFile(input) {
+				validFiles = append(validFiles, filePath)
+			}
+		}
+	}
+
+	if len(validFiles) == 0 {
+		return nil, fmt.Errorf("This directory contains no yaml config files\n")
+	}
+
+	for i, file := range validFiles {
+		content, err := os.ReadFile(file)
+		if err != nil {
+			return nil, err
+		}
+
+		if i > 0 {
+			resultBuffer = append(resultBuffer, []byte("\n---\n")...)
+		}
+
+		resultBuffer = append(resultBuffer, content...)
+	}
+
+	return bytes.NewReader(resultBuffer), nil
 }
 
 func PublishToGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions, configFile io.Reader) (PublishGatewayResponse, error) {
