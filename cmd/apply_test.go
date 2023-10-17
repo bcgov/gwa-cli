@@ -195,7 +195,7 @@ func TestPublishResource(t *testing.T) {
 func TestPublishGatewayService(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
-	httpmock.RegisterResponder("PUT", "https://aps.gov.bc.ca/gw/api/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+	httpmock.RegisterResponder("PUT", "https://aps.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
 			return nil, err
@@ -220,8 +220,9 @@ func TestPublishGatewayService(t *testing.T) {
 		},
 	}
 	ctx := &pkg.AppContext{
-		Namespace: "ns-sampler",
-		Host:      "aps.gov.bc.ca",
+		ApiVersion: "v2",
+		Namespace:  "ns-sampler",
+		Host:       "aps.gov.bc.ca",
 	}
 	err := PublishGatewayService(ctx, doc)
 	assert.NoError(t, err)
