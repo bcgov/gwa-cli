@@ -36,8 +36,9 @@ func setupConfig(dir string) error {
 
 func setupGetTests(args []string, response httpmock.Responder, buf *bytes.Buffer) *cobra.Command {
 	ctx := &pkg.AppContext{
-		Namespace: "ns-sampler",
-		ApiHost:   apiHost,
+		Namespace:  "ns-sampler",
+		ApiHost:    apiHost,
+		ApiVersion: "v2",
 	}
 
 	args = append([]string{"get"}, args...)
