@@ -19,9 +19,14 @@ type OutputFlags struct {
 	Yaml bool
 }
 
+type RequestFilters struct {
+	Org string
+}
+
 func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var outputOptions = new(OutputFlags)
-	var validArgs = []string{"datasets", "issuers", "organizations", "products"}
+	var filters = new(RequestFilters)
+	var validArgs = []string{"datasets", "issuers", "organizations", "org-units", "products"}
 	var getCmd = &cobra.Command{
 		Use:   "get [type] <flags>",
 		Short: fmt.Sprintf("Get gateway resources.  Retrieve a table of %s.", pkg.ArgumentsSliceToString(validArgs, "or")),
@@ -39,7 +44,7 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			if ctx.Namespace == "" {
 				return fmt.Errorf("no namespace selected")
 			}
-			data, err := CreateAction(ctx, args[0])
+			data, err := CreateAction(ctx, args[0], filters)
 			if err != nil {
 				return err
 			}
@@ -70,6 +75,12 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 					tbl.AddRow(item["name"], item["title"])
 				}
 				break
+			case "org-units":
+				tbl = table.New("Name", "Title")
+				for _, orgUnit := range data {
+					tbl.AddRow(orgUnit["name"], orgUnit["title"])
+				}
+				break
 			case "issuers":
 				tbl = table.New("Name", "Flow", "Mode", "Owner")
 				for _, issuer := range data {
@@ -97,13 +108,14 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		},
 	}
 
+	getCmd.Flags().StringVar(&filters.Org, "org", "", "Organization to filter results by")
 	getCmd.Flags().BoolVar(&outputOptions.Json, "json", false, "Return output as JSON")
 	getCmd.Flags().BoolVar(&outputOptions.Yaml, "yaml", false, "Return output as YAML")
 	getCmd.MarkFlagsMutuallyExclusive("json", "yaml")
 	return getCmd
 }
 
-func CreateAction(ctx *pkg.AppContext, operator string) ([]payload, error) {
+func CreateAction(ctx *pkg.AppContext, operator string, filters *RequestFilters) ([]payload, error) {
 	var path string
 	switch operator {
 	case "datasets":
@@ -111,6 +123,9 @@ func CreateAction(ctx *pkg.AppContext, operator string) ([]payload, error) {
 		break
 	case "organizations":
 		path = "/ds/api/v2/organizations"
+		break
+	case "org-units":
+		path = fmt.Sprintf("/ds/api/v2/organizations/%s/org-units", filters.Org)
 		break
 	default:
 		path = fmt.Sprintf("/ds/api/v2/namespaces/%s/%s", ctx.Namespace, operator)

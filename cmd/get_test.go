@@ -141,6 +141,16 @@ func productsResponse(r *http.Request) (*http.Response, error) {
 	})
 }
 
+func orgUnitsResponse(r *http.Request) (*http.Response, error) {
+	return httpmock.NewJsonResponse(200, []map[string]interface{}{
+		{
+			"id":    "1",
+			"name":  "planning-and-innovation-division",
+			"title": "Planning and Innovation Division",
+		},
+	})
+}
+
 func TestGetCmdTables(t *testing.T) {
 	setupConfig(t.TempDir())
 	tests := []struct {
@@ -175,6 +185,15 @@ func TestGetCmdTables(t *testing.T) {
 				"DemoNet  132QWE  2",
 			},
 			response: productsResponse,
+		},
+		{
+			name: "get org-units",
+			args: []string{"org-units", "--org", "ministry-of-citizens-services"},
+			expect: []string{
+				"Name                              Title",
+				"planning-and-innovation-division  Planning and Innovation Division",
+			},
+			response: orgUnitsResponse,
 		},
 	}
 
