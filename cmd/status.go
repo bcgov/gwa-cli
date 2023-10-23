@@ -19,11 +19,13 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		Short: "Check the status of your services configured on the Kong gateway",
 		Example: heredoc.Doc(`$ gwa status
   $ gwa status --json`),
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
-				cmd.SetUsageTemplate(`
-You can create a namespace by running:
-    $ gwa namespace create`)
+				fmt.Println(heredoc.Doc(`
+          You can create a namespace by running:
+              $ gwa namespace create
+          `),
+				)
 				return fmt.Errorf("no namespace has been defined")
 			}
 			data, err := FetchStatus(ctx)
