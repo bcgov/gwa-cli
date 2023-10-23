@@ -35,7 +35,8 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:   "list",
 		Short: "List all your managed namespaces",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			URL, _ := ctx.CreateUrl("/ds/api/v2/namespaces", nil)
+			path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
+			URL, _ := ctx.CreateUrl(path, nil)
 			r, err := pkg.NewApiGet[[]string](ctx, URL)
 			if err != nil {
 				return err
@@ -45,7 +46,13 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 			response, err := r.Do()
 			if err != nil {
 				if response.StatusCode == http.StatusUnauthorized {
-					cmd.SetUsageTemplate("\nNext Steps:\nRun gwa login to obtain another auth token")
+					fmt.Println()
+					fmt.Println(
+						heredoc.Doc(`
+              Next Steps:
+              Run gwa login to obtain another auth token
+            `),
+					)
 				}
 				return err
 			}
@@ -75,16 +82,14 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa namespace create
     $ gwa namespace create --name my-namespace --description="This is my namespace"
     `),
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			namespace, err := createNamespace(ctx, &namespaceFormData)
 			if err != nil {
-				cmd.SilenceUsage = true
 				return err
 			}
 
 			err = setCurrentNamespace(namespace)
 			if err != nil {
-				cmd.SilenceUsage = true
 				return err
 			}
 
@@ -104,7 +109,8 @@ type NamespaceResult struct {
 }
 
 func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, error) {
-	URL, err := ctx.CreateUrl("/ds/api/v2/namespaces", nil)
+	path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
+	URL, err := ctx.CreateUrl(path, nil)
 	if err != nil {
 		return "", err
 	}
@@ -131,11 +137,12 @@ func NamespaceCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
 	var currentCmd = &cobra.Command{
 		Use:   "current",
 		Short: "Display the current namespace",
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
-				cmd.SetUsageTemplate(`
+				fmt.Println(heredoc.Doc(`
 You can create a namespace by running:
-    $ gwa namespace create`)
+    $ gwa namespace create
+`))
 				return fmt.Errorf("no namespace has been defined")
 			}
 
@@ -164,14 +171,15 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 	var destroyCommand = &cobra.Command{
 		Use:   "destroy",
 		Short: "Destroy the current namespace",
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
-				cmd.SetUsageTemplate(`
-A namespace must be set via the config command
+				fmt.Println(heredoc.Doc(`
+          A namespace must be set via the config command
 
-Example:
-    $ gwa config set namespace YOUR_NAMESPACE_NAME
-`)
+          Example:
+              $ gwa config set namespace YOUR_NAMESPACE_NAME
+          `),
+				)
 				return fmt.Errorf("No namespace has been set")
 			}
 
@@ -180,13 +188,11 @@ Example:
 			err := destroyNamespace(ctx, &destroyOptions)
 			loader.Stop()
 			if err != nil {
-				cmd.SilenceUsage = true
 				return err
 			}
 
 			err = setCurrentNamespace("")
 			if err != nil {
-				cmd.SilenceUsage = true
 				return err
 			}
 
@@ -201,7 +207,7 @@ Example:
 }
 
 func destroyNamespace(ctx *pkg.AppContext, destroyOptions *NamespaceDestroyOptions) error {
-	pathname := fmt.Sprintf("/ds/api/v2/namespaces/%s", ctx.Namespace)
+	pathname := fmt.Sprintf("/ds/api/%s/namespaces/%s", ctx.ApiVersion, ctx.Namespace)
 	URL, err := ctx.CreateUrl(pathname, destroyOptions)
 	if err != nil {
 		return err

@@ -48,9 +48,9 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa publish-gateway path/to/config.yaml --dry-run
     $ gwa publish-gateway path/to/config.yaml --qualifier dev
     `),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
-				cmd.SetUsageTemplate(heredoc.Doc(`
+				fmt.Println(heredoc.Doc(`
           A namespace must be set via the config command
 
           Example:

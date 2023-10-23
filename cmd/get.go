@@ -119,16 +119,16 @@ func CreateAction(ctx *pkg.AppContext, operator string, filters *RequestFilters)
 	var path string
 	switch operator {
 	case "datasets":
-		path = fmt.Sprintf("/ds/api/v2/namespaces/%s/directory", ctx.Namespace)
+		path = fmt.Sprintf("/ds/api/%s/namespaces/%s/directory", ctx.ApiVersion, ctx.Namespace)
 		break
 	case "organizations":
-		path = "/ds/api/v2/organizations"
+		path = fmt.Sprintf("/ds/api/%s/organizations", ctx.ApiVersion)
 		break
 	case "org-units":
 		path = fmt.Sprintf("/ds/api/v2/organizations/%s/org-units", filters.Org)
 		break
 	default:
-		path = fmt.Sprintf("/ds/api/v2/namespaces/%s/%s", ctx.Namespace, operator)
+		path = fmt.Sprintf("/ds/api/%s/namespaces/%s/%s", ctx.ApiVersion, ctx.Namespace, operator)
 	}
 	url, _ := ctx.CreateUrl(path, nil)
 
