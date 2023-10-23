@@ -213,7 +213,7 @@ func PublishResource(ctx *pkg.AppContext, doc map[string]interface{}, arg string
 	if err != nil {
 		return "", err
 	}
-	route := fmt.Sprintf("/ds/api/v2/namespaces/%s/%ss", ctx.Namespace, arg)
+	route := fmt.Sprintf("/ds/api/%s/namespaces/%s/%ss", ctx.ApiVersion, ctx.Namespace, arg)
 	URL, _ := ctx.CreateUrl(route, nil)
 	request, err := pkg.NewApiPut[PutResponse](ctx, URL, bytes.NewBuffer(body))
 	if err != nil {
