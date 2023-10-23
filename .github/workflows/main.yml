@@ -21,6 +21,7 @@ jobs:
         uses: rymndhng/release-on-push-action@v0.28.0
         with:
           bump_version_scheme: patch
+          dry_run: true
     outputs:
       version_number: ${{ steps.release.outputs.tag_name }}
 
