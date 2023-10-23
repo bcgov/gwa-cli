@@ -133,7 +133,7 @@ func TestMultiPrepareConfigFile(t *testing.T) {
 	ctx := &pkg.AppContext{
 		Cwd: cwd,
 	}
-	for i, _ := range "123" {
+	for i := range "123" {
 		fileName := fmt.Sprintf("config-%d.yaml", i)
 		contents := fmt.Sprintf(`
 _format_version: "1.1"
