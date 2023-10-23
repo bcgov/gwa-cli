@@ -13,30 +13,95 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type parsedConfig map[string]interface{}
+var kindMapper = map[string]string{
+	"CredentialIssuer": "issuer",
+	"DraftDataset":     "dataset",
+	"Product":          "product",
+	"Environment":      "environment",
+}
 
+// After splitting a config, these are the possible types
+type Resource struct {
+	Kind   string
+	Config map[string]interface{}
+}
+
+func (r *Resource) GetAction() string {
+	if slug, ok := kindMapper[r.Kind]; ok {
+		return slug
+	}
+	return ""
+}
+
+type GatewayService struct {
+	Config []map[string]interface{}
+}
+
+type Skipped struct {
+	Name string
+	Kind string
+}
+
+// Input struct
 type ApplyOptions struct {
-	input string
+	cwd    string
+	input  string
+	output []interface{}
 }
 
 // Takes a dir to locate the input file and returns a slice of each doc contained in the YAML file
-func (o *ApplyOptions) Parse(cwd string) ([][]byte, error) {
-	filePath := filepath.Join(cwd, o.input)
+func (o *ApplyOptions) Parse() error {
+	var gatewayService = GatewayService{}
+
+	filePath := filepath.Join(o.cwd, o.input)
 	ext := filepath.Ext(filePath)
 	if ext != ".yaml" && ext != ".yml" {
-		return nil, fmt.Errorf("Invalid file type. %s is not a YAML file", o.input)
+		return fmt.Errorf("Invalid file type. %s is not a YAML file", o.input)
 	}
 	file, err := os.ReadFile(filePath)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	splitDocs, err := pkg.SplitYAML(file)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return splitDocs, nil
+	// Inputs can have multiple configs, so collect separately here
+	for _, doc := range splitDocs {
+		var parsed map[string]interface{}
+		err := yaml.Unmarshal(doc, &parsed)
+		if err != nil {
+			return err
+		}
+		if parsed["kind"] == nil {
+			return fmt.Errorf("This config template is not supported")
+		}
+		kind := parsed["kind"].(string)
+		delete(parsed, "kind")
+
+		if kind == "GatewayService" {
+			gatewayService.Config = append(gatewayService.Config, parsed)
+		} else {
+			if _, ok := kindMapper[kind]; ok {
+				o.output = append(o.output, Resource{
+					Kind:   kind,
+					Config: parsed,
+				})
+			} else {
+				skipped := Skipped{
+					Kind: kind,
+				}
+				if name, ok := parsed["name"].(string); ok {
+					skipped.Name = name
+				}
+				o.output = append(o.output, skipped)
+			}
+		}
+	}
+	o.output = append(o.output, gatewayService)
+	return nil
 }
 
 type PublishCounter struct {
@@ -61,7 +126,9 @@ func (p *PublishCounter) Print() string {
 }
 
 func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
-	opts := &ApplyOptions{}
+	opts := &ApplyOptions{
+		cwd: ctx.Cwd,
+	}
 	var applyCmd = &cobra.Command{
 		Use:   "apply",
 		Short: "Apply gateway resources",
@@ -71,55 +138,50 @@ func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 $ gwa apply --input gw-config.yaml
     `),
 		RunE: func(_ *cobra.Command, _ []string) error {
-			yamlDocs, err := opts.Parse(ctx.Cwd)
+			err := opts.Parse()
 			if err != nil {
 				return err
 			}
 
 			counter := &PublishCounter{}
-			for _, doc := range yamlDocs {
-				// Step 1: Parse the yaml
-				config, err := ExtractResourceConfig(doc)
-				if err != nil {
-					return err
-				}
-				// Step 2: Get the action type
-				action := config.Action()
-				// Step 3: Handle the action. Printing is done here
-				switch action {
-				case "publishGateway":
-					fmt.Printf("↑ %s %s", config.Kind, config.Config["name"])
-					err := PublishGatewayService(ctx, config.Config)
+
+			for _, config := range opts.output {
+				switch c := config.(type) {
+				case GatewayService:
+					fmt.Println()
+					fmt.Printf("↑ Publishing Gateway Services")
+					res, err := PublishGatewayService(ctx, c.Config)
 					if err != nil {
 						counter.AddFailed()
 						fmt.Print("\r")
-						fmt.Printf("%s %s %s\n", pkg.Times(), config.Kind, config.Config["name"])
+						fmt.Printf("%s Gateway Services publish failed\n", pkg.Times())
 						break
 					}
 
 					counter.AddSuccess()
-					fmt.Printf("%s %s %s\n", pkg.Checkmark(), config.Kind, config.Config["name"])
+					fmt.Printf("%s Gateway Services published\n", pkg.Checkmark())
+					fmt.Println(res.Results)
 					fmt.Print("\r")
 					break
 
-				case "skip":
+				case Skipped:
 					counter.AddSkipped()
-					fmt.Println(pkg.Indeterminate(), config.Config["name"])
+					fmt.Printf("%s [%s] %s\n", pkg.Indeterminate(), c.Kind, c.Name)
 					break
 
-				default:
-					fmt.Printf("↑ %s %s", config.Kind, config.Config["name"])
-					result, err := PublishResource(ctx, config.Config, action)
+				case Resource:
+					fmt.Printf("↑ [%s] %s", c.Kind, c.Config["name"])
+					result, err := PublishResource(ctx, c.Config, c.GetAction())
 					if err != nil {
 						counter.AddFailed()
 						fmt.Print("\r")
-						fmt.Printf("%s %s %s\n", pkg.Times(), config.Kind, config.Config["name"])
+						fmt.Printf("%s [%s] %s failed\n", pkg.Times(), c.Kind, c.Config["name"])
 						break
 					}
 
 					counter.AddSuccess()
 					fmt.Print("\r")
-					fmt.Printf("%s %s %s: %s\n", pkg.Checkmark(), config.Kind, config.Config["name"], result)
+					fmt.Printf("%s [%s] %s: %s\n", pkg.Checkmark(), c.Kind, c.Config["name"], result)
 					break
 				}
 			}
@@ -132,44 +194,9 @@ $ gwa apply --input gw-config.yaml
 	}
 
 	applyCmd.Flags().StringVarP(&opts.input, "input", "i", "gw-config.yml", "YAML file containing your configuration")
+	applyCmd.MarkFlagRequired("input")
 
 	return applyCmd
-}
-
-type ResourceConfig struct {
-	Config map[string]interface{}
-	Kind   string
-}
-
-func (r *ResourceConfig) Action() string {
-	var kindMapper = map[string]string{
-		"CredentialIssuer": "issuer",
-		"DraftDataset":     "dataset",
-		"Product":          "product",
-		"Environment":      "environment",
-	}
-
-	if slug, ok := kindMapper[r.Kind]; ok {
-		return slug
-	} else if r.Kind == "GatewayService" {
-		return "publishGateway"
-	}
-	return "skip"
-}
-
-// doc is a single yaml document
-func ExtractResourceConfig(doc []byte) (*ResourceConfig, error) {
-	var result = &ResourceConfig{}
-	err := yaml.Unmarshal(doc, &result.Config)
-	if err != nil {
-		return result, err
-	}
-	if result.Config["kind"] == nil {
-		return result, fmt.Errorf("This config template is not supported")
-	}
-	result.Kind = result.Config["kind"].(string)
-	delete(result.Config, "kind")
-	return result, nil
 }
 
 type PutResponse struct {
@@ -181,7 +208,7 @@ type PutResponse struct {
 	ChildResults string
 }
 
-func PublishResource(ctx *pkg.AppContext, doc parsedConfig, arg string) (string, error) {
+func PublishResource(ctx *pkg.AppContext, doc map[string]interface{}, arg string) (string, error) {
 	body, err := json.Marshal(doc)
 	if err != nil {
 		return "", err
@@ -201,21 +228,21 @@ func PublishResource(ctx *pkg.AppContext, doc parsedConfig, arg string) (string,
 	return res.Data.Result, nil
 }
 
-func PublishGatewayService(ctx *pkg.AppContext, doc parsedConfig) error {
+func PublishGatewayService(ctx *pkg.AppContext, doc []map[string]interface{}) (PublishGatewayResponse, error) {
 	var kongConfig = struct {
 		Services []map[string]interface{} `json:"services"`
 	}{}
 
-	kongConfig.Services = append([]map[string]interface{}{}, doc)
+	kongConfig.Services = doc
 
 	body, err := json.Marshal(kongConfig)
 	if err != nil {
-		return err
+		return PublishGatewayResponse{}, err
 	}
-	_, err = PublishToGateway(ctx, &PublishGatewayOptions{}, bytes.NewReader(body))
+	res, err := PublishToGateway(ctx, &PublishGatewayOptions{}, bytes.NewReader(body))
 	if err != nil {
-		return err
+		return PublishGatewayResponse{}, err
 	}
 
-	return err
+	return res, err
 }
