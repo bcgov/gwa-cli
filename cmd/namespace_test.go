@@ -132,8 +132,9 @@ ns-456`,
 				httpmock.RegisterResponder(tt.method, URL, tt.response)
 			}
 			ctx := &pkg.AppContext{
-				ApiHost:   "api.gov.ca",
-				Namespace: "ns-sampler",
+				ApiHost:    "api.gov.ca",
+				ApiVersion: "v2",
+				Namespace:  "ns-sampler",
 			}
 			args := append([]string{"namespace"}, tt.args...)
 			mainCmd := &cobra.Command{

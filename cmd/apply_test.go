@@ -179,8 +179,9 @@ func TestPublishResource(t *testing.T) {
 		})
 	})
 	ctx := &pkg.AppContext{
-		Namespace: "ns-sampler",
-		Host:      "aps.gov.bc.ca",
+		ApiVersion: "v2",
+		Namespace:  "ns-sampler",
+		Host:       "aps.gov.bc.ca",
 	}
 	doc := parsedConfig{
 		"name": "my-service",

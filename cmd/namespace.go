@@ -34,8 +34,9 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 	var listCommand = &cobra.Command{
 		Use:   "list",
 		Short: "List all your managed namespaces",
-		RunE: func(_ *cobra.Command, _ []string) error {
-			URL, _ := ctx.CreateUrl("/ds/api/v2/namespaces", nil)
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
+			URL, _ := ctx.CreateUrl(path, nil)
 			r, err := pkg.NewApiGet[[]string](ctx, URL)
 			if err != nil {
 				return err
@@ -108,7 +109,8 @@ type NamespaceResult struct {
 }
 
 func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, error) {
-	URL, err := ctx.CreateUrl("/ds/api/v2/namespaces", nil)
+	path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
+	URL, err := ctx.CreateUrl(path, nil)
 	if err != nil {
 		return "", err
 	}
@@ -205,7 +207,7 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 func destroyNamespace(ctx *pkg.AppContext, destroyOptions *NamespaceDestroyOptions) error {
-	pathname := fmt.Sprintf("/ds/api/v2/namespaces/%s", ctx.Namespace)
+	pathname := fmt.Sprintf("/ds/api/%s/namespaces/%s", ctx.ApiVersion, ctx.Namespace)
 	URL, err := ctx.CreateUrl(pathname, destroyOptions)
 	if err != nil {
 		return err
