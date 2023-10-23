@@ -14,10 +14,11 @@ var quiet bool
 
 func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	var rootCmd = &cobra.Command{
-		Use:     "gwa <command> <subcommand> [flags]",
-		Short:   "CLI tool supported by the APS team",
-		Long:    `GWA CLI helps manage gateway resources in a declarative fashion.`,
-		Version: ctx.Version,
+		Use:          "gwa <command> <subcommand> [flags]",
+		Short:        "CLI tool supported by the APS team",
+		SilenceUsage: true,
+		Long:         `GWA CLI helps manage gateway resources in a declarative fashion.`,
+		Version:      ctx.Version,
 	}
 	rootCmd.AddCommand(NewConfigCmd(ctx))
 	rootCmd.AddCommand(NewInit(ctx))
