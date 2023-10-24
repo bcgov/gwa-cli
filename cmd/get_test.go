@@ -142,12 +142,14 @@ func productsResponse(r *http.Request) (*http.Response, error) {
 	})
 }
 
-func orgUnitsResponse(r *http.Request) (*http.Response, error) {
-	return httpmock.NewJsonResponse(200, []map[string]interface{}{
-		{
-			"id":    "1",
-			"name":  "planning-and-innovation-division",
-			"title": "Planning and Innovation Division",
+func orgResponse(r *http.Request) (*http.Response, error) {
+	return httpmock.NewJsonResponse(200, map[string]interface{}{
+		"id": "1",
+		"orgUnits": []map[string]interface{}{
+			{
+				"name":  "planning-and-innovation-division",
+				"title": "Planning and Innovation Division",
+			},
 		},
 	})
 }
@@ -159,6 +161,7 @@ func TestGetCmdTables(t *testing.T) {
 		args     []string
 		expect   []string
 		response httpmock.Responder
+		url      string
 	}{
 		{
 			name: "get datasets",
@@ -168,6 +171,7 @@ func TestGetCmdTables(t *testing.T) {
 				"a-unit-test-dataset  A Unit Test Dataset",
 			},
 			response: datasetsResponse,
+			url:      "/ds/api/v2/namespaces/ns-sampler/directory",
 		},
 		{
 			name: "get issuers",
@@ -177,6 +181,7 @@ func TestGetCmdTables(t *testing.T) {
 				"APS IdP  client-credentials  auto  janis@idir",
 			},
 			response: issuersResponse,
+			url:      "/ds/api/v2/namespaces/ns-sampler/issuers",
 		},
 		{
 			name: "get products",
@@ -186,15 +191,17 @@ func TestGetCmdTables(t *testing.T) {
 				"DemoNet  132QWE  2",
 			},
 			response: productsResponse,
+			url:      "/ds/api/v2/namespaces/ns-sampler/products",
 		},
 		{
 			name: "get org-units",
-			args: []string{"org-units", "--org", "ministry-of-citizens-services"},
+			args: []string{"organization", "--name", "ministry-of-citizens-services"},
 			expect: []string{
 				"Name                              Title",
 				"planning-and-innovation-division  Planning and Innovation Division",
 			},
-			response: orgUnitsResponse,
+			response: orgResponse,
+			url:      "/ds/api/v2/organizations/ministry-of-citizens-services",
 		},
 	}
 
@@ -202,11 +209,7 @@ func TestGetCmdTables(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			var operator = tt.args[0]
-			if operator == "datasets" {
-				operator = "directory"
-			}
-			URL := fmt.Sprintf("https://%s/ds/api/v2/namespaces/ns-sampler/%s", host, operator)
+			URL := fmt.Sprintf("https://%s%s", host, tt.url)
 			httpmock.RegisterResponder("POST", authHost, func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, map[string]interface{}{
 					"access_token":       "123ABC",
@@ -358,6 +361,88 @@ func TestGetJsonYamlCmd(t *testing.T) {
 				mainCmd.Execute()
 			})
 			assert.Equal(t, tt.expect, out)
+		})
+	}
+}
+
+func TestGetter(t *testing.T) {
+	ctx := &pkg.AppContext{
+		ApiVersion: "v2",
+		ApiHost:    "aps.gov.bc.ca",
+		Namespace:  "ns-sampler",
+	}
+	tests := []struct {
+		name     string
+		operator string
+		expect   *Getter
+		filters  *RequestFilters
+	}{
+		{
+			name:     "creates a dataset GetRequest",
+			operator: "datasets",
+			expect: &Getter{
+				Ctx:          ctx,
+				TableHeaders: []string{"Name", "Title"},
+				Type:         Basic,
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/directory",
+			},
+		},
+		{
+			name:     "creates a organizations GetRequest",
+			operator: "organizations",
+			expect: &Getter{
+				Ctx:          ctx,
+				TableHeaders: []string{"Name", "Title"},
+				Type:         Basic,
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/organizations",
+			},
+		},
+		{
+			name:     "creates a organization GetRequest",
+			operator: "organization",
+			expect: &Getter{
+				Ctx:          ctx,
+				TableHeaders: []string{"Name", "Title"},
+				Type:         OrgUnits,
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/organizations/ministry-of-citizen-services",
+			},
+			filters: &RequestFilters{
+				Org: "ministry-of-citizen-services",
+			},
+		},
+		{
+			name:     "creates a issuer GetRequest",
+			operator: "issuers",
+			expect: &Getter{
+				Ctx:          ctx,
+				TableHeaders: []string{"Name", "Flow", "Mode", "Owner"},
+				Type:         Issuers,
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/issuers",
+			},
+			filters: &RequestFilters{
+				Org: "ministry-of-citizen-services",
+			},
+		},
+		{
+			name:     "creates a product GetRequest",
+			operator: "products",
+			expect: &Getter{
+				Ctx:          ctx,
+				TableHeaders: []string{"Name", "App ID", "Environments"},
+				Type:         Products,
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/products",
+			},
+			filters: &RequestFilters{
+				Org: "ministry-of-citizen-services",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			output := NewRequest(ctx, tt.operator, tt.filters)
+			assert.NotNil(t, output)
+			assert.EqualValues(t, tt.expect, output)
 		})
 	}
 }
