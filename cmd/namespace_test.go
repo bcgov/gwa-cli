@@ -7,6 +7,7 @@ import (
 	"path"
 	"testing"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/jarcoal/httpmock"
 	"github.com/spf13/cobra"
@@ -93,6 +94,25 @@ ns-456`,
 			},
 		},
 		{
+			name: "new name fails",
+			args: []string{"create", "--name", "ns"},
+			expect: heredoc.Doc(`
+        Error: Validation Failed
+        Namespace name must be between 5 and 15 alpha-numeric lowercase characters and start and end with an alphabet.
+      `),
+			method: "POST",
+			response: func(r *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(500, map[string]interface{}{
+					"message": "Validation Failed",
+					"details": map[string]interface{}{
+						"d0": map[string]interface{}{
+							"message": "Namespace name must be between 5 and 15 alpha-numeric lowercase characters and start and end with an alphabet.",
+						},
+					},
+				})
+			},
+		},
+		{
 			name:   "new namespace fails",
 			args:   []string{"create"},
 			expect: "Error: Validation Failed\nYou do not have access to this resource",
@@ -138,7 +158,8 @@ ns-456`,
 			}
 			args := append([]string{"namespace"}, tt.args...)
 			mainCmd := &cobra.Command{
-				Use: "gwa",
+				Use:          "gwa",
+				SilenceUsage: true,
 			}
 			mainCmd.AddCommand(NewNamespaceCmd(ctx))
 			mainCmd.SetArgs(args)
