@@ -375,7 +375,7 @@ func TestGetter(t *testing.T) {
 		name     string
 		operator string
 		expect   *Getter
-		filters  *RequestFilters
+		filters  *GetFilters
 	}{
 		{
 			name:     "creates a dataset GetRequest",
@@ -383,7 +383,7 @@ func TestGetter(t *testing.T) {
 			expect: &Getter{
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "Title"},
-				Type:         Basic,
+				Layout:       Basic,
 				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/directory",
 			},
 		},
@@ -393,7 +393,7 @@ func TestGetter(t *testing.T) {
 			expect: &Getter{
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "Title"},
-				Type:         Basic,
+				Layout:       Basic,
 				Url:          "https://aps.gov.bc.ca/ds/api/v2/organizations",
 			},
 		},
@@ -403,10 +403,10 @@ func TestGetter(t *testing.T) {
 			expect: &Getter{
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "Title"},
-				Type:         OrgUnits,
+				Layout:       OrgUnits,
 				Url:          "https://aps.gov.bc.ca/ds/api/v2/organizations/ministry-of-citizen-services",
 			},
-			filters: &RequestFilters{
+			filters: &GetFilters{
 				Org: "ministry-of-citizen-services",
 			},
 		},
@@ -416,10 +416,10 @@ func TestGetter(t *testing.T) {
 			expect: &Getter{
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "Flow", "Mode", "Owner"},
-				Type:         Issuers,
+				Layout:       Issuers,
 				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/issuers",
 			},
-			filters: &RequestFilters{
+			filters: &GetFilters{
 				Org: "ministry-of-citizen-services",
 			},
 		},
@@ -429,10 +429,10 @@ func TestGetter(t *testing.T) {
 			expect: &Getter{
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "App ID", "Environments"},
-				Type:         Products,
+				Layout:       Products,
 				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/products",
 			},
-			filters: &RequestFilters{
+			filters: &GetFilters{
 				Org: "ministry-of-citizen-services",
 			},
 		},

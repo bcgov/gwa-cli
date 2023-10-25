@@ -12,23 +12,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type payload map[string]interface{}
-
 type OutputFlags struct {
 	Json bool
 	Yaml bool
 }
 
-type RequestFilters struct {
+type GetFilters struct {
 	Org string
 }
 
-// requests feature 4 different types of URLs
-// 3 different table column
-
 func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var outputOptions = new(OutputFlags)
-	var filters = new(RequestFilters)
+	var filters = new(GetFilters)
 	var validArgs = []string{"datasets", "issuers", "organizations", "organization", "products"}
 	var getCmd = &cobra.Command{
 		Use:   "get [type] <flags>",
@@ -49,15 +44,15 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				return fmt.Errorf("no namespace selected")
 			}
 
-			getter := NewRequest(ctx, args[0], filters)
-			err := getter.Fetch()
+			req := NewRequest(ctx, args[0], filters)
+			err := req.Fetch()
 			if err != nil {
 				return err
 			}
 
 			// JSON/YAML outputs
 			if outputOptions.Json {
-				json, err := json.Marshal(getter.Data)
+				json, err := json.Marshal(req.Data)
 				if err != nil {
 					return err
 				}
@@ -66,7 +61,7 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			}
 
 			if outputOptions.Yaml {
-				yaml, err := yaml.Marshal(getter.Data)
+				yaml, err := yaml.Marshal(req.Data)
 				if err != nil {
 					return err
 				}
@@ -75,23 +70,24 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			}
 
 			// Pretty-print table
-			cols := make([]interface{}, len(getter.TableHeaders))
-			for i, c := range getter.TableHeaders {
+			cols := make([]interface{}, len(req.TableHeaders))
+			for i, c := range req.TableHeaders {
 				cols[i] = c
 			}
 			tbl := table.New(cols...)
-			switch getter.Type {
+
+			switch req.Layout {
 			case Basic:
-				PrintBasic(getter.Data, tbl)
+				PrintBasic(req.Data, tbl)
 				break
 			case OrgUnits:
-				PrintOrgUnits(getter.Data, tbl)
+				PrintOrgUnits(req.Data, tbl)
 				break
 			case Issuers:
-				PrintIssuers(getter.Data, tbl)
+				PrintIssuers(req.Data, tbl)
 				break
 			case Products:
-				PrintProducts(getter.Data, tbl)
+				PrintProducts(req.Data, tbl)
 				break
 			}
 
@@ -111,10 +107,10 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 }
 
 // Enum to test against different accessors
-type TableType int
+type TableLayout int
 
 const (
-	Basic TableType = iota
+	Basic TableLayout = iota
 	OrgUnits
 	Issuers
 	Products
@@ -124,9 +120,8 @@ type Getter struct {
 	Ctx          *pkg.AppContext
 	Data         interface{}
 	Url          string
-	Type         TableType
+	Layout       TableLayout
 	TableHeaders []string
-	TableColumns []string
 }
 
 func (g *Getter) Fetch() error {
@@ -142,7 +137,7 @@ func (g *Getter) Fetch() error {
 	return nil
 }
 
-func NewRequest(ctx *pkg.AppContext, operator string, filters *RequestFilters) *Getter {
+func NewRequest(ctx *pkg.AppContext, operator string, filters *GetFilters) *Getter {
 	// Parse the URL type
 	var path string
 	switch operator {
@@ -160,27 +155,27 @@ func NewRequest(ctx *pkg.AppContext, operator string, filters *RequestFilters) *
 	}
 	url, _ := ctx.CreateUrl(path, nil)
 
-	// Populate the table headers and columns
+	// Populate the table headers and layout
 	var tableHeaders []string
-	var tableType TableType
+	var tableLayout TableLayout
 	switch operator {
 	case "datasets":
 		fallthrough
 	case "organizations":
 		tableHeaders = []string{"Name", "Title"}
-		tableType = TableType(Basic)
+		tableLayout = TableLayout(Basic)
 		break
 	case "organization":
 		tableHeaders = []string{"Name", "Title"}
-		tableType = TableType(OrgUnits)
+		tableLayout = TableLayout(OrgUnits)
 		break
 	case "issuers":
 		tableHeaders = []string{"Name", "Flow", "Mode", "Owner"}
-		tableType = TableType(Issuers)
+		tableLayout = TableLayout(Issuers)
 		break
 	case "products":
 		tableHeaders = []string{"Name", "App ID", "Environments"}
-		tableType = TableType(Products)
+		tableLayout = TableLayout(Products)
 		break
 	}
 
@@ -188,10 +183,12 @@ func NewRequest(ctx *pkg.AppContext, operator string, filters *RequestFilters) *
 		Ctx:          ctx,
 		Url:          url,
 		TableHeaders: tableHeaders,
-		Type:         tableType,
+		Layout:       tableLayout,
 	}
 }
 
+// TODO: Probably could move these into the struct some how
+// NOTE: This is a bit verbose because the goal is to keep the request type as agnostic as possible, so for now the response traversing is "handled in post"
 func PrintBasic(data interface{}, tbl table.Table) {
 	switch d := data.(type) {
 	case []interface{}:
