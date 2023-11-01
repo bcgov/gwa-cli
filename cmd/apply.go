@@ -100,7 +100,7 @@ func (o *ApplyOptions) Parse() error {
 			}
 		}
 	}
-	o.output = append(o.output, gatewayService)
+	o.output = append([]interface{}{gatewayService}, o.output...)
 	return nil
 }
 
