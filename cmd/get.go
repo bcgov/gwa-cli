@@ -24,7 +24,7 @@ type GetFilters struct {
 func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var outputOptions = new(OutputFlags)
 	var filters = new(GetFilters)
-	var validArgs = []string{"datasets", "issuers", "organizations", "organization", "products"}
+	var validArgs = []string{"datasets", "issuers", "organizations", "org-units", "products"}
 	var getCmd = &cobra.Command{
 		Use:   "get [type] <flags>",
 		Short: fmt.Sprintf("Get gateway resources.  Retrieve a table of %s.", pkg.ArgumentsSliceToString(validArgs, "or")),
@@ -99,7 +99,7 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		},
 	}
 
-	getCmd.Flags().StringVar(&filters.Org, "name", "", "Organization to filter results by")
+	getCmd.Flags().StringVar(&filters.Org, "org", "", "Organization to filter results by")
 	getCmd.Flags().BoolVar(&outputOptions.Json, "json", false, "Return output as JSON")
 	getCmd.Flags().BoolVar(&outputOptions.Yaml, "yaml", false, "Return output as YAML")
 	getCmd.MarkFlagsMutuallyExclusive("json", "yaml")
@@ -147,7 +147,7 @@ func NewRequest(ctx *pkg.AppContext, operator string, filters *GetFilters) *Gett
 	case "organizations":
 		path = fmt.Sprintf("/ds/api/%s/organizations", ctx.ApiVersion)
 		break
-	case "organization":
+	case "org-units":
 		path = fmt.Sprintf("/ds/api/%s/organizations/%s", ctx.ApiVersion, filters.Org)
 		break
 	default:
@@ -165,7 +165,7 @@ func NewRequest(ctx *pkg.AppContext, operator string, filters *GetFilters) *Gett
 		tableHeaders = []string{"Name", "Title"}
 		tableLayout = TableLayout(Basic)
 		break
-	case "organization":
+	case "org-units":
 		tableHeaders = []string{"Name", "Title"}
 		tableLayout = TableLayout(OrgUnits)
 		break

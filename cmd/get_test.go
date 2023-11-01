@@ -195,7 +195,7 @@ func TestGetCmdTables(t *testing.T) {
 		},
 		{
 			name: "get org-units",
-			args: []string{"organization", "--name", "ministry-of-citizens-services"},
+			args: []string{"org-units", "--org", "ministry-of-citizens-services"},
 			expect: []string{
 				"Name                              Title",
 				"planning-and-innovation-division  Planning and Innovation Division",
@@ -399,7 +399,7 @@ func TestGetter(t *testing.T) {
 		},
 		{
 			name:     "creates a organization GetRequest",
-			operator: "organization",
+			operator: "org-units",
 			expect: &Getter{
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "Title"},
