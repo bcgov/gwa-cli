@@ -61,10 +61,6 @@ func TestApplyOptions(t *testing.T) {
 	}
 
 	expected := []interface{}{
-		Skipped{Name: "ns-sampler", Kind: "Namespace"},
-		Resource{Kind: "CredentialIssuer", Config: map[string]interface{}{"name": "aps-moh-proto default"}},
-		Resource{Kind: "DraftDataset", Config: map[string]interface{}{"name": "my-service-dataset"}},
-		Resource{Kind: "Product", Config: map[string]interface{}{"name": "my-service API"}},
 		GatewayService{Config: []map[string]interface{}{
 			{
 				"name": "service-1",
@@ -75,6 +71,10 @@ func TestApplyOptions(t *testing.T) {
 				"host": "api.co2.com",
 			},
 		}},
+		Skipped{Name: "ns-sampler", Kind: "Namespace"},
+		Resource{Kind: "CredentialIssuer", Config: map[string]interface{}{"name": "aps-moh-proto default"}},
+		Resource{Kind: "DraftDataset", Config: map[string]interface{}{"name": "my-service-dataset"}},
+		Resource{Kind: "Product", Config: map[string]interface{}{"name": "my-service API"}},
 	}
 
 	assert.Equal(t, expected, o.output, "outputs a map keyed by type, with grouped gateways")
@@ -256,6 +256,10 @@ func TestApplyStdout(t *testing.T) {
 			name:         "Success output",
 			responseCode: 200,
 			expected: []string{
+				"↑ Publishing Gateway Services",
+				"✓ Gateway Services published",
+				"Pubished: 2\nSkipped: 1",
+				"4/4 Published, 1 Skipped",
 				"- [Namespace] ns-sampler",
 				"↑ [CredentialIssuer] aps-moh-proto default",
 				"✓ [CredentialIssuer] aps-moh-proto default: Published",
@@ -263,16 +267,15 @@ func TestApplyStdout(t *testing.T) {
 				"✓ [DraftDataset] my-service-dataset: Published",
 				"↑ [Product] my-service API",
 				"✓ [Product] my-service API: Published",
-				"↑ Publishing Gateway Services",
-				"✓ Gateway Services published",
-				"Pubished: 2\nSkipped: 1",
-				"4/4 Published, 1 Skipped",
 			},
 		},
 		{
 			name:         "Failed output",
 			responseCode: 401,
 			expected: []string{
+				"↑ Publishing Gateway Services",
+				"x Gateway Services publish failed",
+				"0/4 Published, 1 Skipped",
 				"- [Namespace] ns-sampler",
 				"↑ [CredentialIssuer] aps-moh-proto default",
 				"x [CredentialIssuer] aps-moh-proto default failed",
@@ -280,9 +283,6 @@ func TestApplyStdout(t *testing.T) {
 				"x [DraftDataset] my-service-dataset failed",
 				"↑ [Product] my-service API",
 				"x [Product] my-service API failed",
-				"↑ Publishing Gateway Services",
-				"x Gateway Services publish failed",
-				"0/4 Published, 1 Skipped",
 			},
 		},
 	}
