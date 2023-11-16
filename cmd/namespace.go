@@ -5,20 +5,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
-	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/bcgov/gwa-cli/pkg"
 )
 
 func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
-	var namespaceCmd = &cobra.Command{
+	namespaceCmd := &cobra.Command{
 		Use:   "namespace",
 		Short: "Manage your namespaces",
 		Long:  `Namespaces are used to organize your services.`,
@@ -31,7 +32,7 @@ func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 type NamespaceFormData struct {
-	Name        string `json:"name,omitempty" url:"name,omitempty"`
+	Name        string `json:"name,omitempty"        url:"name,omitempty"`
 	Description string `json:"displayName,omitempty" url:"description,omitempty"`
 }
 
@@ -40,7 +41,7 @@ func (n *NamespaceFormData) IsEmpty() bool {
 }
 
 func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
-	var listCommand = &cobra.Command{
+	listCommand := &cobra.Command{
 		Use:   "list",
 		Short: "List all your managed namespaces",
 		RunE: func(_ *cobra.Command, _ []string) error {
@@ -83,32 +84,32 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 // Start Prompt Code
-var (
-	promptSymbolStyle = pkg.SuccessStyle.Copy().Bold(true)
-	boldStyle         = lipgloss.NewStyle().Bold(true)
-	focusedStyle      = pkg.SuccessStyle.Copy().Bold(true)
-	errorHeaderText   = fmt.Sprintf("%s Namespace create failed:", pkg.Times())
-	errorStyle        = lipgloss.NewStyle().Bold(true).Render(errorHeaderText)
-
-	buttonBlurred = boldStyle.Copy().Render("? Submit")
-	buttonFocused = focusedStyle.Copy().Foreground(lipgloss.Color("2")).Render("> Submit")
-)
-
 type statusMsg int
 
-type model struct {
+var errorHeaderText = fmt.Sprintf("%s Namespace create failed:", pkg.Times())
+
+type namespaceCreateModel struct {
 	ctx          *pkg.AppContext
 	data         *NamespaceFormData
 	err          error
 	focusIndex   int
 	inputs       []textinput.Model
 	isRequesting bool
+	invalid      error
 	spinner      spinner.Model
 	status       statusMsg
 }
 
-func (m model) startSpinner() {
+func (m namespaceCreateModel) startSpinner() {
 	m.spinner = spinner.New()
+}
+
+type nsValueErrMsg struct {
+	err error
+}
+
+func (e nsValueErrMsg) Error() string {
+	return e.err.Error()
 }
 
 type requestErrMsg struct {
@@ -119,7 +120,7 @@ func (e requestErrMsg) Error() string {
 	return e.err.Error()
 }
 
-func NewNamespaceCreateRequest(ctx *pkg.AppContext, data *NamespaceFormData) tea.Cmd {
+func newNamespaceCreateRequest(ctx *pkg.AppContext, data *NamespaceFormData) tea.Cmd {
 	return func() tea.Msg {
 		_, err := createNamespace(ctx, data)
 		if err != nil {
@@ -129,18 +130,19 @@ func NewNamespaceCreateRequest(ctx *pkg.AppContext, data *NamespaceFormData) tea
 	}
 }
 
-func initialModel(ctx *pkg.AppContext) model {
-	m := model{
+func initialModel(ctx *pkg.AppContext) namespaceCreateModel {
+	m := namespaceCreateModel{
 		ctx:     ctx,
 		data:    &NamespaceFormData{},
 		inputs:  make([]textinput.Model, 2),
+		invalid: nsValueErrMsg{fmt.Errorf("empty")},
 		spinner: spinner.New(),
 	}
 
 	for i := range m.inputs {
 		var t textinput.Model
 		t = textinput.New()
-		t.PromptStyle = boldStyle
+		t.PromptStyle = pkg.BoldStyle
 		switch i {
 		case 0:
 			t.Prompt = "Name: "
@@ -157,21 +159,31 @@ func initialModel(ctx *pkg.AppContext) model {
 	return m
 }
 
-func (m model) Init() tea.Cmd {
+func (m namespaceCreateModel) Init() tea.Cmd {
 	return m.spinner.Tick
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m namespaceCreateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	// Request handlers
 	case statusMsg:
-		m.isRequesting = false
-		m.status = msg
-		return m, tea.Quit
+		if msg == 200 {
+			m.isRequesting = false
+			m.status = msg
+			return m, tea.Quit
+		} else {
+			var cmd tea.Cmd
+			m.invalid = nil
+			return m, cmd
+		}
 	case requestErrMsg:
 		m.isRequesting = false
 		m.err = msg
 		return m, tea.Quit
+	case nsValueErrMsg:
+		var cmd tea.Cmd
+		m.invalid = msg
+		return m, cmd
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
@@ -191,9 +203,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.status = 0
 				m.isRequesting = true
 				m.startSpinner()
-				return m, NewNamespaceCreateRequest(m.ctx, m.data)
+				return m, newNamespaceCreateRequest(m.ctx, m.data)
 			}
 
+			// Namespace string validation
+			if m.invalid != nil {
+				return m, validateNamespace(m.inputs[0].Value())
+			}
+
+			// Movement
 			if key == "up" || key == "shift+up" {
 				m.focusIndex--
 			} else {
@@ -224,23 +242,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m model) View() string {
+func (m namespaceCreateModel) View() string {
 	var b strings.Builder
 
-	b.WriteString(`
-Create Namespace
+	b.WriteString(heredoc.Doc(`
+    Create Namespace
 
-Names must be:
-- Alphanumeric (letters, numbers and dashes only, no special characters)
-- Unique to all other namespaces
+    Names must be:
+    - Alphanumeric (letters, numbers and dashes only, no special characters)
+    - Unique to all other namespaces
 
-`)
+  `))
 
 	for i := range m.inputs {
 		if i == m.focusIndex {
-			b.WriteString(promptSymbolStyle.Render("> "))
+			if m.invalid != nil {
+				b.WriteString(pkg.PromptErrorStyle.Render("! "))
+			} else {
+				b.WriteString(pkg.PromptSymbolStyle.Render("> "))
+			}
 		} else {
-			b.WriteString(promptSymbolStyle.Render("? "))
+			b.WriteString(pkg.PromptSymbolStyle.Render("? "))
 		}
 
 		b.WriteString(m.inputs[i].View())
@@ -250,23 +272,17 @@ Names must be:
 		}
 	}
 
-	button := &buttonBlurred
-	if m.focusIndex == len(m.inputs) {
-		button = &buttonFocused
-	}
-	fmt.Fprintf(&b, "%s\n", *button)
-
 	// Request results
 	if m.isRequesting {
 		s := fmt.Sprintf("\n%s Creating namespace...", m.spinner.View())
 		b.WriteString(s)
-	}
-	if m.err != nil {
-		b.WriteRune('\n')
-		b.WriteString(errorStyle)
-		b.WriteRune('\n')
-		b.WriteString(m.err.Error())
-		b.WriteRune('\n')
+		if m.err != nil {
+			b.WriteRune('\n')
+			b.WriteString(pkg.ErrorStyle.Render(errorHeaderText))
+			b.WriteRune('\n')
+			b.WriteString(m.err.Error())
+			b.WriteRune('\n')
+		}
 	}
 
 	if m.status != 0 {
@@ -277,7 +293,7 @@ Names must be:
 	return b.String()
 }
 
-func (m model) updateInputs(msg tea.Msg) tea.Cmd {
+func (m namespaceCreateModel) updateInputs(msg tea.Msg) tea.Cmd {
 	cmds := make([]tea.Cmd, len(m.inputs))
 
 	for i := range m.inputs {
@@ -288,13 +304,13 @@ func (m model) updateInputs(msg tea.Msg) tea.Cmd {
 }
 
 func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
-	var generate = false
+	generate := false
 	var namespaceFormData NamespaceFormData
-	var createCommand = &cobra.Command{
+	createCommand := &cobra.Command{
 		Use:   "create",
 		Short: "Create a new namespace",
 		Example: heredoc.Doc(`
-    $ gwa namespace create
+    $ gwa namespace create --generate
     $ gwa namespace create --name my-namespace --description="This is my namespace"
     `),
 		RunE: func(_ *cobra.Command, _ []string) error {
@@ -320,9 +336,12 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 			return nil
 		},
 	}
-	createCommand.Flags().BoolVarP(&generate, "generate", "g", false, "generates a random, unique namespace")
-	createCommand.Flags().StringVarP(&namespaceFormData.Name, "name", "n", "", "optionally define your own namespace")
-	createCommand.Flags().StringVarP(&namespaceFormData.Description, "description", "d", "", "optionally add a description")
+	createCommand.Flags().
+		BoolVarP(&generate, "generate", "g", false, "generates a random, unique namespace")
+	createCommand.Flags().
+		StringVarP(&namespaceFormData.Name, "name", "n", "", "optionally define your own namespace")
+	createCommand.Flags().
+		StringVarP(&namespaceFormData.Description, "description", "d", "", "optionally add a description")
 
 	return createCommand
 }
@@ -358,7 +377,7 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 }
 
 func NamespaceCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
-	var currentCmd = &cobra.Command{
+	currentCmd := &cobra.Command{
 		Use:   "current",
 		Short: "Display the current namespace",
 		RunE: func(_ *cobra.Command, _ []string) error {
@@ -392,7 +411,7 @@ type NamespaceDestroyOptions struct {
 
 func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 	var destroyOptions NamespaceDestroyOptions
-	var destroyCommand = &cobra.Command{
+	destroyCommand := &cobra.Command{
 		Use:   "destroy",
 		Short: "Destroy the current namespace",
 		RunE: func(_ *cobra.Command, _ []string) error {
@@ -447,4 +466,18 @@ func destroyNamespace(ctx *pkg.AppContext, destroyOptions *NamespaceDestroyOptio
 	}
 
 	return nil
+}
+
+func validateNamespace(input string) tea.Cmd {
+	return func() tea.Msg {
+		pattern := `^[a-zA-Z0-9\-]{3,15}$`
+		r := regexp.MustCompile(pattern)
+
+		if !r.MatchString(input) {
+			err := fmt.Errorf("%s is an invalid namespace", input)
+			return nsValueErrMsg{err}
+		}
+
+		return statusMsg(1)
+	}
 }

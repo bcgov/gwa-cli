@@ -5,7 +5,7 @@ import (
 )
 
 var ErrorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#d8292f"))
-var SuccessStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#2d9f44"))
+var SuccessStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
 var WarningStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#fcba19"))
 
 func Indeterminate() string {
