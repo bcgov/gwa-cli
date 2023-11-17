@@ -13,6 +13,49 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// This module has some basic defaults for a multistep prompt form TUI
+//
+// Initialize in a Cobra Run/RunE like so:
+//
+//       model := initGenerateModel(ctx)
+//       if _, err := tea.NewProgram(model).Run(); err != nil {
+//       	return err
+//       }
+//       return nil
+//
+// Example bootstrap function:
+//
+//       const (
+//         name = iota
+//         email
+//       )
+//
+//       func initGenerateModel(ctx *pkg.AppContext) pkg.GenerateModel {
+//         var prompts = make([]pkg.PromptField, 2)
+//
+//         // Use incrementing consts so it's easy to reference a field in a slice
+//         prompts[name] = pkg.NewTextInput("Name", "Users' name", true)
+//         ...
+//         return pkg.GenerateModel{
+//           Action: actionCallback,
+//           Ctx: ctx,
+//           Prompts: prompts,
+//         }
+//       }
+
+//       func runGenerateConfig(m pkg.GenerateModel) tea.Cmd {
+//         return func() tea.Msg {
+//           err := someServerAction(struct{
+//             m.Prompts[name].TextInput().Value
+//           })
+//           if err != nil {
+//             return pkg.PromptOutputErr{Err: err}
+//           }
+//           return pkg.PromptCompleteEvent("string to display success")
+//         }
+//       }
+
+// Prompt only styles
 var (
 	PromptSymbolStyle = SuccessStyle.Copy().Bold(true)
 	PromptErrorStyle  = ErrorStyle.Copy().Bold(true)
@@ -31,14 +74,20 @@ var (
 
 // Form Component
 type GenerateModel struct {
-	Action       func(GenerateModel) tea.Cmd
-	Ctx          *AppContext
-	ErrorMsg     string
-	focusIndex   int
-	Header       string
+	// Like an HTML form action, the command will implement this callback to submit the user input
+	Action   func(GenerateModel) tea.Cmd
+	Ctx      *AppContext
+	ErrorMsg string
+	// Keeps track of which input is focused
+	focusIndex int
+	// Optional text rendered above the form
+	Header string
+	// Internal request state
 	isRequesting bool
-	Prompts      []PromptField
-	Spinner      spinner.Model
+
+	Prompts []PromptField
+	// TODO: The module is responsible for creating the spinner, would be nice to make this internal
+	Spinner spinner.Model
 }
 
 func (m GenerateModel) Init() tea.Cmd {
@@ -214,6 +263,7 @@ func NewPromptError(err error) tea.Cmd {
 	}
 }
 
+// Convenience function to make a consistently-styled textinput component
 func NewTextInput(prompt string, placeholder string, required bool) PromptField {
 	input := textinput.New()
 	input.Prompt = NewPromptLabel(prompt)
@@ -230,6 +280,7 @@ func NewTextInput(prompt string, placeholder string, required bool) PromptField 
 	}
 }
 
+// L
 type ListItem string
 
 func (i ListItem) FilterValue() string { return "" }
@@ -257,6 +308,7 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	fmt.Fprint(w, fn(str))
 }
 
+// Convenience function to make a single-choice, consistently styled list component
 func NewList(label string, items []string) PromptField {
 	listItems := []list.Item{}
 	for _, i := range items {
@@ -275,6 +327,9 @@ func NewList(label string, items []string) PromptField {
 	}
 }
 
+// TODO: if needed a multi-choice list component
+
+// Only runs if a `PromptField` has a `Validator` callback
 func ValidateField(p PromptField) tea.Cmd {
 	return func() tea.Msg {
 		value := p.TextInput.Value()
