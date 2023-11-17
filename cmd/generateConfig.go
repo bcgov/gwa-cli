@@ -10,8 +10,6 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
@@ -107,7 +105,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 			}
 			opts.Namespace = ctx.Namespace
 			if opts.IsEmpty() {
-				model := initGenerateModel(ctx, opts)
+				model := initGenerateModel(ctx)
 				if _, err := tea.NewProgram(model).Run(); err != nil {
 					return err
 				}
@@ -178,250 +176,61 @@ const (
 	outfile
 )
 
-type validationErr struct{ error }
-
-func (e validationErr) Error() string {
-	return e.error.Error()
-}
-
-type outputErr struct{ error }
-
-func (e outputErr) Error() string {
-	return e.error.Error()
-}
-
-type generateModel struct {
-	ctx        *pkg.AppContext
-	data       *GenerateConfigOptions
-	errorMsg   string
-	focusIndex int
-	prompts    []pkg.PromptField
-	success    bool
-}
-
-func (m generateModel) Init() tea.Cmd {
-	return nil
-}
-
-func (m generateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-
-	switch msg := msg.(type) {
-	case validationErr:
-		m.errorMsg = msg.Error()
-		return m, nil
-	case outputErr:
-		fmt.Println(fmt.Sprintf("%s Unable to generate output\n%s", pkg.Times(), msg.Error()))
-		return m, tea.Quit
-	case validValue:
-		m.prompts[m.focusIndex].Value = string(msg)
-		m.focusIndex++
-
-		if m.focusIndex < len(m.prompts) {
-			promptType := m.prompts[m.focusIndex].PromptType
-			if promptType == pkg.TextInput {
-				return m, m.prompts[m.focusIndex].TextInput.Focus()
-			}
-		}
-
-		return m, nil
-	case success:
-		if msg == 1 {
-			m.success = true
-			fmt.Println(fmt.Sprintf("\n\n%s Success, %s generated", pkg.Checkmark(), pkg.BoldStyle.Render(m.data.Out)))
-			return m, tea.Quit
-		}
-	case tea.KeyMsg:
-		m.errorMsg = ""
-		key := msg.String()
-		if key == "esc" || key == "ctrl+c" {
-			return m, tea.Quit
-		}
-
-		switch key {
-		case "enter":
-			totalPrompts := len(m.prompts)
-			if totalPrompts == m.focusIndex {
-				m.data.Service = m.prompts[service].Value
-				m.data.Template = m.prompts[template].Value
-				m.data.Upstream = m.prompts[upstream].Value
-				m.data.Organization = m.prompts[organization].Value
-				m.data.OrganizationUnit = m.prompts[orgUnit].Value
-				m.data.Out = m.prompts[outfile].Value
-
-				return m, runGenerateConfig(m)
-			}
-
-			if m.focusIndex < totalPrompts {
-				return m, validateField(m.prompts[m.focusIndex])
-			}
-		}
-	}
-
-	// Update the currently focused input
-	if m.focusIndex < len(m.prompts) {
-		current := m.prompts[m.focusIndex]
-		switch current.PromptType {
-		case pkg.TextInput:
-			m.prompts[m.focusIndex].TextInput, cmd = current.TextInput.Update(msg)
-		case pkg.ListInput:
-			m.prompts[m.focusIndex].List, cmd = current.List.Update(msg)
-		}
-	}
-
-	return m, cmd
-}
-
-func (m generateModel) View() string {
-	var b strings.Builder
-
-	for i, p := range m.prompts {
-		if i > m.focusIndex {
-			continue
-		}
-
-		// Render the actul input
-		if i == m.focusIndex {
-			if m.errorMsg != "" {
-				b.WriteString(fmt.Sprintf("%s %s\n", pkg.Times(), m.errorMsg))
-			}
-
-			var s string
-			switch p.PromptType {
-			case pkg.TextInput:
-				s = p.TextInput.View()
-			case pkg.ListInput:
-				b.WriteString(pkg.NewPromptLabel(p.Label))
-				s = p.List.View()
-			}
-			b.WriteString(s)
-		}
-
-		// Render the entered value
-		if i < m.focusIndex {
-			switch p.PromptType {
-			case pkg.TextInput:
-				b.WriteString(p.TextInput.Prompt)
-			case pkg.ListInput:
-				b.WriteString(pkg.NewPromptLabel(p.Label))
-			}
-			b.WriteString(pkg.InputStyle.Render(p.Value))
-		}
-		b.WriteRune('\n')
-	}
-
-	if len(m.prompts) == m.focusIndex {
-		buttonText := fmt.Sprintf("%s Submit", pkg.PromptBulletStyle)
-		b.WriteString(buttonText)
-	}
-
-	return b.String()
-}
-
-type success int
-
-func runGenerateConfig(m generateModel) tea.Cmd {
+func runGenerateConfig(m pkg.GenerateModel) tea.Cmd {
 	return func() tea.Msg {
-		err := m.data.Exec()
+		data := &GenerateConfigOptions{}
+		data.Service = m.Prompts[service].Value
+		data.Template = m.Prompts[template].Value
+		data.Upstream = m.Prompts[upstream].Value
+		data.Organization = m.Prompts[organization].Value
+		data.OrganizationUnit = m.Prompts[orgUnit].Value
+		data.Out = m.Prompts[outfile].Value
+		err := data.Exec()
 		if err != nil {
-			return outputErr{err}
+			return pkg.PromptOutputErr{Err: err}
 		}
-		err = GenerateConfig(m.ctx, m.data)
+		err = GenerateConfig(m.Ctx, data)
 		if err != nil {
-			return outputErr{err}
+			msg := fmt.Errorf("Unable to generate output\n%s", err.Error())
+			return pkg.PromptOutputErr{Err: msg}
 		}
-		return success(1)
+
+		msg := fmt.Sprintf("%s generated", data.Out)
+		return pkg.PromptCompleteEvent(msg)
 	}
 }
 
-func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) generateModel {
+func initGenerateModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	var prompts = make([]pkg.PromptField, 6)
 
-	serviceInput := textinput.New()
-	serviceInput.Prompt = pkg.NewPromptLabel("Service")
-	serviceInput.Focus()
-	// serviceInput.TextStyle = pkg.InputStyle
-	prompts[service] = pkg.PromptField{
-		PromptType: pkg.TextInput,
-		IsRequired: true,
-		TextInput:  serviceInput,
+	prompts[service] = pkg.NewTextInput("Service", "", true)
+	prompts[service].TextInput.Focus()
+
+	prompts[template] = pkg.NewList("Template", []string{
+		"kong-httpbin",
+		"client-credentials-shared-idp",
+	})
+
+	prompts[upstream] = pkg.NewTextInput("Upstream", "", true)
+	prompts[upstream].Validator = func(input string) error {
+		_, err := url.ParseRequestURI(input)
+		return err
 	}
 
-	templateOptions := []list.Item{
-		pkg.ListItem("kong-httpbin"),
-		pkg.ListItem("client-credentials-shared-idp"),
-	}
-	templateInput := pkg.NewList(templateOptions)
-	prompts[template] = pkg.PromptField{
-		PromptType: pkg.ListInput,
-		List:       templateInput,
-		Label:      "Template",
-	}
-
-	upstreamInput := textinput.New()
-	upstreamInput.Prompt = pkg.NewPromptLabel("Upstream")
-	prompts[upstream] = pkg.PromptField{
-		PromptType: pkg.TextInput,
-		IsRequired: true,
-		TextInput:  upstreamInput,
-		Validator: func(input string) error {
-			_, err := url.ParseRequestURI(input)
-			return err
-		},
+	prompts[organization] = pkg.NewTextInput("Organization", "", false)
+	prompts[orgUnit] = pkg.NewTextInput("Org Unit", "", false)
+	prompts[outfile] = pkg.NewTextInput("Filename", "Must be a YAML file", true)
+	prompts[outfile].Validator = func(input string) error {
+		if !strings.HasSuffix(input, ".yaml") || !strings.HasSuffix(input, ".yaml") {
+			return fmt.Errorf("Must be a yaml filetype")
+		}
+		return nil
 	}
 
-	orgInput := textinput.New()
-	orgInput.Prompt = pkg.NewPromptLabel("Organization")
-	prompts[organization] = pkg.PromptField{
-		PromptType: pkg.TextInput,
-		TextInput:  orgInput,
-	}
-
-	orgUnitInput := textinput.New()
-	orgUnitInput.Prompt = pkg.NewPromptLabel("Org Unit")
-	prompts[orgUnit] = pkg.PromptField{
-		PromptType: pkg.TextInput,
-		TextInput:  orgUnitInput,
-	}
-
-	outInput := textinput.New()
-	outInput.Prompt = pkg.NewPromptLabel("Filename")
-	prompts[outfile] = pkg.PromptField{
-		PromptType: pkg.TextInput,
-		TextInput:  outInput,
-		IsRequired: true,
-	}
-
-	model := generateModel{
-		ctx:     ctx,
-		data:    opts,
-		prompts: prompts,
+	model := pkg.GenerateModel{
+		Action:  runGenerateConfig,
+		Ctx:     ctx,
+		Prompts: prompts,
 	}
 	return model
-}
-
-type validValue string
-
-func validateField(p pkg.PromptField) tea.Cmd {
-	return func() tea.Msg {
-		value := p.TextInput.Value()
-		switch p.PromptType {
-		case pkg.TextInput:
-			if p.IsRequired && value == "" {
-				return validationErr{fmt.Errorf("Field is required")}
-			}
-		case pkg.ListInput:
-			v, ok := p.List.SelectedItem().(pkg.ListItem)
-			if ok {
-				return validValue(v)
-			}
-		}
-		if p.Validator != nil {
-			err := p.Validator(value)
-			if err != nil {
-				return validationErr{err}
-			}
-		}
-		return validValue(value)
-	}
 }

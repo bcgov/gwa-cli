@@ -6,24 +6,13 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
-	// "github.com/charmbracelet/bubbles/textinput"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-// type FieldType int
-//
-// const (
-//
-//	TextInput FieldType = iota
-//	RadioInput
-//
-// )
-//
-//	type Component interface {
-//		View() string
-//	}
 var (
 	PromptSymbolStyle = SuccessStyle.Copy().Bold(true)
 	PromptErrorStyle  = ErrorStyle.Copy().Bold(true)
@@ -39,6 +28,164 @@ var (
 	ButtonBlurred = BoldStyle.Copy().Render("? Submit")
 	ButtonFocused = FocusedStyle.Copy().Render("> Submit")
 )
+
+// Form Component
+type GenerateModel struct {
+	Action       func(GenerateModel) tea.Cmd
+	Ctx          *AppContext
+	ErrorMsg     string
+	focusIndex   int
+	Header       string
+	isRequesting bool
+	Prompts      []PromptField
+	Spinner      spinner.Model
+}
+
+func (m GenerateModel) Init() tea.Cmd {
+	return m.Spinner.Tick
+}
+
+func (m GenerateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
+	switch msg := msg.(type) {
+	// Form validation
+	case PromptValidationErr:
+		m.ErrorMsg = msg.Error()
+		return m, nil
+	case PromptOutputErr:
+		fmt.Println(fmt.Sprintf("%s %s %s", Times(), BoldStyle.Render("[ERROR]"), msg))
+		return m, tea.Quit
+	case PromptFieldValidEvent:
+		m.Prompts[m.focusIndex].Value = string(msg)
+		m.focusIndex++
+
+		if m.focusIndex < len(m.Prompts) {
+			promptType := m.Prompts[m.focusIndex].PromptType
+			if promptType == TextInput {
+				return m, m.Prompts[m.focusIndex].TextInput.Focus()
+			}
+		}
+
+		return m, nil
+	case PromptCompleteEvent:
+		m.isRequesting = false
+		fmt.Println(fmt.Sprintf("\n\n%s %s %s", Checkmark(), SuccessStyle.Render("[Success]"), msg))
+		return m, tea.Quit
+
+	case spinner.TickMsg:
+		var cmd tea.Cmd
+		m.Spinner, cmd = m.Spinner.Update(msg)
+		return m, cmd
+
+	// Keyboard events
+	case tea.KeyMsg:
+		m.ErrorMsg = ""
+		key := msg.String()
+		if key == "esc" || key == "ctrl+c" {
+			return m, tea.Quit
+		}
+
+		switch key {
+		case "enter":
+			totalPrompts := len(m.Prompts)
+			if totalPrompts == m.focusIndex {
+				m.isRequesting = true
+				return m, m.Action(m)
+			}
+
+			if m.focusIndex < totalPrompts {
+				return m, ValidateField(m.Prompts[m.focusIndex])
+			}
+		}
+	}
+
+	// Update the currently focused input
+	if m.focusIndex < len(m.Prompts) {
+		current := m.Prompts[m.focusIndex]
+		switch current.PromptType {
+		case TextInput:
+			m.Prompts[m.focusIndex].TextInput, cmd = current.TextInput.Update(msg)
+		case ListInput:
+			m.Prompts[m.focusIndex].List, cmd = current.List.Update(msg)
+		}
+	}
+
+	return m, cmd
+}
+
+func (m GenerateModel) View() string {
+	var b strings.Builder
+	b.WriteRune('\n')
+
+	if m.Header != "" {
+		b.WriteString(m.Header)
+	}
+
+	for i, p := range m.Prompts {
+		if i > m.focusIndex {
+			continue
+		}
+
+		// Render the actual input
+		if i == m.focusIndex {
+			if m.ErrorMsg != "" {
+				b.WriteString(fmt.Sprintf("%s %s\n", ErrorStyle.Copy().Bold(true).Render("#"), m.ErrorMsg))
+			}
+
+			var s string
+			switch p.PromptType {
+			case TextInput:
+				s = p.TextInput.View()
+			case ListInput:
+				b.WriteString(NewPromptLabel(p.Label))
+				s = p.List.View()
+			}
+			b.WriteString(s)
+		}
+
+		// Render the entered value
+		if i < m.focusIndex {
+			switch p.PromptType {
+			case TextInput:
+				b.WriteString(p.TextInput.Prompt)
+			case ListInput:
+				b.WriteString(NewPromptLabel(p.Label))
+			}
+			b.WriteString(InputStyle.Render(p.Value))
+		}
+		b.WriteRune('\n')
+	}
+
+	if len(m.Prompts) == m.focusIndex {
+		buttonText := fmt.Sprintf("%s Submit", PromptBulletStyle)
+		b.WriteString(buttonText)
+	}
+
+	// Request results
+	if m.isRequesting {
+		s := fmt.Sprintf("\n%s Requesting", m.Spinner.View())
+		b.WriteString(s)
+	}
+
+	return b.String()
+}
+
+// Form Actions
+type PromptFieldValidEvent string
+type PromptCompleteEvent string
+
+type PromptValidationErr struct{ Err error }
+
+func (e PromptValidationErr) Error() string {
+	return e.Err.Error()
+}
+
+type PromptOutputErr struct{ Err error }
+
+func (e PromptOutputErr) Error() string {
+	return e.Err.Error()
+}
 
 type PromptType int
 
@@ -67,21 +214,22 @@ func NewPromptError(err error) tea.Cmd {
 	}
 }
 
-//	func NewTextInput(prompt string, placeholder string, focus bool) PromptField {
-//		input := textinput.New()
-//		input.Prompt = prompt
-//		input.PromptStyle = PromptStyle
-//		input.Placeholder = placeholder
-//		if focus {
-//
-//			input.Focus()
-//		}
-//
-//		return PromptField{
-//			Input: input,
-//			Type:  TextInput,
-//		}
-//	}
+func NewTextInput(prompt string, placeholder string, required bool) PromptField {
+	input := textinput.New()
+	input.Prompt = NewPromptLabel(prompt)
+	input.Placeholder = placeholder
+
+	if !required {
+		input.Placeholder = strings.Join([]string{placeholder, "(optional)"}, " ")
+	}
+
+	return PromptField{
+		PromptType: TextInput,
+		TextInput:  input,
+		IsRequired: required,
+	}
+}
+
 type ListItem string
 
 func (i ListItem) FilterValue() string { return "" }
@@ -109,11 +257,44 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	fmt.Fprint(w, fn(str))
 }
 
-func NewList(items []list.Item) list.Model {
-	l := list.New(items, itemDelegate{}, 20, len(items)+2)
+func NewList(label string, items []string) PromptField {
+	listItems := []list.Item{}
+	for _, i := range items {
+		listItems = append(listItems, ListItem(i))
+	}
+	l := list.New(listItems, itemDelegate{}, 20, len(items)+2)
 	l.SetShowStatusBar(false)
 	l.SetShowPagination(false)
 	l.SetShowHelp(false)
 	l.SetShowTitle(false)
-	return l
+
+	return PromptField{
+		PromptType: ListInput,
+		List:       l,
+		Label:      label,
+	}
+}
+
+func ValidateField(p PromptField) tea.Cmd {
+	return func() tea.Msg {
+		value := p.TextInput.Value()
+		switch p.PromptType {
+		case TextInput:
+			if p.IsRequired && value == "" {
+				return PromptValidationErr{fmt.Errorf("Field is required")}
+			}
+		case ListInput:
+			v, ok := p.List.SelectedItem().(ListItem)
+			if ok {
+				return PromptFieldValidEvent(v)
+			}
+		}
+		if p.Validator != nil {
+			err := p.Validator(value)
+			if err != nil {
+				return PromptValidationErr{err}
+			}
+		}
+		return PromptFieldValidEvent(value)
+	}
 }
