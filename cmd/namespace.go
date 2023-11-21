@@ -106,7 +106,7 @@ const (
 func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	var prompts = make([]pkg.PromptField, 2)
 
-	prompts[namespace] = pkg.NewTextInput("Name", "Max-length: 15 characters", true)
+	prompts[namespace] = pkg.NewTextInput("Name", "Must be between 3-15 characters", true)
 	prompts[namespace].TextInput.Focus()
 	prompts[namespace].Validator = validateNamespace
 	prompts[description] = pkg.NewTextInput("Description", "A short, human readable name", false)

@@ -103,7 +103,7 @@ func (m GenerateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.ErrorMsg = msg.Error()
 		return m, nil
 	case PromptOutputErr:
-		fmt.Println(fmt.Sprintf("%s %s %s", Times(), BoldStyle.Render("[ERROR]"), msg))
+		fmt.Println(fmt.Sprintf("%s %s", ErrorStyle.Copy().Bold(true).Render("! ERROR"), msg))
 		return m, tea.Quit
 	case PromptFieldValidEvent:
 		m.Prompts[m.focusIndex].Value = string(msg)
@@ -117,9 +117,9 @@ func (m GenerateModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		return m, nil
+
 	case PromptCompleteEvent:
 		m.isRequesting = false
-		fmt.Println(fmt.Sprintf("\n\n%s %s %s", Checkmark(), SuccessStyle.Render("[Success]"), msg))
 		return m, tea.Quit
 
 	case spinner.TickMsg:

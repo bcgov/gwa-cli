@@ -70,6 +70,19 @@ func (o *GenerateConfigOptions) ParseUpstream() error {
 	return nil
 }
 
+func (o *GenerateConfigOptions) ImportFromForm(m pkg.GenerateModel) tea.Cmd {
+	return func() tea.Msg {
+		o.Service = m.Prompts[service].Value
+		o.Template = m.Prompts[template].Value
+		o.Upstream = m.Prompts[upstream].Value
+		o.Organization = m.Prompts[organization].Value
+		o.OrganizationUnit = m.Prompts[orgUnit].Value
+		o.Out = m.Prompts[outfile].Value
+		return pkg.PromptCompleteEvent("")
+	}
+
+}
+
 func NewGenerateConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &GenerateConfigOptions{}
 	var generateConfigCmd = &cobra.Command{
@@ -105,13 +118,11 @@ $ gwa generate-config --template client-credentials-shared-idp \
 			}
 			opts.Namespace = ctx.Namespace
 			if opts.IsEmpty() {
-				model := initGenerateModel(ctx)
+				model := initGenerateModel(ctx, opts)
 				if _, err := tea.NewProgram(model).Run(); err != nil {
 					return err
 				}
-				return nil
 			}
-			opts.Namespace = ctx.Namespace
 			err := opts.Exec()
 			if err != nil {
 				return err
@@ -122,8 +133,8 @@ $ gwa generate-config --template client-credentials-shared-idp \
 				return err
 			}
 
-			output := fmt.Sprintf("File %s created", opts.Out)
-			fmt.Println(pkg.PrintSuccess(output))
+			output := fmt.Sprintf("\n%s File %s created", pkg.Checkmark(), opts.Out)
+			fmt.Println(output)
 
 			return nil
 		},
@@ -176,31 +187,7 @@ const (
 	outfile
 )
 
-func runGenerateConfig(m pkg.GenerateModel) tea.Cmd {
-	return func() tea.Msg {
-		data := &GenerateConfigOptions{}
-		data.Service = m.Prompts[service].Value
-		data.Template = m.Prompts[template].Value
-		data.Upstream = m.Prompts[upstream].Value
-		data.Organization = m.Prompts[organization].Value
-		data.OrganizationUnit = m.Prompts[orgUnit].Value
-		data.Out = m.Prompts[outfile].Value
-		err := data.Exec()
-		if err != nil {
-			return pkg.PromptOutputErr{Err: err}
-		}
-		err = GenerateConfig(m.Ctx, data)
-		if err != nil {
-			msg := fmt.Errorf("Unable to generate output\n%s", err.Error())
-			return pkg.PromptOutputErr{Err: msg}
-		}
-
-		msg := fmt.Sprintf("%s generated", data.Out)
-		return pkg.PromptCompleteEvent(msg)
-	}
-}
-
-func initGenerateModel(ctx *pkg.AppContext) pkg.GenerateModel {
+func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.GenerateModel {
 	var prompts = make([]pkg.PromptField, 6)
 
 	prompts[service] = pkg.NewTextInput("Service", "", true)
@@ -228,7 +215,7 @@ func initGenerateModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	}
 
 	model := pkg.GenerateModel{
-		Action:  runGenerateConfig,
+		Action:  opts.ImportFromForm,
 		Ctx:     ctx,
 		Prompts: prompts,
 	}
