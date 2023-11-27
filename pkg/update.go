@@ -86,7 +86,7 @@ func CheckForVersion(ctx *AppContext) {
       %s
 
       You have %s installed.
-      Please download the latest version to continue access to our services
+      Please download the latest version to continue access to our services.
     `, titleEl, ctx.Version)))
 	}
 }
