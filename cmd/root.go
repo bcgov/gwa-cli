@@ -19,6 +19,9 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 		SilenceUsage: true,
 		Long:         `GWA CLI helps manage gateway resources in a declarative fashion.`,
 		Version:      ctx.Version,
+		PersistentPostRun: func(_ *cobra.Command, _ []string) {
+			pkg.CheckForVersion(ctx)
+		},
 	}
 	rootCmd.AddCommand(NewConfigCmd(ctx))
 	rootCmd.AddCommand(NewInit(ctx))
