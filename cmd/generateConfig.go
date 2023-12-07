@@ -194,11 +194,11 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 	prompts[service].TextInput.Focus()
 
 	prompts[template] = pkg.NewList("Template", []string{
-		"kong-httpbin",
 		"client-credentials-shared-idp",
+		"kong-httpbin",
 	})
 
-	prompts[upstream] = pkg.NewTextInput("Upstream", "", true)
+	prompts[upstream] = pkg.NewTextInput("Upstream (URL)", "", true)
 	prompts[upstream].Validator = func(input string) error {
 		_, err := url.ParseRequestURI(input)
 		return err
@@ -207,11 +207,12 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 	prompts[organization] = pkg.NewTextInput("Organization", "", false)
 	prompts[orgUnit] = pkg.NewTextInput("Org Unit", "", false)
 	prompts[outfile] = pkg.NewTextInput("Filename", "Must be a YAML file", true)
+	prompts[outfile].TextInput.SetValue("gw-config.yml")
 	prompts[outfile].Validator = func(input string) error {
-		if !strings.HasSuffix(input, ".yaml") || !strings.HasSuffix(input, ".yaml") {
-			return fmt.Errorf("Must be a yaml filetype")
+		if strings.HasSuffix(input, ".yml") || strings.HasSuffix(input, ".yaml") {
+			return nil
 		}
-		return nil
+		return fmt.Errorf("Filename %s is invalid. Only YAML files are accepted.", pkg.BoldStyle.Underline(true).Render(input))
 	}
 
 	model := pkg.GenerateModel{
