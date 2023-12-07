@@ -5,6 +5,7 @@ import (
 	"net/url"
 
 	"github.com/google/go-querystring/query"
+	"github.com/spf13/cobra"
 )
 
 type AppContext struct {
@@ -14,6 +15,7 @@ type AppContext struct {
 	ApiVersion string
 	ClientId   string
 	Cwd        string
+	Debug      bool
 	Host       string
 	Namespace  string
 	Scheme     string
@@ -50,4 +52,30 @@ func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) 
 	}
 
 	return url.String(), nil
+}
+
+// Cobra's error handling doesn't bubble to the root's lifecycle hooks
+// so this HOF is used to catch errors and print them before exit
+// Usage
+// ```go
+//
+//	var cmd = &cobra.Command{
+//	  Use: "cmd",
+//	  RunE: pkg.WrapError(ctx, func (cmd *cobra.Command, args []string) error {
+//	    ...
+//	  }),
+//	}
+//
+// ```
+func WrapError(ctx *AppContext, handler func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, args []string) error {
+		err := handler(cmd, args)
+		if err != nil {
+			if ctx.Debug {
+				PrintLog()
+			}
+			return err
+		}
+		return nil
+	}
 }

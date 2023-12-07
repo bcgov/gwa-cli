@@ -20,7 +20,7 @@ func NewConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 	return configCmd
 }
 
-func NewConfigGetCmd(_ *pkg.AppContext) *cobra.Command {
+func NewConfigGetCmd(ctx *pkg.AppContext) *cobra.Command {
 	args := []string{"api_key", "host", "namespace"}
 	argsSentence := pkg.ArgumentsSliceToString(args, "and")
 
@@ -36,20 +36,21 @@ func NewConfigGetCmd(_ *pkg.AppContext) *cobra.Command {
     `),
 		ValidArgs: args,
 		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
+			pkg.Info(fmt.Sprintf("Config file: %s", viper.ConfigFileUsed()))
 			result := viper.Get(args[0])
 			if result == "" {
 				return nil
 			}
 			fmt.Println(result)
 			return nil
-		},
+		}),
 	}
 
 	return configGetCmd
 }
 
-func NewConfigSetCmd(_ *pkg.AppContext) *cobra.Command {
+func NewConfigSetCmd(ctx *pkg.AppContext) *cobra.Command {
 	var configSetCmd = &cobra.Command{
 		Use:   "set [key] [value]",
 		Short: "Write a specific global setting",
@@ -67,7 +68,8 @@ Exposes some specific config values that can be defined by the user.
 $ gwa config set namespace ns-sampler
 $ gwa config set --namespace ns-sampler
     `),
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
+			pkg.Info(fmt.Sprintf("Config file: %s", viper.ConfigFileUsed()))
 			if len(args) > 1 {
 				switch args[0] {
 				case "token":
@@ -93,7 +95,7 @@ $ gwa config set --namespace ns-sampler
 			}
 			fmt.Println(pkg.Checkmark(), pkg.PrintSuccess("Config settings saved"))
 			return nil
-		},
+		}),
 	}
 
 	configSetCmd.Flags().String("token", "", "set the namespace")

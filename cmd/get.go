@@ -35,7 +35,9 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
     `),
 		ValidArgs: validArgs,
 		Args:      cobra.OnlyValidArgs,
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
+			pkg.Info(fmt.Sprintf("Namespace: %s", ctx.Namespace))
+
 			if len(args) == 0 {
 				return fmt.Errorf("Must provide an argument of %s to get command", pkg.ArgumentsSliceToString(validArgs, "or"))
 			}
@@ -96,7 +98,7 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			}
 			tbl.Print()
 			return nil
-		},
+		}),
 	}
 
 	getCmd.Flags().StringVar(&filters.Org, "org", "", "Organization to filter results by")

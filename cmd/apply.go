@@ -142,6 +142,7 @@ $ gwa apply --input gw-config.yaml
 			if err != nil {
 				return err
 			}
+			pkg.Info("Namespace:" + ctx.Namespace)
 
 			counter := &PublishCounter{}
 
@@ -155,6 +156,7 @@ $ gwa apply --input gw-config.yaml
 						counter.AddFailed()
 						fmt.Print("\r")
 						fmt.Printf("%s Gateway Services publish failed\n", pkg.Times())
+						pkg.Error(fmt.Sprintf("Publish Error: %v", err))
 						break
 					}
 
@@ -176,6 +178,7 @@ $ gwa apply --input gw-config.yaml
 						counter.AddFailed()
 						fmt.Print("\r")
 						fmt.Printf("%s [%s] %s failed\n", pkg.Times(), c.Kind, c.Config["name"])
+						pkg.Error(fmt.Sprintf("Resource Error: %v", err))
 						break
 					}
 

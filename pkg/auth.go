@@ -17,59 +17,71 @@ import (
 var boldText = lipgloss.NewStyle().Bold(true)
 
 func DeviceLogin(ctx *AppContext) error {
+	Info("Auth: Device login selected")
 	openApiPathname, err := fetchConfigUrl(ctx)
 	if err != nil {
 		return err
 	}
+	Info("OpenAPI Pathname received")
 
 	authTokenUrl, err := fetchOpenApiConfig(ctx, openApiPathname)
 	if err != nil {
 		return err
 	}
+	Info("Auth token recieved")
 
 	wellKnownConfig, err := fetchWellKnown(authTokenUrl)
 	if err != nil {
 		return err
 	}
+	Info("Well known config received")
 	viper.Set("token_endpoint", wellKnownConfig.TokenEndpoint)
 	err = viper.WriteConfig()
 	if err != nil {
 		return err
 	}
+	Info("Config updated")
 
 	err = deviceLogin(wellKnownConfig, ctx.ClientId, 8)
 	if err != nil {
 		return err
 	}
+	Info("Logged in")
 
 	return nil
 }
 
 func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret string) error {
+	Info("Auth method: Client Credential")
 	openApiPathname, err := fetchConfigUrl(ctx)
 	if err != nil {
 		return err
 	}
+	Info("OpenAPI Pathname received")
 
 	authTokenUrl, err := fetchOpenApiConfig(ctx, openApiPathname)
 	if err != nil {
 		return err
 	}
+	Info("Auth token recieved")
 
 	wellKnownConfig, err := fetchWellKnown(authTokenUrl)
 	if err != nil {
 		return err
 	}
+	Info("Well known config received")
 	viper.Set("token_endpoint", wellKnownConfig.TokenEndpoint)
 	err = viper.WriteConfig()
 	if err != nil {
 		return err
 	}
+	Info("Config updated")
 
 	err = ClientCredentialLogin(wellKnownConfig.TokenEndpoint, clientId, clientSecret)
 	if err != nil {
 		return err
 	}
+	Info("Logged in")
 
 	return nil
 }
@@ -77,6 +89,7 @@ func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret strin
 func fetchConfigUrl(ctx *AppContext) (string, error) {
 	client := http.Client{}
 	URL, _ := ctx.CreateUrl("/ds/api", nil)
+	Info(fmt.Sprintf("Config URL: %s", URL))
 	request, err := http.NewRequest(http.MethodGet, URL, nil)
 	if err != nil {
 		return "", err
@@ -157,6 +170,7 @@ type OpenApi struct {
 func fetchOpenApiConfig(ctx *AppContext, openApiPathname string) (string, error) {
 	client := http.Client{}
 	URL, _ := ctx.CreateUrl(openApiPathname, nil)
+	Info(fmt.Sprintf("Config URL: %s", URL))
 	request, err := http.NewRequest(http.MethodGet, URL, nil)
 
 	if err != nil {
@@ -176,6 +190,7 @@ func fetchOpenApiConfig(ctx *AppContext, openApiPathname string) (string, error)
 	if err != nil {
 		return "", err
 	}
+	Info(fmt.Sprintf("Config URL: %s", URL))
 
 	return openApiConfig.Components.SecuritySchemes.OpenId.OpenIdConnectUrl, nil
 }
@@ -264,6 +279,7 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) error {
 }
 
 func RefreshToken(ctx *AppContext) error {
+	Info("Auth: Refreshing token")
 	tokenEndpoint := viper.GetString("token_endpoint")
 	refreshToken := viper.GetString("refresh_token")
 

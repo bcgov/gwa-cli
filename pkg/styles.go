@@ -1,12 +1,15 @@
 package pkg
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/lipgloss"
 )
 
 var ErrorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#d8292f"))
 var SuccessStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#2d9f44"))
 var WarningStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#fcba19"))
+var DebugStyle = WarningStyle.Copy().Bold(true).Render("[DEBUG] ")
 
 func Indeterminate() string {
 	return WarningStyle.Render("-")
@@ -30,4 +33,8 @@ func PrintError(output string) string {
 
 func PrintWarning(output string) string {
 	return WarningStyle.Render(output)
+}
+
+func PrintDebug(output string) {
+	fmt.Println(DebugStyle, output)
 }

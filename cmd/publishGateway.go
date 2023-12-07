@@ -48,7 +48,7 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa publish-gateway path/to/config.yaml --dry-run
     $ gwa publish-gateway path/to/config.yaml --qualifier dev
     `),
-		RunE: func(_ *cobra.Command, args []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
 				fmt.Println(heredoc.Doc(`
           A namespace must be set via the config command
@@ -62,16 +62,19 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 			opts.inputs = args
 			if len(args) == 0 {
 				opts.inputs = []string{""}
+				pkg.Info("No files entered, locating all files...")
 			}
 			config, err := PrepareConfigFile(ctx, opts)
 			if err != nil {
 				return err
 			}
+			pkg.Info("Config file prepared")
 
 			result, err := PublishToGateway(ctx, opts, config)
 			if err != nil {
 				return err
 			}
+			pkg.Info("Config publish complete")
 
 			fmt.Println(pkg.Checkmark(), "Gateway config published")
 			fmt.Printf(`
@@ -82,7 +85,7 @@ Details:
 `, result.Message, result.Results)
 
 			return nil
-		},
+		}),
 	}
 
 	publishGatewayCmd.Flags().BoolVar(&opts.dryRun, "dry-run", false, "Dry run your API changes before committing to them")
@@ -144,6 +147,7 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 	}
 
 	for i, file := range validFiles {
+		pkg.Info(fmt.Sprintf("Located and parsing file: %s", file))
 		content, err := os.ReadFile(file)
 		if err != nil {
 			return nil, err

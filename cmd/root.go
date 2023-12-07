@@ -19,6 +19,14 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 		SilenceUsage: true,
 		Long:         `GWA CLI helps manage gateway resources in a declarative fashion.`,
 		Version:      ctx.Version,
+		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
+			if ctx.Debug {
+				pkg.Info("Namespace: " + ctx.Namespace)
+				pkg.Info("API Version: " + ctx.ApiVersion)
+				pkg.PrintLog()
+			}
+			return nil
+		},
 	}
 	rootCmd.AddCommand(NewConfigCmd(ctx))
 	rootCmd.AddCommand(NewInit(ctx))
@@ -33,6 +41,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	// Disable these for now since they don't do anything
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-confg.yaml)")
 	// rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "only print results, ideal for CI/CD")
+	rootCmd.PersistentFlags().BoolVarP(&ctx.Debug, "debug", "D", false, "print debug information about the command being run")
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiVersion, "api-version", ctx.ApiVersion, "Set the global API version")
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiHost, "host", ctx.ApiHost, "Set the default host to use for the API")
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")

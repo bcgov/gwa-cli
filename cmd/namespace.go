@@ -34,7 +34,7 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 	var listCommand = &cobra.Command{
 		Use:   "list",
 		Short: "List all your managed namespaces",
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
 			URL, _ := ctx.CreateUrl(path, nil)
 			r, err := pkg.NewApiGet[[]string](ctx, URL)
@@ -67,7 +67,7 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 			}
 
 			return nil
-		},
+		}),
 	}
 
 	return listCommand
@@ -82,11 +82,13 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa namespace create
     $ gwa namespace create --name my-namespace --description="This is my namespace"
     `),
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			namespace, err := createNamespace(ctx, &namespaceFormData)
 			if err != nil {
 				return err
 			}
+
+			pkg.Info("Setting namespace to " + namespace)
 
 			err = setCurrentNamespace(namespace)
 			if err != nil {
@@ -95,7 +97,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 
 			fmt.Println(namespace)
 			return nil
-		},
+		}),
 	}
 	createCommand.Flags().StringVarP(&namespaceFormData.Name, "name", "n", "", "optionally define your own namespace")
 	createCommand.Flags().StringVarP(&namespaceFormData.Description, "description", "d", "", "optionally add a description")
@@ -171,7 +173,7 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 	var destroyCommand = &cobra.Command{
 		Use:   "destroy",
 		Short: "Destroy the current namespace",
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
 				fmt.Println(heredoc.Doc(`
           A namespace must be set via the config command
@@ -198,7 +200,7 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 
 			fmt.Println("Namespace destroyed:", ctx.Namespace)
 			return nil
-		},
+		}),
 	}
 
 	destroyCommand.Flags().BoolVar(&destroyOptions.Force, "force", false, "force deletion")
