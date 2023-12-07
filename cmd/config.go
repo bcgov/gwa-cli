@@ -5,6 +5,8 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
+	"github.com/charmbracelet/bubbles/spinner"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -49,7 +51,7 @@ func NewConfigGetCmd(_ *pkg.AppContext) *cobra.Command {
 	return configGetCmd
 }
 
-func NewConfigSetCmd(_ *pkg.AppContext) *cobra.Command {
+func NewConfigSetCmd(ctx *pkg.AppContext) *cobra.Command {
 	var configSetCmd = &cobra.Command{
 		Use:   "set [key] [value]",
 		Short: "Write a specific global setting",
@@ -67,8 +69,9 @@ Exposes some specific config values that can be defined by the user.
 $ gwa config set namespace ns-sampler
 $ gwa config set --namespace ns-sampler
     `),
-		RunE: func(_ *cobra.Command, args []string) error {
-			if len(args) > 1 {
+		RunE: func(cmd *cobra.Command, args []string) error {
+			totalArgs := len(args)
+			if totalArgs > 1 {
 				switch args[0] {
 				case "token":
 					viper.Set("api_key", args[1])
@@ -83,8 +86,16 @@ $ gwa config set --namespace ns-sampler
 				}
 			}
 
-			if len(args) == 1 {
+			if totalArgs == 1 {
 				return fmt.Errorf("No value was set for %s", args)
+			}
+
+			if totalArgs == 0 && !cmd.HasFlags() {
+				model := initialSetModel(ctx)
+				if _, err := tea.NewProgram(model).Run(); err != nil {
+					return err
+				}
+				return nil
 			}
 
 			err := viper.WriteConfig()
@@ -106,4 +117,39 @@ $ gwa config set --namespace ns-sampler
 	viper.BindPFlag("scheme", configSetCmd.Flags().Lookup("scheme"))
 
 	return configSetCmd
+}
+
+const (
+	key = iota
+	value
+)
+
+func initialSetModel(ctx *pkg.AppContext) pkg.GenerateModel {
+	var prompts = make([]pkg.PromptField, 2)
+
+	prompts[key] = pkg.NewList("Select a config key to set", []string{"host", "namespace", "scheme", "token"})
+	prompts[value] = pkg.NewTextInput("Value", "", true)
+
+	m := pkg.GenerateModel{
+		Action:  setConfigValue,
+		Ctx:     ctx,
+		Prompts: prompts,
+		Spinner: spinner.New(),
+	}
+
+	return m
+}
+
+func setConfigValue(m pkg.GenerateModel) tea.Cmd {
+	return func() tea.Msg {
+		key := m.Prompts[key].Value
+		value := m.Prompts[value].TextInput.Value()
+
+		viper.Set(key, value)
+		err := viper.WriteConfig()
+		if err != nil {
+			return pkg.PromptOutputErr{Err: err}
+		}
+		return pkg.PromptCompleteEvent("")
+	}
 }

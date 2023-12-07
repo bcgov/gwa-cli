@@ -62,7 +62,7 @@ ns-456`,
 		},
 		{
 			name:   "new license plate name",
-			args:   []string{"create"},
+			args:   []string{"create", "--generate"},
 			expect: "ns-qwerty",
 			method: "POST",
 			response: func(r *http.Request) (*http.Response, error) {
@@ -73,7 +73,7 @@ ns-456`,
 		},
 		{
 			name:   "new license plate with description",
-			args:   []string{"create", "--description", "my description"},
+			args:   []string{"create", "--generate", "--description", "my description"},
 			expect: "ns-qwerty",
 			method: "POST",
 			response: func(r *http.Request) (*http.Response, error) {
@@ -114,7 +114,7 @@ ns-456`,
 		},
 		{
 			name:   "new namespace fails",
-			args:   []string{"create"},
+			args:   []string{"create", "--generate"},
 			expect: "Error: Validation Failed\nYou do not have access to this resource",
 			method: "POST",
 			response: func(r *http.Request) (*http.Response, error) {

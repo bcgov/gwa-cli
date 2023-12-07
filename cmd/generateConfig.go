@@ -6,9 +6,11 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/bcgov/gwa-cli/pkg"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +27,10 @@ type GenerateConfigOptions struct {
 	Organization     string
 	OrganizationUnit string
 	Out              string
+}
+
+func (o *GenerateConfigOptions) IsEmpty() bool {
+	return o.Template == "" && o.Service == "" && o.Upstream == ""
 }
 
 func (o *GenerateConfigOptions) ValidateTemplate() error {
@@ -64,6 +70,19 @@ func (o *GenerateConfigOptions) ParseUpstream() error {
 	return nil
 }
 
+func (o *GenerateConfigOptions) ImportFromForm(m pkg.GenerateModel) tea.Cmd {
+	return func() tea.Msg {
+		o.Service = m.Prompts[service].Value
+		o.Template = m.Prompts[template].Value
+		o.Upstream = m.Prompts[upstream].Value
+		o.Organization = m.Prompts[organization].Value
+		o.OrganizationUnit = m.Prompts[orgUnit].Value
+		o.Out = m.Prompts[outfile].Value
+		return pkg.PromptCompleteEvent("")
+	}
+
+}
+
 func NewGenerateConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 	opts := &GenerateConfigOptions{}
 	var generateConfigCmd = &cobra.Command{
@@ -79,8 +98,31 @@ $ gwa generate-config --template client-credentials-shared-idp \
     --service my-service \
 	--upstream https://httpbin.org
     `),
+		PreRun: func(cmd *cobra.Command, _ []string) {
+			if !opts.IsEmpty() {
+				cmd.MarkFlagRequired("template")
+				cmd.MarkFlagRequired("service")
+				cmd.MarkFlagRequired("upstream")
+			}
+		},
 		RunE: func(_ *cobra.Command, _ []string) error {
+			if ctx.Namespace == "" {
+				fmt.Println(heredoc.Doc(`
+          A namespace must be set via the config command
+
+          Example:
+              $ gwa config set namespace YOUR_NAMESPACE_NAME
+          `),
+				)
+				return fmt.Errorf("No namespace has been set")
+			}
 			opts.Namespace = ctx.Namespace
+			if opts.IsEmpty() {
+				model := initGenerateModel(ctx, opts)
+				if _, err := tea.NewProgram(model).Run(); err != nil {
+					return err
+				}
+			}
 			err := opts.Exec()
 			if err != nil {
 				return err
@@ -91,8 +133,8 @@ $ gwa generate-config --template client-credentials-shared-idp \
 				return err
 			}
 
-			output := fmt.Sprintf("File %s created", opts.Out)
-			fmt.Println(pkg.PrintSuccess(output))
+			output := fmt.Sprintf("\n%s File %s created", pkg.Checkmark(), opts.Out)
+			fmt.Println(output)
 
 			return nil
 		},
@@ -104,9 +146,6 @@ $ gwa generate-config --template client-credentials-shared-idp \
 	generateConfigCmd.Flags().StringVar(&opts.Organization, "org", "ministry-of-citizens-services", "Set the organization")
 	generateConfigCmd.Flags().StringVar(&opts.OrganizationUnit, "org-unit", "databc", "Set the organization unit")
 	generateConfigCmd.Flags().StringVarP(&opts.Out, "out", "o", "gw-config.yml", "The file to output the generate config to")
-	generateConfigCmd.MarkFlagRequired("template")
-	generateConfigCmd.MarkFlagRequired("service")
-	generateConfigCmd.MarkFlagRequired("upstream")
 
 	return generateConfigCmd
 }
@@ -136,4 +175,50 @@ func GenerateConfig(ctx *pkg.AppContext, opts *GenerateConfigOptions) error {
 		return err
 	}
 	return nil
+}
+
+// Prompt Code
+const (
+	service = iota
+	template
+	upstream
+	organization
+	orgUnit
+	outfile
+)
+
+func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.GenerateModel {
+	var prompts = make([]pkg.PromptField, 6)
+
+	prompts[service] = pkg.NewTextInput("Service", "", true)
+	prompts[service].TextInput.Focus()
+
+	prompts[template] = pkg.NewList("Template", []string{
+		"client-credentials-shared-idp",
+		"kong-httpbin",
+	})
+
+	prompts[upstream] = pkg.NewTextInput("Upstream (URL)", "", true)
+	prompts[upstream].Validator = func(input string) error {
+		_, err := url.ParseRequestURI(input)
+		return err
+	}
+
+	prompts[organization] = pkg.NewTextInput("Organization", "", false)
+	prompts[orgUnit] = pkg.NewTextInput("Org Unit", "", false)
+	prompts[outfile] = pkg.NewTextInput("Filename", "Must be a YAML file", true)
+	prompts[outfile].TextInput.SetValue("gw-config.yml")
+	prompts[outfile].Validator = func(input string) error {
+		if strings.HasSuffix(input, ".yml") || strings.HasSuffix(input, ".yaml") {
+			return nil
+		}
+		return fmt.Errorf("Filename %s is invalid. Only YAML files are accepted.", pkg.BoldStyle.Underline(true).Render(input))
+	}
+
+	model := pkg.GenerateModel{
+		Action:  opts.ImportFromForm,
+		Ctx:     ctx,
+		Prompts: prompts,
+	}
+	return model
 }
