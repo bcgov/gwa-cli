@@ -28,7 +28,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd.AddCommand(NewPublishGatewayCmd(ctx))
 	rootCmd.AddCommand(NewPublishCmd(ctx))
 	rootCmd.AddCommand(NewGetCmd(ctx, nil))
-	rootCmd.AddCommand(NewApplyCmd(ctx))
+	rootCmd.AddCommand(NewSyncCmd(ctx))
 	rootCmd.AddCommand(NewGenerateConfigCmd(ctx))
 	rootCmd.AddCommand(NewLoginCmd(ctx))
 	rootCmd.AddCommand(NewNamespaceCmd(ctx))

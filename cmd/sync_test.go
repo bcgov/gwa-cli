@@ -42,7 +42,7 @@ kind: Product
 name: my-service API
 `
 
-func TestApplyOptions(t *testing.T) {
+func TestSyncOptions(t *testing.T) {
 	fileName := "gw-config.yaml"
 	dir := t.TempDir()
 	config, err := os.Create(filepath.Join(dir, fileName))
@@ -51,7 +51,7 @@ func TestApplyOptions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	o := &ApplyOptions{
+	o := &SyncOptions{
 		cwd:   dir,
 		input: fileName,
 	}
@@ -88,7 +88,7 @@ func TestNonYamlFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	o := &ApplyOptions{
+	o := &SyncOptions{
 		cwd:   dir,
 		input: fileName,
 	}
@@ -246,7 +246,7 @@ func TestPublishGatewayService(t *testing.T) {
 	assert.Equal(t, "", res.Results, "returns a successful gateway service resposne like in publish-gateway")
 }
 
-func TestApplyStdout(t *testing.T) {
+func TestSynSyncStdout(t *testing.T) {
 	tests := []struct {
 		name         string
 		responseCode int
@@ -321,12 +321,12 @@ func TestApplyStdout(t *testing.T) {
 		filename := "gw-config.yaml"
 		os.WriteFile(filepath.Join(cwd, filename), []byte(input), 0644)
 
-		args := []string{"apply", "--input", filename}
+		args := []string{"sync", "--input", filename}
 
 		mainCmd := &cobra.Command{
 			Use: "gwa",
 		}
-		mainCmd.AddCommand(NewApplyCmd(ctx))
+		mainCmd.AddCommand(NewSyncCmd(ctx))
 		mainCmd.SetArgs(args)
 		out := capturer.CaptureOutput(func() {
 			mainCmd.Execute()

@@ -43,14 +43,14 @@ type Skipped struct {
 }
 
 // Input struct
-type ApplyOptions struct {
+type SyncOptions struct {
 	cwd    string
 	input  string
 	output []interface{}
 }
 
 // Takes a dir to locate the input file and returns a slice of each doc contained in the YAML file
-func (o *ApplyOptions) Parse() error {
+func (o *SyncOptions) Parse() error {
 	var gatewayService = GatewayService{}
 
 	filePath := filepath.Join(o.cwd, o.input)
@@ -125,17 +125,17 @@ func (p *PublishCounter) Print() string {
 	return fmt.Sprintf("%d/%d Published, %d Skipped", p.Success, total, p.Skipped)
 }
 
-func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
-	opts := &ApplyOptions{
+func NewSyncCmd(ctx *pkg.AppContext) *cobra.Command {
+	opts := &SyncOptions{
 		cwd: ctx.Cwd,
 	}
-	var applyCmd = &cobra.Command{
-		Use:   "apply",
-		Short: "Apply gateway resources",
-		Long:  "Apply your GatewayService, CredentialIssuer, DraftDataset, and Product resources.  Use the `generate-config` command to see examples of these resources.",
+	var syncCmd = &cobra.Command{
+		Use:   "sync",
+		Short: "Sync gateway resources",
+		Long:  "Sync your GatewayService, CredentialIssuer, DraftDataset, and Product resources.  Use the `generate-config` command to see examples of these resources.",
 		Args:  cobra.OnlyValidArgs,
 		Example: heredoc.Doc(`
-$ gwa apply --input gw-config.yaml
+$ gwa sync --input gw-config.yaml
     `),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			err := opts.Parse()
@@ -193,10 +193,10 @@ $ gwa apply --input gw-config.yaml
 		},
 	}
 
-	applyCmd.Flags().StringVarP(&opts.input, "input", "i", "gw-config.yml", "YAML file containing your configuration")
-	applyCmd.MarkFlagRequired("input")
+	syncCmd.Flags().StringVarP(&opts.input, "input", "i", "gw-config.yml", "YAML file containing your configuration")
+	syncCmd.MarkFlagRequired("input")
 
-	return applyCmd
+	return syncCmd
 }
 
 type PutResponse struct {
