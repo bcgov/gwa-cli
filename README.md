@@ -55,7 +55,7 @@ Tools:
    ```sh
    $ git clone git@github.com:bcgov/gwa-cli.git
    $ cd gwa-cli
-   $ mv env.exampler .env
+   $ mv env.example .env
    ```
    **Note** Some local environments require Go projects are run from the `$HOME/go/src` directory. If any `module not found` errors are reported, try moving it.
 
