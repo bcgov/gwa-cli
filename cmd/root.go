@@ -26,6 +26,8 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 				pkg.PrintLog()
 			}
 			return nil
+		PersistentPostRun: func(_ *cobra.Command, _ []string) {
+			pkg.CheckForVersion(ctx)
 		},
 	}
 	rootCmd.AddCommand(NewConfigCmd(ctx))
