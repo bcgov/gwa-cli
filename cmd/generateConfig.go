@@ -105,7 +105,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 				cmd.MarkFlagRequired("upstream")
 			}
 		},
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
 				fmt.Println(heredoc.Doc(`
           A namespace must be set via the config command
@@ -116,7 +116,10 @@ $ gwa generate-config --template client-credentials-shared-idp \
 				)
 				return fmt.Errorf("No namespace has been set")
 			}
+
 			opts.Namespace = ctx.Namespace
+			pkg.Info(fmt.Sprintf("Options received %v", opts))
+
 			if opts.IsEmpty() {
 				model := initGenerateModel(ctx, opts)
 				if _, err := tea.NewProgram(model).Run(); err != nil {

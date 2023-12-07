@@ -70,7 +70,7 @@ Exposes some specific config values that can be defined by the user.
 $ gwa config set namespace ns-sampler
 $ gwa config set --namespace ns-sampler
     `),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: pkg.WrapError(ctx, func(cmd *cobra.Command, args []string) error {
 			totalArgs := len(args)
 			if totalArgs > 1 {
 				switch args[0] {

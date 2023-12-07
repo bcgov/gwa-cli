@@ -142,7 +142,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa namespace create --generate
     $ gwa namespace create --name my-namespace --description="This is my namespace"
     `),
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if namespaceFormData.IsEmpty() && generate == false {
 				model := initialModel(ctx)
 				if _, err := tea.NewProgram(model).Run(); err != nil {
