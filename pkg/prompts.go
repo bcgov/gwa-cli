@@ -1,3 +1,44 @@
+// This module has some basic defaults for a multistep prompt form TUI
+//
+// Initialize in a Cobra Run/RunE like so:
+//
+//	model := initGenerateModel(ctx)
+//	if _, err := tea.NewProgram(model).Run(); err != nil {
+//		return err
+//	}
+//	return nil
+//
+// Example bootstrap function:
+//
+//	   const (
+//	     name = iota
+//	     email
+//	   )
+//
+//	   func initGenerateModel(ctx *pkg.AppContext) pkg.GenerateModel {
+//	     var prompts = make([]pkg.PromptField, 2)
+//
+//	     // Use incrementing consts so it's easy to reference a field in a slice
+//	     prompts[name] = pkg.NewTextInput("Name", "Users' name", true)
+//	     ...
+//	     return pkg.GenerateModel{
+//	       Action: actionCallback,
+//	       Ctx: ctx,
+//	       Prompts: prompts,
+//	     }
+//	   }
+//
+//		func runGenerateConfig(m pkg.GenerateModel) tea.Cmd {
+//		  return func() tea.Msg {
+//		    err := someServerAction(struct{
+//		      m.Prompts[name].TextInput().Value
+//		    })
+//		    if err != nil {
+//		      return pkg.PromptOutputErr{Err: err}
+//		    }
+//		    return pkg.PromptCompleteEvent("string to display success")
+//		  }
+//		}
 package pkg
 
 import (
@@ -12,48 +53,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-
-// This module has some basic defaults for a multistep prompt form TUI
-//
-// Initialize in a Cobra Run/RunE like so:
-//
-//       model := initGenerateModel(ctx)
-//       if _, err := tea.NewProgram(model).Run(); err != nil {
-//       	return err
-//       }
-//       return nil
-//
-// Example bootstrap function:
-//
-//       const (
-//         name = iota
-//         email
-//       )
-//
-//       func initGenerateModel(ctx *pkg.AppContext) pkg.GenerateModel {
-//         var prompts = make([]pkg.PromptField, 2)
-//
-//         // Use incrementing consts so it's easy to reference a field in a slice
-//         prompts[name] = pkg.NewTextInput("Name", "Users' name", true)
-//         ...
-//         return pkg.GenerateModel{
-//           Action: actionCallback,
-//           Ctx: ctx,
-//           Prompts: prompts,
-//         }
-//       }
-
-//       func runGenerateConfig(m pkg.GenerateModel) tea.Cmd {
-//         return func() tea.Msg {
-//           err := someServerAction(struct{
-//             m.Prompts[name].TextInput().Value
-//           })
-//           if err != nil {
-//             return pkg.PromptOutputErr{Err: err}
-//           }
-//           return pkg.PromptCompleteEvent("string to display success")
-//         }
-//       }
 
 // Prompt only styles
 var (
@@ -74,19 +73,25 @@ var (
 
 // Form Component
 type GenerateModel struct {
-	// Like an HTML form action, the command will implement this callback to submit the user input
-	Action   func(GenerateModel) tea.Cmd
-	Ctx      *AppContext
+	// Action works like an HTML form action,
+	// the command will implement this callback
+	// to submit the user input.
+	Action func(GenerateModel) tea.Cmd
+	// Ctx is the embedded application context.
+	Ctx *AppContext
+	// ErrorMsg stores any error state that should
+	// be displayed to the user.
 	ErrorMsg string
-	// Keeps track of which input is focused
+	// focusIndex keeps track of which input is focused.
 	focusIndex int
-	// Optional text rendered above the form
+	// Header prints optional text rendered above the form.
 	Header string
-	// Internal request state
+	// isRequesting is the switch for HTTP request status.
 	isRequesting bool
-
+	// Prompts is the set of form components to be printed.
 	Prompts []PromptField
-	// TODO: The module is responsible for creating the spinner, would be nice to make this internal
+	// TODO: The module is responsible for creating the spinner,
+	//  would be nice to make this internal
 	Spinner spinner.Model
 }
 
@@ -221,49 +226,76 @@ func (m GenerateModel) View() string {
 }
 
 // Form Actions
+//
+
+// PromptFieldValidEvent is fired when the user completes a
+// form action successfully, like entering valid input
 type PromptFieldValidEvent string
+
+// PromptCompleteEvent is fired when the form steps have
+// been successfully completed
 type PromptCompleteEvent string
 
+// PromptValidationErr composes and stores error messages
+// with easy access, and is displayed when an form
+// validation error occurs only.
 type PromptValidationErr struct{ Err error }
 
+// PromptValidationErr.Error returns the error string
+// to print out
 func (e PromptValidationErr) Error() string {
 	return e.Err.Error()
 }
 
+// PromptOutputErr runs post PromptCompleteEvent if
+// there are errors present
 type PromptOutputErr struct{ Err error }
 
+// PromptOutputErr.Error returns the error string
+// to print out
 func (e PromptOutputErr) Error() string {
 	return e.Err.Error()
 }
 
+// @enum PromptType represents the different types of
+// prompts for use in switch statements.
 type PromptType int
 
 const (
-	TextInput PromptType = iota
-	ListInput
+	TextInput PromptType = iota // represents a TextInput
+	ListInput                   // represents a ListInput
 )
 
+// A PromptField is essentially a fieldset container
+// for a prompt style form.
 type PromptField struct {
-	PromptType
-	Label      string
-	IsRequired bool
-	Value      string
-	TextInput  textinput.Model
-	List       list.Model
-	Validator  func(input string) error
+	PromptType                          // PromptType must be declared to help the compiler switch logic.
+	Label      string                   // Label to render to the left of the input.
+	IsRequired bool                     // IsRequired prevents the form from continuing if receives empty input.
+	Value      string                   // Value is the internal value of the field.
+	TextInput  textinput.Model          // TextInput is the bubbletea textinput component.
+	List       list.Model               // List is the bubbletea list component.
+	Validator  func(input string) error // Validator is a custom callback that can provide additional validation.
 }
 
+// NewPromptLabel returns a consistantly formatted label, eg
+// ? Label: input
 func NewPromptLabel(label string) string {
 	return fmt.Sprintf("%s %s: ", PromptBulletStyle, label)
 }
 
+// NewPromptError is a curried function that returns an
+// error in the bubbletea update loop.
 func NewPromptError(err error) tea.Cmd {
 	return func() tea.Msg {
 		return err
 	}
 }
 
-// Convenience function to make a consistently-styled textinput component
+// Convenience function to make a consistently-styled textinput component.
+// See [bubbletea examples] for more details.
+//
+// [bubbletea examples]: https://github.com/charmbracelet/bubbletea/tree/master/examples/textinput
 func NewTextInput(prompt string, placeholder string, required bool) PromptField {
 	input := textinput.New()
 	input.Prompt = NewPromptLabel(prompt)
@@ -280,7 +312,9 @@ func NewTextInput(prompt string, placeholder string, required bool) PromptField 
 	}
 }
 
-// L
+// ListItem handler, see [bubbletea examples] for example useage
+//
+// [bubbletea examples]: https://github.com/charmbracelet/bubbletea/tree/master/examples/list-simple
 type ListItem string
 
 func (i ListItem) FilterValue() string { return "" }
@@ -308,7 +342,8 @@ func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list
 	fmt.Fprint(w, fn(str))
 }
 
-// Convenience function to make a single-choice, consistently styled list component
+// NewList is a convenience function to make a single-choice,
+// consistently styled list component
 func NewList(label string, items []string) PromptField {
 	listItems := []list.Item{}
 	for _, i := range items {
@@ -329,7 +364,7 @@ func NewList(label string, items []string) PromptField {
 
 // TODO: if needed a multi-choice list component
 
-// Only runs if a `PromptField` has a `Validator` callback
+// ValidateField only runs if a `PromptField` has a `Validator` callback
 func ValidateField(p PromptField) tea.Cmd {
 	return func() tea.Msg {
 		value := p.TextInput.Value()

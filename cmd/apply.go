@@ -20,10 +20,10 @@ var kindMapper = map[string]string{
 	"Environment":      "environment",
 }
 
-// After splitting a config, these are the possible types
+// A Resource contains a config
 type Resource struct {
-	Kind   string
-	Config map[string]interface{}
+	Kind   string                 // Relates to the values in `kindMapper`
+	Config map[string]interface{} // Embedded config
 }
 
 func (r *Resource) GetAction() string {
@@ -104,10 +104,11 @@ func (o *ApplyOptions) Parse() error {
 	return nil
 }
 
+// A PublishCounter contains all the totals of each published resource
 type PublishCounter struct {
-	Success int
-	Failed  int
-	Skipped int
+	Success int // Total published resources
+	Failed  int // Total failed, use debug to print errors
+	Skipped int // Certain types won't be published
 }
 
 func (p *PublishCounter) AddSkipped() {

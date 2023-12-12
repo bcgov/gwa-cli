@@ -18,7 +18,7 @@ type NewApi[T any] struct {
 	method  string
 	url     string
 	body    io.Reader
-	Request *http.Request
+	Request *http.Request // Attaches the API request so additional manipulation can be performed if needed
 }
 
 // Using the std `http.NewRequest` pattern, `New` instaniates a request
@@ -35,7 +35,7 @@ func (m *NewApi[T]) New() (*NewApi[T], error) {
 	return m, err
 }
 
-// Run the request instantiated by `New`
+// Request factory method
 func (m *NewApi[T]) makeRequest() (ApiResponse[T], error) {
 	if m.ctx.ApiKey != "" {
 		bearer := fmt.Sprintf("Bearer %s", m.ctx.ApiKey)
@@ -72,6 +72,7 @@ func (m *NewApi[T]) makeRequest() (ApiResponse[T], error) {
 	return result, errorResponse.GetError()
 }
 
+// Run the API request, similar to the std's implementation
 func (m *NewApi[T]) Do() (ApiResponse[T], error) {
 	response, err := m.makeRequest()
 	if err != nil && response.StatusCode == http.StatusUnauthorized {
@@ -85,7 +86,8 @@ func (m *NewApi[T]) Do() (ApiResponse[T], error) {
 	return response, err
 }
 
-// Convience methods
+// Short hand request methods
+
 func NewApiGet[T any](ctx *AppContext, url string) (*NewApi[T], error) {
 	config := NewApi[T]{ctx: ctx, method: "GET", url: url}
 	request, err := config.New()
