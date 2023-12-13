@@ -17,6 +17,7 @@ type OutputFlags struct {
 	Yaml bool
 }
 
+// GetFilters stores user input settings
 type GetFilters struct {
 	Org string
 }
@@ -109,21 +110,24 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 // Enum to test against different accessors
 type TableLayout int
 
+// @enum table types
 const (
-	Basic TableLayout = iota
-	OrgUnits
-	Issuers
-	Products
+	Basic    TableLayout = iota // Multi-purpose table layout (Name, Title)
+	OrgUnits                    // Org Units table layout (Name, Title)
+	Issuers                     // Issuers table layout (Name, Flow, Mode, Owner)
+	Products                    // Products table layout (Name, App ID, Environments)
 )
 
+// Once the get command has been determined, store content and render details here
 type Getter struct {
 	Ctx          *pkg.AppContext
-	Data         interface{}
-	Url          string
-	Layout       TableLayout
-	TableHeaders []string
+	Data         interface{} // Returned data from the server
+	Url          string      // API endpoint to populate the table
+	Layout       TableLayout // Declare the layout for switch statements
+	TableHeaders []string    // Declare headers here
 }
 
+// Fetch is a polymorphic get command
 func (g *Getter) Fetch() error {
 	req, err := pkg.NewApiGet[interface{}](g.Ctx, g.Url)
 	if err != nil {
@@ -137,6 +141,7 @@ func (g *Getter) Fetch() error {
 	return nil
 }
 
+// NewRequest determines, executes and stores the result of the get command
 func NewRequest(ctx *pkg.AppContext, operator string, filters *GetFilters) *Getter {
 	// Parse the URL type
 	var path string

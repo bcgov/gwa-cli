@@ -97,6 +97,7 @@ type PublishGatewayResponse struct {
 	Error   string `json:"error"`
 }
 
+// isYamlFile will use the Ext module to determine the extension
 func isYamlFile(filename string) bool {
 	ext := filepath.Ext(filename)
 

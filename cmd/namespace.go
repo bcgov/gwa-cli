@@ -34,6 +34,7 @@ type NamespaceFormData struct {
 	Description string `json:"displayName,omitempty" url:"description,omitempty"`
 }
 
+// IsEmpty provides some simple validation on user input
 func (n *NamespaceFormData) IsEmpty() bool {
 	return n.Description == "" && n.Name == ""
 }
@@ -98,6 +99,10 @@ func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 	}
 }
 
+// @enum prompt form fields
+//
+//   - namespace
+//   - description
 const (
 	namespace = iota
 	description
@@ -297,6 +302,7 @@ func destroyNamespace(ctx *pkg.AppContext, destroyOptions *NamespaceDestroyOptio
 	return nil
 }
 
+// validateNamespace runs client validation
 func validateNamespace(input string) error {
 	pattern := `^[a-zA-Z0-9\-]{3,15}$`
 	r := regexp.MustCompile(pattern)

@@ -16,6 +16,7 @@ import (
 
 var boldText = lipgloss.NewStyle().Bold(true)
 
+// DeviceLogin handles the default authentication flow
 func DeviceLogin(ctx *AppContext) error {
 	openApiPathname, err := fetchConfigUrl(ctx)
 	if err != nil {
@@ -45,6 +46,7 @@ func DeviceLogin(ctx *AppContext) error {
 	return nil
 }
 
+// ClientCredentialsLogin handles where the user provides clientId and clientSecret
 func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret string) error {
 	openApiPathname, err := fetchConfigUrl(ctx)
 	if err != nil {
@@ -74,6 +76,8 @@ func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret strin
 	return nil
 }
 
+// fetchConfigUrl is the first step in an authentication request, it retreives the URL from the
+// portal's link header. This prevents the need to embed the config URL in the binary.
 func fetchConfigUrl(ctx *AppContext) (string, error) {
 	client := http.Client{}
 	URL, _ := ctx.CreateUrl("/ds/api", nil)
@@ -100,6 +104,7 @@ func fetchConfigUrl(ctx *AppContext) (string, error) {
 	return "", fmt.Errorf("host is not configured correctly")
 }
 
+// parseLinkHeader takes a link header string and returns the embedded URL
 func parseLinkHeader(link string) (string, error) {
 	var result string
 	links := strings.Split(link, ",")
@@ -154,6 +159,8 @@ type OpenApi struct {
 	} `yaml:"components"`
 }
 
+// fetchOpenApiConfig is the second request in the authentication toolchain. It parses the
+// config YAML doc and returns the necessary properties to continue to step 3.
 func fetchOpenApiConfig(ctx *AppContext, openApiPathname string) (string, error) {
 	client := http.Client{}
 	URL, _ := ctx.CreateUrl(openApiPathname, nil)
@@ -191,6 +198,7 @@ type DeviceData struct {
 	VerificationUriComplete string `json:"verification_uri_complete"`
 }
 
+// deviceLogin is the final step in the device authentication flow
 func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.Duration) error {
 	data := url.Values{}
 	data.Set("client_id", clientId)
@@ -228,6 +236,7 @@ type WellKnownConfig struct {
 	DeviceAuthorizationEndpoint string `json:"device_authorization_endpoint"`
 }
 
+// fetchWellKnown is the 3rd request in the auth flow
 func fetchWellKnown(url string) (WellKnownConfig, error) {
 	request, err := NewApiGet[WellKnownConfig](&AppContext{}, url)
 	if err != nil {
@@ -241,6 +250,8 @@ func fetchWellKnown(url string) (WellKnownConfig, error) {
 	return response.Data, nil
 }
 
+// pollAuthStatus can be called during a device-based login, waiting for the
+// server to return a success code when the session is active.
 func pollAuthStatus(URL string, clientId string, deviceCode string) error {
 	data := url.Values{}
 	data.Set("device_code", deviceCode)
@@ -263,6 +274,8 @@ func pollAuthStatus(URL string, clientId string, deviceCode string) error {
 	return nil
 }
 
+// RefreshToken handles all the logic to attempt a token refresh. Returns an error
+// if the token has expired.
 func RefreshToken(ctx *AppContext) error {
 	tokenEndpoint := viper.GetString("token_endpoint")
 	refreshToken := viper.GetString("refresh_token")
@@ -317,6 +330,8 @@ func RefreshToken(ctx *AppContext) error {
 	return errorResponse.GetError()
 }
 
+// ClientCredentialLogin runs the acutal client credential login. It's the final step in the
+// authentication flow.
 func ClientCredentialLogin(tokenEndpoint string, clientId string, clientSecret string) error {
 	data := make(url.Values)
 	data.Set("client_id", clientId)
@@ -337,6 +352,7 @@ func ClientCredentialLogin(tokenEndpoint string, clientId string, clientSecret s
 	return SaveConfig(&response.Data)
 }
 
+// SaveConfig writes all the important config values locally.
 func SaveConfig(data *TokenResponse) error {
 	viper.Set("api_key", data.AccessToken)
 	viper.Set("refresh_token", data.RefreshToken)

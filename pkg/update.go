@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+// Styling for the version check UI
 var (
 	box = lipgloss.NewStyle().Foreground(lipgloss.Color("3")).
 		MarginTop(1).
@@ -29,6 +30,8 @@ type ReleaseJson struct {
 
 const releaseUrl = "https://api.github.com/repos/bcgov/gwa-cli/releases/latest"
 
+// requestPublishedVersion pings the GitHub release API to
+// retrieve the current version
 func requestPublishedVersion() (string, error) {
 	req, err := http.NewRequest("GET", releaseUrl, nil)
 	if err != nil {
@@ -55,6 +58,8 @@ func requestPublishedVersion() (string, error) {
 	return "", err
 }
 
+// convertVersion takes a string like "v1.2.3" and returns it
+// as a number that can be accurately compared
 func convertVersion(input string) int {
 	cleanNumber := strings.TrimPrefix(input, "v")
 	parts := strings.Split(cleanNumber, ".")
@@ -66,6 +71,8 @@ func convertVersion(input string) int {
 	return major*10000 + minor*100 + patch
 }
 
+// isOutdated returns true if the parsed local version string added
+// to the binary is below the GitHub API response
 func isOutdated(local string, published string) bool {
 	latestVersion := convertVersion(published)
 	installedVersion := convertVersion(local)

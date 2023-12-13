@@ -119,6 +119,7 @@ $ gwa config set --namespace ns-sampler
 	return configSetCmd
 }
 
+// @enum prompts indexs
 const (
 	key = iota
 	value

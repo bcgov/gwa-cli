@@ -18,21 +18,23 @@ import (
 var templates embed.FS
 
 type GenerateConfigOptions struct {
-	Namespace        string
-	Template         string
-	Service          string
-	Upstream         string
-	UpstreamUrl      *url.URL
-	UpstreamPort     string
-	Organization     string
-	OrganizationUnit string
-	Out              string
+	Namespace        string   // Taken from ctx
+	Template         string   // One of the valid templates, see ValidateTemplate
+	Service          string   // Required user input of the service they'd like to insert
+	Upstream         string   // Required user input of the upstream URL
+	UpstreamUrl      *url.URL // Parsed Upstream value
+	UpstreamPort     string   // Parsed port, see ParseUpstream
+	Organization     string   // Optional user input, organization name
+	OrganizationUnit string   // Optional user input, org unit
+	Out              string   // Required user input, the out file (must be YAML)
 }
 
+// Use IsEmpty to validate the fields aren't empty
 func (o *GenerateConfigOptions) IsEmpty() bool {
 	return o.Template == "" && o.Service == "" && o.Upstream == ""
 }
 
+// Only kong-httpbin and client-credentials-shared-idp are accepted
 func (o *GenerateConfigOptions) ValidateTemplate() error {
 	if o.Template == "kong-httpbin" || o.Template == "client-credentials-shared-idp" {
 		return nil
@@ -40,6 +42,8 @@ func (o *GenerateConfigOptions) ValidateTemplate() error {
 	return fmt.Errorf("%s is not a valid template", o.Template)
 }
 
+// Exec validates then parses the upstream value before it can be passed
+// to the GenerateConfig method
 func (o *GenerateConfigOptions) Exec() error {
 	err := o.ValidateTemplate()
 	if err != nil {
@@ -52,6 +56,8 @@ func (o *GenerateConfigOptions) Exec() error {
 	return nil
 }
 
+// ParseUpstream takes a URL string, determines the correct port
+// and converts it to a URL object
 func (o *GenerateConfigOptions) ParseUpstream() error {
 	upstreamUrl, err := url.Parse(o.Upstream)
 	if err != nil {
@@ -70,6 +76,7 @@ func (o *GenerateConfigOptions) ParseUpstream() error {
 	return nil
 }
 
+// ImportFromForm is only to be ran as the Action handler in a prompt form
 func (o *GenerateConfigOptions) ImportFromForm(m pkg.GenerateModel) tea.Cmd {
 	return func() tea.Msg {
 		o.Service = m.Prompts[service].Value
@@ -80,7 +87,6 @@ func (o *GenerateConfigOptions) ImportFromForm(m pkg.GenerateModel) tea.Cmd {
 		o.Out = m.Prompts[outfile].Value
 		return pkg.PromptCompleteEvent("")
 	}
-
 }
 
 func NewGenerateConfigCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -150,6 +156,12 @@ $ gwa generate-config --template client-credentials-shared-idp \
 	return generateConfigCmd
 }
 
+// GenerateConfig takes parsed arguments fed from cobra to the GenerateConfigOptions
+// struct and writes the file to cwd if a template can be created successfully
+//
+// # Notes
+//
+// opts.Exec() must be ran before passing the var to this function
 func GenerateConfig(ctx *pkg.AppContext, opts *GenerateConfigOptions) error {
 	tmpl := pkg.NewTemplate()
 
