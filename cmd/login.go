@@ -27,10 +27,10 @@ func NewLoginCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "Log in to your IDIR account",
 		Long:  `You can login via device login or by using client credentials.`,
 		Example: heredoc.Doc(`
-$ gwa login
-$ gwa login --client-id <YOUR_CLIENT_ID> --client-secret <YOUR_CLIENT_SECRET>
+      $ gwa login
+      $ gwa login --client-id <YOUR_CLIENT_ID> --client-secret <YOUR_CLIENT_SECRET>
     `),
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if loginFlags.IsClientCredential() {
 				err := pkg.ClientCredentialsLogin(ctx, loginFlags.clientId, loginFlags.clientSecret)
 				if err != nil {
@@ -46,7 +46,7 @@ $ gwa login --client-id <YOUR_CLIENT_ID> --client-secret <YOUR_CLIENT_SECRET>
 			fmt.Println(pkg.Checkmark(), pkg.PrintSuccess("Successfully logged in"))
 
 			return nil
-		},
+		}),
 	}
 
 	loginCmd.Flags().StringVar(&loginFlags.clientId, "client-id", "", "Your gateway's client ID")

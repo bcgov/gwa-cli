@@ -23,6 +23,8 @@ type NewApi[T any] struct {
 
 // Using the std `http.NewRequest` pattern, `New` instaniates a request
 func (m *NewApi[T]) New() (*NewApi[T], error) {
+	Info(fmt.Sprintf("Request URL: %s", m.url))
+	Info(fmt.Sprintf("Request Method: %s", m.method))
 	request, err := http.NewRequest(m.method, m.url, m.body)
 	if err != nil {
 		return nil, err
@@ -67,14 +69,18 @@ func (m *NewApi[T]) makeRequest() (ApiResponse[T], error) {
 	var errorResponse ApiErrorResponse
 	err = json.Unmarshal(body, &errorResponse)
 	if err != nil {
-		return result, fmt.Errorf(string(body))
+		errorBody := string(body)
+		return result, fmt.Errorf(errorBody)
 	}
+	Error(fmt.Sprintf("Response Body: %s", errorResponse.GetError()))
+	Error(fmt.Sprintf("Status Code: %d", response.StatusCode))
 	return result, errorResponse.GetError()
 }
 
 func (m *NewApi[T]) Do() (ApiResponse[T], error) {
 	response, err := m.makeRequest()
 	if err != nil && response.StatusCode == http.StatusUnauthorized {
+		Error("Session expired")
 		err := RefreshToken(m.ctx)
 		if err != nil {
 			return ApiResponse[T]{}, err
