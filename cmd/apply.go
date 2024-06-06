@@ -150,6 +150,7 @@ $ gwa apply --input gw-config.yaml
 
 			counter := &PublishCounter{}
 			printBlankLine := false
+			var errors []string // Collect error messages here
 
 			for _, config := range opts.output {
 				switch c := config.(type) {
@@ -162,11 +163,14 @@ $ gwa apply --input gw-config.yaml
 						counter.AddFailed()
 						fmt.Print("\r")
 						fmt.Printf("%s Gateway Services publish failed\n", pkg.Times())
-						pkg.Error(fmt.Sprintf("Publish Error: %v", err))
+						errorMessage := fmt.Sprintf("[GatewayService]: %v", err)
+						pkg.Error(errorMessage)
+						errors = append(errors, errorMessage)
 						break
 					}
 
 					counter.AddSuccess()
+					fmt.Println()
 					fmt.Printf("%s Gateway Services published\n", pkg.Checkmark())
 					fmt.Println(res.Results)
 					fmt.Print("\r")
@@ -188,7 +192,9 @@ $ gwa apply --input gw-config.yaml
 						counter.AddFailed()
 						fmt.Print("\r")
 						fmt.Printf("%s [%s] %s failed\n", pkg.Times(), c.Kind, c.Config["name"])
-						pkg.Error(fmt.Sprintf("Resource Error: %v", err))
+						errorMessage := fmt.Sprintf("Resource [%s] %s: %v", c.Kind, c.Config["name"], err)
+						pkg.Error(errorMessage)
+						errors = append(errors, errorMessage)
 						break
 					}
 
@@ -201,6 +207,14 @@ $ gwa apply --input gw-config.yaml
 
 			fmt.Println()
 			fmt.Println(counter.Print())
+
+			if len(errors) > 0 {
+				fmt.Println()
+				fmt.Println(pkg.Times(), pkg.PrintError("Errors encountered"))
+				for _, errMsg := range errors {
+					fmt.Println(errMsg)
+				}
+			}
 
 			return nil
 		},
