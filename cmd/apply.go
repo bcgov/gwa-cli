@@ -100,7 +100,11 @@ func (o *ApplyOptions) Parse() error {
 			}
 		}
 	}
-	o.output = append([]interface{}{gatewayService}, o.output...)
+
+	// Only append gatewayService if it has configurations
+	if len(gatewayService.Config) > 0 {
+		o.output = append([]interface{}{gatewayService}, o.output...)
+	}
 	return nil
 }
 
@@ -145,10 +149,12 @@ $ gwa apply --input gw-config.yaml
 			pkg.Info("Namespace:" + ctx.Namespace)
 
 			counter := &PublishCounter{}
+			printBlankLine := false
 
 			for _, config := range opts.output {
 				switch c := config.(type) {
 				case GatewayService:
+					printBlankLine = true
 					fmt.Println()
 					fmt.Printf("↑ Publishing Gateway Services")
 					res, err := PublishGatewayService(ctx, c.Config)
@@ -172,6 +178,10 @@ $ gwa apply --input gw-config.yaml
 					break
 
 				case Resource:
+					if !printBlankLine {
+						fmt.Println()
+						printBlankLine = true
+					}
 					fmt.Printf("↑ [%s] %s", c.Kind, c.Config["name"])
 					result, err := PublishResource(ctx, c.Config, c.GetAction())
 					if err != nil {
