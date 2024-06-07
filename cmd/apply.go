@@ -146,7 +146,7 @@ $ gwa apply --input gw-config.yaml
 			if err != nil {
 				return err
 			}
-			pkg.Info("Namespace:" + ctx.Namespace)
+			pkg.Info("Gateway:" + ctx.Namespace)
 
 			counter := &PublishCounter{}
 			printBlankLine := false

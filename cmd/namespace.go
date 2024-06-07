@@ -18,9 +18,9 @@ import (
 
 func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
 	namespaceCmd := &cobra.Command{
-		Use:   "namespace",
-		Short: "Manage your namespaces",
-		Long:  `Namespaces are used to organize your services.`,
+		Use:   "gateway",
+		Short: "Manage your gateways",
+		Long:  `Gateways are used to organize your services.`,
 	}
 	namespaceCmd.AddCommand(NamespaceListCmd(ctx))
 	namespaceCmd.AddCommand(NamespaceCreateCmd(ctx))
@@ -41,7 +41,7 @@ func (n *NamespaceFormData) IsEmpty() bool {
 func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 	listCommand := &cobra.Command{
 		Use:   "list",
-		Short: "List all your managed namespaces",
+		Short: "List all your managed gateways",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
 			URL, _ := ctx.CreateUrl(path, nil)
@@ -67,7 +67,7 @@ func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
 			loader.Stop()
 
 			if len(response.Data) <= 0 {
-				fmt.Println("You have no namespaces")
+				fmt.Println("You have no gateways")
 			}
 
 			for _, n := range response.Data {
@@ -118,11 +118,11 @@ func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 		Action: runCreateRequest,
 		Ctx:    ctx,
 		Header: heredoc.Doc(`
-      Create Namespace
+      Create Gateway
 
       Names must be:
       - Alphanumeric (letters, numbers and dashes only, no special characters)
-      - Unique to all other namespaces
+      - Unique to all other gateways
 
     `),
 		Prompts: prompts,
@@ -137,10 +137,10 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 	var namespaceFormData NamespaceFormData
 	createCommand := &cobra.Command{
 		Use:   "create",
-		Short: "Create a new namespace",
+		Short: "Create a new gateway",
 		Example: heredoc.Doc(`
-    $ gwa namespace create --generate
-    $ gwa namespace create --name my-namespace --description="This is my namespace"
+    $ gwa gateway create --generate
+    $ gwa gateway create --name my-gateway --description="This is my gateway"
     `),
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if namespaceFormData.IsEmpty() && generate == false {
@@ -151,26 +151,26 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 				return nil
 			}
 
-			namespace, err := createNamespace(ctx, &namespaceFormData)
+			gateway, err := createNamespace(ctx, &namespaceFormData)
 			if err != nil {
 				return err
 			}
 
-			pkg.Info("Setting namespace to " + namespace)
+			pkg.Info("Setting gateway to " + gateway)
 
-			err = setCurrentNamespace(namespace)
+			err = setCurrentNamespace(gateway)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println(namespace)
+			fmt.Println(gateway)
 			return nil
 		}),
 	}
 	createCommand.Flags().
-		BoolVarP(&generate, "generate", "g", false, "generates a random, unique namespace")
+		BoolVarP(&generate, "generate", "g", false, "generates a random, unique gateway")
 	createCommand.Flags().
-		StringVarP(&namespaceFormData.Name, "name", "n", "", "optionally define your own namespace")
+		StringVarP(&namespaceFormData.Name, "name", "n", "", "optionally define your own gateway")
 	createCommand.Flags().
 		StringVarP(&namespaceFormData.Description, "description", "d", "", "optionally add a description")
 
@@ -210,14 +210,14 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 func NamespaceCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
 	currentCmd := &cobra.Command{
 		Use:   "current",
-		Short: "Display the current namespace",
+		Short: "Display the current gateway",
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
 				fmt.Println(heredoc.Doc(`
-You can create a namespace by running:
-    $ gwa namespace create
+You can create a gateway by running:
+    $ gwa gateway create
 `))
-				return fmt.Errorf("no namespace has been defined")
+				return fmt.Errorf("no gateway has been defined")
 			}
 
 			fmt.Println(ctx.Namespace)
@@ -228,7 +228,7 @@ You can create a namespace by running:
 }
 
 func setCurrentNamespace(ns string) error {
-	viper.Set("namespace", ns)
+	viper.Set("gateway", ns)
 	err := viper.WriteConfig()
 	if err != nil {
 		return err
@@ -244,17 +244,17 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 	var destroyOptions NamespaceDestroyOptions
 	destroyCommand := &cobra.Command{
 		Use:   "destroy",
-		Short: "Destroy the current namespace",
+		Short: "Destroy the current gateway",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
 				fmt.Println(heredoc.Doc(`
-          A namespace must be set via the config command
+          A gateway must be set via the config command
 
           Example:
-              $ gwa config set namespace YOUR_NAMESPACE_NAME
+              $ gwa config set gateway YOUR_GATEWAY_NAME
           `),
 				)
-				return fmt.Errorf("No namespace has been set")
+				return fmt.Errorf("No gateway has been set")
 			}
 
 			loader := pkg.NewSpinner()
@@ -270,7 +270,7 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
-			fmt.Println("Namespace destroyed:", ctx.Namespace)
+			fmt.Println("Gateway destroyed:", ctx.Namespace)
 			return nil
 		}),
 	}
@@ -304,7 +304,7 @@ func validateNamespace(input string) error {
 	r := regexp.MustCompile(pattern)
 
 	if !r.MatchString(input) {
-		err := fmt.Errorf("%s is an invalid namespace", pkg.BoldStyle.Copy().Underline(true).Render(input))
+		err := fmt.Errorf("%s is an invalid gateway", pkg.BoldStyle.Copy().Underline(true).Render(input))
 		return pkg.PromptValidationErr{Err: err}
 	}
 

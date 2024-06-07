@@ -51,12 +51,12 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
 			if ctx.Namespace == "" {
 				fmt.Println(heredoc.Doc(`
-          A namespace must be set via the config command
+          A gateway must be set via the config command
 
           Example:
-            $ gwa config set namespace YOUR_NAMESPACE_NAME
+            $ gwa config set gateway YOUR_GATEWAY_NAME
         `))
-				return fmt.Errorf("No namespace has been set\n")
+				return fmt.Errorf("No gateway has been set\n")
 			}
 
 			opts.inputs = args

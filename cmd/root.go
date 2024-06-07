@@ -48,7 +48,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiVersion, "api-version", ctx.ApiVersion, "Set the global API version")
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiHost, "host", ctx.ApiHost, "Set the default host to use for the API")
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
-	rootCmd.PersistentFlags().StringVar(&ctx.Namespace, "namespace", "", "Assign the namespace you would like to use")
+	rootCmd.PersistentFlags().StringVar(&ctx.Namespace, "gateway", "", "Assign the gateway you would like to use")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	return rootCmd
@@ -56,10 +56,10 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 
 func Execute(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd := NewRootCommand(ctx)
-	viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace"))
+	viper.BindPFlag("gateway", rootCmd.Flags().Lookup("gateway"))
 	cobra.OnInitialize(initConfig, func() {
 		ctx.ApiKey = viper.GetString("api_key")
-		ctx.Namespace = viper.GetString("namespace")
+		ctx.Namespace = viper.GetString("gateway")
 		ctx.Scheme = viper.GetString("scheme")
 
 		f := rootCmd.Flags().Lookup("host")

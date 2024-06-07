@@ -23,7 +23,7 @@ func NewConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 func NewConfigGetCmd(ctx *pkg.AppContext) *cobra.Command {
-	args := []string{"api_key", "host", "namespace"}
+	args := []string{"api_key", "host", "gateway"}
 	argsSentence := pkg.ArgumentsSliceToString(args, "and")
 
 	var configGetCmd = &cobra.Command{
@@ -34,7 +34,7 @@ func NewConfigGetCmd(ctx *pkg.AppContext) *cobra.Command {
 
       - api_key
       - host
-      - namespace
+      - gateway
     `),
 		ValidArgs: args,
 		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
@@ -60,15 +60,15 @@ func NewConfigSetCmd(ctx *pkg.AppContext) *cobra.Command {
 Exposes some specific config values that can be defined by the user.
 
 %s
-  namespace:       The default namespace used
+  gateway:         The default gateway used
   token:           Use only if you have a token you know is authenticated
   host:            The API host you wish to communicate with
   scheme:          http or https
 
     `, lipgloss.NewStyle().Bold(true).Render("Configurable Settings:")),
 		Example: heredoc.Doc(`
-$ gwa config set namespace ns-sampler
-$ gwa config set --namespace ns-sampler
+$ gwa config set gateway ns-sampler
+$ gwa config set --gateway ns-sampler
     `),
 		RunE: pkg.WrapError(ctx, func(cmd *cobra.Command, args []string) error {
 			totalArgs := len(args)
@@ -76,8 +76,8 @@ $ gwa config set --namespace ns-sampler
 				switch args[0] {
 				case "token":
 					viper.Set("api_key", args[1])
-				case "namespace":
-					viper.Set("namespace", args[1])
+				case "gateway":
+					viper.Set("gateway", args[1])
 				case "host":
 					viper.Set("host", args[1])
 				case "scheme":
@@ -108,10 +108,10 @@ $ gwa config set --namespace ns-sampler
 		}),
 	}
 
-	configSetCmd.Flags().String("token", "", "set the namespace")
+	configSetCmd.Flags().String("token", "", "set the gateway")
 	viper.BindPFlag("api_key", configSetCmd.Flags().Lookup("token"))
-	configSetCmd.Flags().String("namespace", "", "set the namespace")
-	viper.BindPFlag("namespace", configSetCmd.Flags().Lookup("namespace"))
+	configSetCmd.Flags().String("gateway", "", "set the gateway")
+	viper.BindPFlag("gateway", configSetCmd.Flags().Lookup("gateway"))
 	configSetCmd.Flags().String("host", "", "set the host")
 	viper.BindPFlag("host", configSetCmd.Flags().Lookup("host"))
 	configSetCmd.Flags().String("scheme", "", "set the scheme")
@@ -128,7 +128,7 @@ const (
 func initialSetModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	var prompts = make([]pkg.PromptField, 2)
 
-	prompts[key] = pkg.NewList("Select a config key to set", []string{"host", "namespace", "scheme", "token"})
+	prompts[key] = pkg.NewList("Select a config key to set", []string{"host", "gateway", "scheme", "token"})
 	prompts[value] = pkg.NewTextInput("Value", "", true)
 
 	m := pkg.GenerateModel{

@@ -43,7 +43,7 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			}
 
 			if ctx.Namespace == "" {
-				return fmt.Errorf("no namespace selected")
+				return fmt.Errorf("no gateway selected")
 			}
 
 			req := NewRequest(ctx, args[0], filters)

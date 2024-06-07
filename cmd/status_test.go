@@ -29,8 +29,8 @@ func TestStatusCmds(t *testing.T) {
 			},
 		},
 		{
-			name:        "no namespace",
-			expect:      "no namespace has been defined",
+			name:        "no gateway",
+			expect:      "no gateway has been defined",
 			noNamespace: true,
 		},
 		{

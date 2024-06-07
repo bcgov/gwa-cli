@@ -22,11 +22,11 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Namespace == "" {
 				fmt.Println(heredoc.Doc(`
-          You can create a namespace by running:
-              $ gwa namespace create
+          You can create a gateway by running:
+              $ gwa gateway create
           `),
 				)
-				return fmt.Errorf("no namespace has been defined")
+				return fmt.Errorf("no gateway has been defined")
 			}
 			data, err := FetchStatus(ctx)
 			if err != nil {

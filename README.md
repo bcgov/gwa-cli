@@ -66,8 +66,8 @@ Tools:
    Test any commmands by running `just run` in the `cwd`. You can also use `$ just test` to run all tests.
 
    ```sh
-   $ just run namespace current
-   your-namespace
+   $ just run gateway current
+   your-gateway
    $ just test
    ?   	github.com/bcgov/gwa-cli	[no test files]
    ok  	github.com/bcgov/gwa-cli/cmd

@@ -35,11 +35,11 @@ func TestNamespaceCommands(t *testing.T) {
 		args      []string
 		expect    string
 		method    string
-		namespace string
+		gateway   string
 		response  httpmock.Responder
 	}{
 		{
-			name: "list namespaces",
+			name: "list gateways",
 			args: []string{"list"},
 			expect: `ns-123
 ns-456`,
@@ -52,9 +52,9 @@ ns-456`,
 			},
 		},
 		{
-			name:   "no namespaces",
+			name:   "no gateways",
 			args:   []string{"list"},
-			expect: "You have no namespaces",
+			expect: "You have no gateways",
 			method: "GET",
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, []string{})
@@ -98,7 +98,7 @@ ns-456`,
 			args: []string{"create", "--name", "ns"},
 			expect: heredoc.Doc(`
         Error: Validation Failed
-        Namespace name must be between 5 and 15 alpha-numeric lowercase characters and start and end with an alphabet.
+        Gateway name must be between 5 and 15 alpha-numeric lowercase characters and start and end with an alphabet.
       `),
 			method: "POST",
 			response: func(r *http.Request) (*http.Response, error) {
@@ -106,14 +106,14 @@ ns-456`,
 					"message": "Validation Failed",
 					"details": map[string]interface{}{
 						"d0": map[string]interface{}{
-							"message": "Namespace name must be between 5 and 15 alpha-numeric lowercase characters and start and end with an alphabet.",
+							"message": "Gateway name must be between 5 and 15 alpha-numeric lowercase characters and start and end with an alphabet.",
 						},
 					},
 				})
 			},
 		},
 		{
-			name:   "new namespace fails",
+			name:   "new gateway fails",
 			args:   []string{"create", "--generate"},
 			expect: "Error: Validation Failed\nYou do not have access to this resource",
 			method: "POST",
@@ -125,17 +125,17 @@ ns-456`,
 			},
 		},
 		{
-			name:      "destroy namespace",
+			name:      "destroy gateway",
 			args:      []string{"destroy"},
-			expect:    "Namespace destroyed: ns-sampler",
+			expect:    "Gateway destroyed: ns-sampler",
 			method:    "DELETE",
-			namespace: "/ns-sampler",
+			gateway:   "/ns-sampler",
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, map[string]interface{}{})
 			},
 		},
 		{
-			name:   "show current namespace",
+			name:   "show current gateway",
 			args:   []string{"current"},
 			expect: "ns-sampler",
 		},
@@ -148,7 +148,7 @@ ns-456`,
 			if tt.response != nil {
 				httpmock.Activate()
 				defer httpmock.DeactivateAndReset()
-				URL := fmt.Sprintf("https://api.gov.ca/ds/api/v2/namespaces%s", tt.namespace)
+				URL := fmt.Sprintf("https://api.gov.ca/ds/api/v2/namespaces%s", tt.gateway)
 				httpmock.RegisterResponder(tt.method, URL, tt.response)
 			}
 			ctx := &pkg.AppContext{
@@ -156,7 +156,7 @@ ns-456`,
 				ApiVersion: "v2",
 				Namespace:  "ns-sampler",
 			}
-			args := append([]string{"namespace"}, tt.args...)
+			args := append([]string{"gateway"}, tt.args...)
 			mainCmd := &cobra.Command{
 				Use:          "gwa",
 				SilenceUsage: true,
