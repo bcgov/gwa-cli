@@ -140,7 +140,7 @@ func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "Create a new gateway",
 		Example: heredoc.Doc(`
     $ gwa gateway create --generate
-    $ gwa gateway create --name my-gateway --display-name="This is my gateway"
+    $ gwa gateway create --gateway-id my-gateway --display-name="This is my gateway"
     `),
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if gatewayFormData.IsEmpty() && generate == false {
