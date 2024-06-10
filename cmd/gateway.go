@@ -30,12 +30,12 @@ func NewGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 type GatewayFormData struct {
-	Name        string `json:"name,omitempty"        url:"name,omitempty"`
+	GatewayId   string `json:"gatewayId,omitempty"        url:"gatewayId,omitempty"`
 	Description string `json:"displayName,omitempty" url:"description,omitempty"`
 }
 
 func (n *GatewayFormData) IsEmpty() bool {
-	return n.Description == "" && n.Name == ""
+	return n.Description == "" && n.GatewayId == ""
 }
 
 func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -87,7 +87,7 @@ type statusMsg int
 func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 	return func() tea.Msg {
 		data := &GatewayFormData{}
-		data.Name = m.Prompts[gateway].TextInput.Value()
+		data.GatewayId = m.Prompts[gateway].TextInput.Value()
 		data.Description = m.Prompts[description].TextInput.Value()
 
 		ns, err := createGateway(m.Ctx, data)
@@ -106,7 +106,7 @@ const (
 func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	var prompts = make([]pkg.PromptField, 2)
 
-	prompts[gateway] = pkg.NewTextInput("Name", "Must be between 3-15 characters", true)
+	prompts[gateway] = pkg.NewTextInput("GatewayId", "Must be between 3-15 characters", true)
 	prompts[gateway].TextInput.Focus()
 	prompts[gateway].Validator = validateGateway
 	prompts[description] = pkg.NewTextInput("Description", "A short, human readable name", false)
@@ -120,7 +120,7 @@ func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 		Header: heredoc.Doc(`
       Create Gateway
 
-      Names must be:
+      GatewayIds must be:
       - Alphanumeric (letters, numbers and dashes only, no special characters)
       - Unique to all other gateways
 
@@ -170,7 +170,7 @@ func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 	createCommand.Flags().
 		BoolVarP(&generate, "generate", "g", false, "generates a random, unique gateway")
 	createCommand.Flags().
-		StringVarP(&gatewayFormData.Name, "name", "n", "", "optionally define your own gateway")
+		StringVarP(&gatewayFormData.GatewayId, "name", "n", "", "optionally define your own gateway")
 	createCommand.Flags().
 		StringVarP(&gatewayFormData.Description, "description", "d", "", "optionally add a description")
 
@@ -178,7 +178,7 @@ func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 }
 
 type GatewayResult struct {
-	Name        string `json:"name,omitempty"`
+	GatewayId   string `json:"gatewayId,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
 }
 
@@ -203,8 +203,8 @@ func createGateway(ctx *pkg.AppContext, data *GatewayFormData) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	return response.Data.Name, nil
+	message := fmt.Sprintf("Gateway created. Gateway ID: %s, display name: %s", response.Data.GatewayId, response.Data.DisplayName)
+	return message, nil
 }
 
 func GatewayCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
