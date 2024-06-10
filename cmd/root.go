@@ -21,7 +21,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 		Version:      ctx.Version,
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Debug {
-				pkg.Info("Namespace: " + ctx.Namespace)
+				pkg.Info("Gateway: " + ctx.Gateway)
 				pkg.Info("API Version: " + ctx.ApiVersion)
 				pkg.PrintLog()
 			}
@@ -39,7 +39,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd.AddCommand(NewApplyCmd(ctx))
 	rootCmd.AddCommand(NewGenerateConfigCmd(ctx))
 	rootCmd.AddCommand(NewLoginCmd(ctx))
-	rootCmd.AddCommand(NewNamespaceCmd(ctx))
+	rootCmd.AddCommand(NewGatewayCmd(ctx))
 	rootCmd.AddCommand(NewStatusCmd(ctx, nil))
 	// Disable these for now since they don't do anything
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-confg.yaml)")
@@ -48,7 +48,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiVersion, "api-version", ctx.ApiVersion, "Set the global API version")
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiHost, "host", ctx.ApiHost, "Set the default host to use for the API")
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
-	rootCmd.PersistentFlags().StringVar(&ctx.Namespace, "gateway", "", "Assign the gateway you would like to use")
+	rootCmd.PersistentFlags().StringVar(&ctx.Gateway, "gateway", "", "Assign the gateway you would like to use")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	return rootCmd
@@ -59,7 +59,7 @@ func Execute(ctx *pkg.AppContext) *cobra.Command {
 	viper.BindPFlag("gateway", rootCmd.Flags().Lookup("gateway"))
 	cobra.OnInitialize(initConfig, func() {
 		ctx.ApiKey = viper.GetString("api_key")
-		ctx.Namespace = viper.GetString("gateway")
+		ctx.Gateway = viper.GetString("gateway")
 		ctx.Scheme = viper.GetString("scheme")
 
 		f := rootCmd.Flags().Lookup("host")

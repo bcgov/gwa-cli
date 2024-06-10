@@ -16,34 +16,34 @@ import (
 	"github.com/bcgov/gwa-cli/pkg"
 )
 
-func NewNamespaceCmd(ctx *pkg.AppContext) *cobra.Command {
-	namespaceCmd := &cobra.Command{
+func NewGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
+	gatewayCmd := &cobra.Command{
 		Use:   "gateway",
 		Short: "Manage your gateways",
 		Long:  `Gateways are used to organize your services.`,
 	}
-	namespaceCmd.AddCommand(NamespaceListCmd(ctx))
-	namespaceCmd.AddCommand(NamespaceCreateCmd(ctx))
-	namespaceCmd.AddCommand(NamespaceDestroyCmd(ctx))
-	namespaceCmd.AddCommand(NamespaceCurrentCmd(ctx))
-	return namespaceCmd
+	gatewayCmd.AddCommand(GatewayListCmd(ctx))
+	gatewayCmd.AddCommand(GatewayCreateCmd(ctx))
+	gatewayCmd.AddCommand(GatewayDestroyCmd(ctx))
+	gatewayCmd.AddCommand(GatewayCurrentCmd(ctx))
+	return gatewayCmd
 }
 
-type NamespaceFormData struct {
+type GatewayFormData struct {
 	Name        string `json:"name,omitempty"        url:"name,omitempty"`
 	Description string `json:"displayName,omitempty" url:"description,omitempty"`
 }
 
-func (n *NamespaceFormData) IsEmpty() bool {
+func (n *GatewayFormData) IsEmpty() bool {
 	return n.Description == "" && n.Name == ""
 }
 
-func NamespaceListCmd(ctx *pkg.AppContext) *cobra.Command {
+func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 	listCommand := &cobra.Command{
 		Use:   "list",
 		Short: "List all your managed gateways",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
-			path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
+			path := fmt.Sprintf("/ds/api/%s/gateways", ctx.ApiVersion)
 			URL, _ := ctx.CreateUrl(path, nil)
 			r, err := pkg.NewApiGet[[]string](ctx, URL)
 			if err != nil {
@@ -86,11 +86,11 @@ type statusMsg int
 
 func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 	return func() tea.Msg {
-		data := &NamespaceFormData{}
-		data.Name = m.Prompts[namespace].TextInput.Value()
+		data := &GatewayFormData{}
+		data.Name = m.Prompts[gateway].TextInput.Value()
 		data.Description = m.Prompts[description].TextInput.Value()
 
-		ns, err := createNamespace(m.Ctx, data)
+		ns, err := createGateway(m.Ctx, data)
 		if err != nil {
 			return pkg.PromptOutputErr{Err: err}
 		}
@@ -99,16 +99,16 @@ func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 }
 
 const (
-	namespace = iota
+	gateway = iota
 	description
 )
 
 func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	var prompts = make([]pkg.PromptField, 2)
 
-	prompts[namespace] = pkg.NewTextInput("Name", "Must be between 3-15 characters", true)
-	prompts[namespace].TextInput.Focus()
-	prompts[namespace].Validator = validateNamespace
+	prompts[gateway] = pkg.NewTextInput("Name", "Must be between 3-15 characters", true)
+	prompts[gateway].TextInput.Focus()
+	prompts[gateway].Validator = validateGateway
 	prompts[description] = pkg.NewTextInput("Description", "A short, human readable name", false)
 
 	s := spinner.New()
@@ -132,9 +132,9 @@ func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	return m
 }
 
-func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
+func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 	generate := false
-	var namespaceFormData NamespaceFormData
+	var gatewayFormData GatewayFormData
 	createCommand := &cobra.Command{
 		Use:   "create",
 		Short: "Create a new gateway",
@@ -143,7 +143,7 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa gateway create --name my-gateway --description="This is my gateway"
     `),
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
-			if namespaceFormData.IsEmpty() && generate == false {
+			if gatewayFormData.IsEmpty() && generate == false {
 				model := initialModel(ctx)
 				if _, err := tea.NewProgram(model).Run(); err != nil {
 					return err
@@ -151,14 +151,14 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 				return nil
 			}
 
-			gateway, err := createNamespace(ctx, &namespaceFormData)
+			gateway, err := createGateway(ctx, &gatewayFormData)
 			if err != nil {
 				return err
 			}
 
 			pkg.Info("Setting gateway to " + gateway)
 
-			err = setCurrentNamespace(gateway)
+			err = setCurrentGateway(gateway)
 			if err != nil {
 				return err
 			}
@@ -170,20 +170,20 @@ func NamespaceCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 	createCommand.Flags().
 		BoolVarP(&generate, "generate", "g", false, "generates a random, unique gateway")
 	createCommand.Flags().
-		StringVarP(&namespaceFormData.Name, "name", "n", "", "optionally define your own gateway")
+		StringVarP(&gatewayFormData.Name, "name", "n", "", "optionally define your own gateway")
 	createCommand.Flags().
-		StringVarP(&namespaceFormData.Description, "description", "d", "", "optionally add a description")
+		StringVarP(&gatewayFormData.Description, "description", "d", "", "optionally add a description")
 
 	return createCommand
 }
 
-type NamespaceResult struct {
+type GatewayResult struct {
 	Name        string `json:"name,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
 }
 
-func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, error) {
-	path := fmt.Sprintf("/ds/api/%s/namespaces", ctx.ApiVersion)
+func createGateway(ctx *pkg.AppContext, data *GatewayFormData) (string, error) {
+	path := fmt.Sprintf("/ds/api/%s/gateways", ctx.ApiVersion)
 	URL, err := ctx.CreateUrl(path, nil)
 	if err != nil {
 		return "", err
@@ -194,7 +194,7 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 		return "", err
 	}
 
-	r, err := pkg.NewApiPost[NamespaceResult](ctx, URL, bytes.NewBuffer(body))
+	r, err := pkg.NewApiPost[GatewayResult](ctx, URL, bytes.NewBuffer(body))
 	if err != nil {
 		return "", err
 	}
@@ -207,12 +207,12 @@ func createNamespace(ctx *pkg.AppContext, data *NamespaceFormData) (string, erro
 	return response.Data.Name, nil
 }
 
-func NamespaceCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
+func GatewayCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
 	currentCmd := &cobra.Command{
 		Use:   "current",
 		Short: "Display the current gateway",
 		RunE: func(_ *cobra.Command, _ []string) error {
-			if ctx.Namespace == "" {
+			if ctx.Gateway == "" {
 				fmt.Println(heredoc.Doc(`
 You can create a gateway by running:
     $ gwa gateway create
@@ -220,14 +220,14 @@ You can create a gateway by running:
 				return fmt.Errorf("no gateway has been defined")
 			}
 
-			fmt.Println(ctx.Namespace)
+			fmt.Println(ctx.Gateway)
 			return nil
 		},
 	}
 	return currentCmd
 }
 
-func setCurrentNamespace(ns string) error {
+func setCurrentGateway(ns string) error {
 	viper.Set("gateway", ns)
 	err := viper.WriteConfig()
 	if err != nil {
@@ -236,17 +236,17 @@ func setCurrentNamespace(ns string) error {
 	return nil
 }
 
-type NamespaceDestroyOptions struct {
+type GatewayDestroyOptions struct {
 	Force bool `url:"force"`
 }
 
-func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
-	var destroyOptions NamespaceDestroyOptions
+func GatewayDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
+	var destroyOptions GatewayDestroyOptions
 	destroyCommand := &cobra.Command{
 		Use:   "destroy",
 		Short: "Destroy the current gateway",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
-			if ctx.Namespace == "" {
+			if ctx.Gateway == "" {
 				fmt.Println(heredoc.Doc(`
           A gateway must be set via the config command
 
@@ -259,18 +259,18 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 
 			loader := pkg.NewSpinner()
 			loader.Start()
-			err := destroyNamespace(ctx, &destroyOptions)
+			err := destroyGateway(ctx, &destroyOptions)
 			loader.Stop()
 			if err != nil {
 				return err
 			}
 
-			err = setCurrentNamespace("")
+			err = setCurrentGateway("")
 			if err != nil {
 				return err
 			}
 
-			fmt.Println("Gateway destroyed:", ctx.Namespace)
+			fmt.Println("Gateway destroyed:", ctx.Gateway)
 			return nil
 		}),
 	}
@@ -280,13 +280,13 @@ func NamespaceDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 	return destroyCommand
 }
 
-func destroyNamespace(ctx *pkg.AppContext, destroyOptions *NamespaceDestroyOptions) error {
-	pathname := fmt.Sprintf("/ds/api/%s/namespaces/%s", ctx.ApiVersion, ctx.Namespace)
+func destroyGateway(ctx *pkg.AppContext, destroyOptions *GatewayDestroyOptions) error {
+	pathname := fmt.Sprintf("/ds/api/%s/gateways/%s", ctx.ApiVersion, ctx.Gateway)
 	URL, err := ctx.CreateUrl(pathname, destroyOptions)
 	if err != nil {
 		return err
 	}
-	r, err := pkg.NewApiDelete[NamespaceResult](ctx, URL)
+	r, err := pkg.NewApiDelete[GatewayResult](ctx, URL)
 	if err != nil {
 		return err
 	}
@@ -299,7 +299,7 @@ func destroyNamespace(ctx *pkg.AppContext, destroyOptions *NamespaceDestroyOptio
 	return nil
 }
 
-func validateNamespace(input string) error {
+func validateGateway(input string) error {
 	pattern := `^[a-zA-Z0-9\-]{3,15}$`
 	r := regexp.MustCompile(pattern)
 

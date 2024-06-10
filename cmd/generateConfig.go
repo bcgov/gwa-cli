@@ -18,7 +18,7 @@ import (
 var templates embed.FS
 
 type GenerateConfigOptions struct {
-	Namespace        string
+	Gateway          string
 	Template         string
 	Service          string
 	Upstream         string
@@ -106,7 +106,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 			}
 		},
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
-			if ctx.Namespace == "" {
+			if ctx.Gateway == "" {
 				fmt.Println(heredoc.Doc(`
           A gateway must be set via the config command
 
@@ -117,7 +117,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 				return fmt.Errorf("No gateway has been set")
 			}
 
-			opts.Namespace = ctx.Namespace
+			opts.Gateway = ctx.Gateway
 			pkg.Info(fmt.Sprintf("Options received %v", opts))
 
 			if opts.IsEmpty() {

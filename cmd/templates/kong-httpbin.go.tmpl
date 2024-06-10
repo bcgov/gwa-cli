@@ -1,13 +1,13 @@
 kind: GatewayService
 name: {{ kebabCase .Service }}-dev
-tags: [ ns.{{ .Namespace }} ]
+tags: [ ns.{{ .Gateway }} ]
 host: {{ .UpstreamUrl.Host }}
 port: {{ .UpstreamPort }}
 protocol: {{ .UpstreamUrl.Scheme }}
 retries: 0
 routes:
   - name: {{ kebabCase .Service }}-dev
-    tags: [ ns.{{ .Namespace }} ]
+    tags: [ ns.{{ .Gateway }} ]
     hosts:
     - {{ kebabCase .Service }}.dev.api.gov.bc.ca
     paths:

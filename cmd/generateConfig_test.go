@@ -68,7 +68,7 @@ func TestGenerateKongConfig(t *testing.T) {
 		Cwd: dir,
 	}
 	opts := &GenerateConfigOptions{
-		Namespace:    "sampler",
+		Gateway:      "sampler",
 		Template:     "kong-httpbin",
 		Service:      "my-service",
 		UpstreamPort: "443",
@@ -101,7 +101,7 @@ func TestClientCredentialsGenerator(t *testing.T) {
 		Cwd: dir,
 	}
 	opts := &GenerateConfigOptions{
-		Namespace:    "cc-sampler",
+		Gateway:      "cc-sampler",
 		Template:     "client-credentials-shared-idp",
 		Service:      "my-service",
 		UpstreamPort: "443",

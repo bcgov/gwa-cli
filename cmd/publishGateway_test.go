@@ -67,7 +67,7 @@ func TestPublishCommands(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/v2/namespaces/ns-sampler/gateway", tt.response)
+			httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/v2/gateways/ns-sampler/gateway", tt.response)
 			cwd := t.TempDir()
 
 			if tt.setup != nil {
@@ -83,7 +83,7 @@ func TestPublishCommands(t *testing.T) {
 				Cwd:        cwd,
 				ApiHost:    API_HOST,
 				ApiVersion: "v2",
-				Namespace:  tt.gateway,
+				Gateway:    tt.gateway,
 			}
 
 			args := append([]string{"publish-gateway"}, tt.args...)
@@ -107,7 +107,7 @@ func TestPrepareConfigFile(t *testing.T) {
 		ApiHost:    API_HOST,
 		ApiVersion: "v2",
 		Cwd:        cwd,
-		Namespace:  "ns-sampler",
+		Gateway:    "ns-sampler",
 	}
 	fileName := "config.yaml"
 	filePath := filepath.Join(cwd, fileName)
@@ -249,7 +249,7 @@ func TestPublishGatewayWithQualifier(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/v2/namespaces/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
+	httpmock.RegisterResponder("PUT", "https://"+API_HOST+"/gw/api/v2/gateways/ns-sampler/gateway", func(r *http.Request) (*http.Response, error) {
 		assert.Contains(t, r.URL.Path, "ns-sampler")
 		assert.Equal(t, "myqualifier", r.FormValue("qualifier"))
 
@@ -265,7 +265,7 @@ func TestPublishGatewayWithQualifier(t *testing.T) {
 		ApiHost:    API_HOST,
 		ApiVersion: "v2",
 		Cwd:        cwd,
-		Namespace:  "ns-sampler",
+		Gateway:    "ns-sampler",
 	}
 	fileName := "config.yaml"
 	filePath := filepath.Join(cwd, fileName)

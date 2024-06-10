@@ -146,7 +146,7 @@ $ gwa apply --input gw-config.yaml
 			if err != nil {
 				return err
 			}
-			pkg.Info("Gateway:" + ctx.Namespace)
+			pkg.Info("Gateway:" + ctx.Gateway)
 
 			counter := &PublishCounter{}
 			printBlankLine := false
@@ -240,7 +240,7 @@ func PublishResource(ctx *pkg.AppContext, doc map[string]interface{}, arg string
 	if err != nil {
 		return "", err
 	}
-	route := fmt.Sprintf("/ds/api/%s/namespaces/%s/%ss", ctx.ApiVersion, ctx.Namespace, arg)
+	route := fmt.Sprintf("/ds/api/%s/gateways/%s/%ss", ctx.ApiVersion, ctx.Gateway, arg)
 	URL, _ := ctx.CreateUrl(route, nil)
 	request, err := pkg.NewApiPut[PutResponse](ctx, URL, bytes.NewBuffer(body))
 	if err != nil {

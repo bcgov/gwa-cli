@@ -29,14 +29,14 @@ func setup(dir string) error {
 	return nil
 }
 
-func TestNamespaceCommands(t *testing.T) {
+func TestGatewayCommands(t *testing.T) {
 	tests := []struct {
-		name      string
-		args      []string
-		expect    string
-		method    string
-		gateway   string
-		response  httpmock.Responder
+		name     string
+		args     []string
+		expect   string
+		method   string
+		gateway  string
+		response httpmock.Responder
 	}{
 		{
 			name: "list gateways",
@@ -125,11 +125,11 @@ ns-456`,
 			},
 		},
 		{
-			name:      "destroy gateway",
-			args:      []string{"destroy"},
-			expect:    "Gateway destroyed: ns-sampler",
-			method:    "DELETE",
-			gateway:   "/ns-sampler",
+			name:    "destroy gateway",
+			args:    []string{"destroy"},
+			expect:  "Gateway destroyed: ns-sampler",
+			method:  "DELETE",
+			gateway: "/ns-sampler",
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, map[string]interface{}{})
 			},
@@ -148,20 +148,20 @@ ns-456`,
 			if tt.response != nil {
 				httpmock.Activate()
 				defer httpmock.DeactivateAndReset()
-				URL := fmt.Sprintf("https://api.gov.ca/ds/api/v2/namespaces%s", tt.gateway)
+				URL := fmt.Sprintf("https://api.gov.ca/ds/api/v2/gateways%s", tt.gateway)
 				httpmock.RegisterResponder(tt.method, URL, tt.response)
 			}
 			ctx := &pkg.AppContext{
 				ApiHost:    "api.gov.ca",
 				ApiVersion: "v2",
-				Namespace:  "ns-sampler",
+				Gateway:    "ns-sampler",
 			}
 			args := append([]string{"gateway"}, tt.args...)
 			mainCmd := &cobra.Command{
 				Use:          "gwa",
 				SilenceUsage: true,
 			}
-			mainCmd.AddCommand(NewNamespaceCmd(ctx))
+			mainCmd.AddCommand(NewGatewayCmd(ctx))
 			mainCmd.SetArgs(args)
 			out := capturer.CaptureOutput(func() {
 				mainCmd.Execute()

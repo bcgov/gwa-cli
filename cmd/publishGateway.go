@@ -49,7 +49,7 @@ func NewPublishGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
     $ gwa publish-gateway path/to/config.yaml --qualifier dev
     `),
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
-			if ctx.Namespace == "" {
+			if ctx.Gateway == "" {
 				fmt.Println(heredoc.Doc(`
           A gateway must be set via the config command
 
@@ -200,7 +200,7 @@ func PublishToGateway(ctx *pkg.AppContext, opts *PublishGatewayOptions, configFi
 		return result, err
 	}
 
-	path := fmt.Sprintf("/gw/api/%s/namespaces/%s/gateway", ctx.ApiVersion, ctx.Namespace)
+	path := fmt.Sprintf("/gw/api/%s/gateways/%s/gateway", ctx.ApiVersion, ctx.Gateway)
 	URL, _ := ctx.CreateUrl(path, nil)
 	r, err := pkg.NewApiPut[PublishGatewayResponse](ctx, URL, body)
 	if err != nil {

@@ -15,11 +15,11 @@ import (
 
 func TestStatusCmds(t *testing.T) {
 	tests := []struct {
-		name        string
-		args        []string
-		expect      string
-		noNamespace bool
-		response    httpmock.Responder
+		name      string
+		args      []string
+		expect    string
+		noGateway bool
+		response  httpmock.Responder
 	}{
 		{
 			name:   "no services",
@@ -29,9 +29,9 @@ func TestStatusCmds(t *testing.T) {
 			},
 		},
 		{
-			name:        "no gateway",
-			expect:      "no gateway has been defined",
-			noNamespace: true,
+			name:      "no gateway",
+			expect:    "no gateway has been defined",
+			noGateway: true,
 		},
 		{
 			name:   "prints json",
@@ -57,18 +57,18 @@ func TestStatusCmds(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			host := "api.gov.bc.ca"
-			URL := fmt.Sprintf("https://%s/gw/api/v2/namespaces/ns-sampler/services", host)
+			URL := fmt.Sprintf("https://%s/gw/api/v2/gateways/ns-sampler/services", host)
 			httpmock.RegisterResponder("GET", URL, tt.response)
 
 			args := append([]string{"status"}, tt.args...)
 			ctx := &pkg.AppContext{
-				Namespace:  "ns-sampler",
+				Gateway:    "ns-sampler",
 				ApiHost:    host,
 				ApiVersion: "v2",
 			}
 
-			if tt.noNamespace {
-				ctx.Namespace = ""
+			if tt.noGateway {
+				ctx.Gateway = ""
 			}
 
 			mainCmd := &cobra.Command{
@@ -126,12 +126,12 @@ func TestTableOutput(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
 			host := "api.gov.bc.ca"
-			URL := fmt.Sprintf("https://%s/gw/api/v2/namespaces/ns-sampler/services", host)
+			URL := fmt.Sprintf("https://%s/gw/api/v2/gateways/ns-sampler/services", host)
 			httpmock.RegisterResponder("GET", URL, tt.response)
 
 			args := []string{"status"}
 			ctx := &pkg.AppContext{
-				Namespace:  "ns-sampler",
+				Gateway:    "ns-sampler",
 				ApiHost:    host,
 				ApiVersion: "v2",
 			}

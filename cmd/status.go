@@ -20,7 +20,7 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		Example: heredoc.Doc(`$ gwa status
   $ gwa status --json`),
 		RunE: func(_ *cobra.Command, _ []string) error {
-			if ctx.Namespace == "" {
+			if ctx.Gateway == "" {
 				fmt.Println(heredoc.Doc(`
           You can create a gateway by running:
               $ gwa gateway create
@@ -80,7 +80,7 @@ type StatusJson struct {
 }
 
 func FetchStatus(ctx *pkg.AppContext) ([]StatusJson, error) {
-	path := fmt.Sprintf("/gw/api/%s/namespaces/%s/services", ctx.ApiVersion, ctx.Namespace)
+	path := fmt.Sprintf("/gw/api/%s/gateways/%s/services", ctx.ApiVersion, ctx.Gateway)
 	URL, _ := ctx.CreateUrl(path, nil)
 	request, err := pkg.NewApiGet[[]StatusJson](ctx, URL)
 	if err != nil {

@@ -36,13 +36,13 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		ValidArgs: validArgs,
 		Args:      cobra.OnlyValidArgs,
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
-			pkg.Info(fmt.Sprintf("Namespace: %s", ctx.Namespace))
+			pkg.Info(fmt.Sprintf("Gateway: %s", ctx.Gateway))
 
 			if len(args) == 0 {
 				return fmt.Errorf("Must provide an argument of %s to get command", pkg.ArgumentsSliceToString(validArgs, "or"))
 			}
 
-			if ctx.Namespace == "" {
+			if ctx.Gateway == "" {
 				return fmt.Errorf("no gateway selected")
 			}
 
@@ -144,7 +144,7 @@ func NewRequest(ctx *pkg.AppContext, operator string, filters *GetFilters) *Gett
 	var path string
 	switch operator {
 	case "datasets":
-		path = fmt.Sprintf("/ds/api/%s/namespaces/%s/directory", ctx.ApiVersion, ctx.Namespace)
+		path = fmt.Sprintf("/ds/api/%s/gateways/%s/directory", ctx.ApiVersion, ctx.Gateway)
 		break
 	case "organizations":
 		path = fmt.Sprintf("/ds/api/%s/organizations", ctx.ApiVersion)
@@ -153,7 +153,7 @@ func NewRequest(ctx *pkg.AppContext, operator string, filters *GetFilters) *Gett
 		path = fmt.Sprintf("/ds/api/%s/organizations/%s", ctx.ApiVersion, filters.Org)
 		break
 	default:
-		path = fmt.Sprintf("/ds/api/%s/namespaces/%s/%s", ctx.ApiVersion, ctx.Namespace, operator)
+		path = fmt.Sprintf("/ds/api/%s/gateways/%s/%s", ctx.ApiVersion, ctx.Gateway, operator)
 	}
 	url, _ := ctx.CreateUrl(path, nil)
 
