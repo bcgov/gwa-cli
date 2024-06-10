@@ -31,11 +31,11 @@ func NewGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
 
 type GatewayFormData struct {
 	GatewayId   string `json:"gatewayId,omitempty"        url:"gatewayId,omitempty"`
-	Description string `json:"displayName,omitempty" url:"description,omitempty"`
+	DisplayName string `json:"displayName,omitempty" 	  url:"displayName,omitempty"`
 }
 
 func (n *GatewayFormData) IsEmpty() bool {
-	return n.Description == "" && n.GatewayId == ""
+	return n.DisplayName == "" && n.GatewayId == ""
 }
 
 func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -88,28 +88,28 @@ func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 	return func() tea.Msg {
 		data := &GatewayFormData{}
 		data.GatewayId = m.Prompts[gateway].TextInput.Value()
-		data.Description = m.Prompts[description].TextInput.Value()
+		data.DisplayName = m.Prompts[displayName].TextInput.Value()
 
-		ns, err := createGateway(m.Ctx, data)
+		gw, err := createGateway(m.Ctx, data)
 		if err != nil {
 			return pkg.PromptOutputErr{Err: err}
 		}
-		return pkg.PromptCompleteEvent(ns)
+		return pkg.PromptCompleteEvent(gw)
 	}
 }
 
 const (
 	gateway = iota
-	description
+	displayName
 )
 
 func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	var prompts = make([]pkg.PromptField, 2)
 
-	prompts[gateway] = pkg.NewTextInput("GatewayId", "Must be between 3-15 characters", true)
+	prompts[gateway] = pkg.NewTextInput("Gateway ID", "Must be between 3-15 characters", true)
 	prompts[gateway].TextInput.Focus()
 	prompts[gateway].Validator = validateGateway
-	prompts[description] = pkg.NewTextInput("Description", "A short, human readable name", false)
+	prompts[displayName] = pkg.NewTextInput("Display name", "A short, human readable name", false)
 
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -140,7 +140,7 @@ func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "Create a new gateway",
 		Example: heredoc.Doc(`
     $ gwa gateway create --generate
-    $ gwa gateway create --name my-gateway --description="This is my gateway"
+    $ gwa gateway create --name my-gateway --display-name="This is my gateway"
     `),
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if gatewayFormData.IsEmpty() && generate == false {
@@ -163,16 +163,16 @@ func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
-			fmt.Println(gateway)
+			// fmt.Println(gateway)
 			return nil
 		}),
 	}
 	createCommand.Flags().
 		BoolVarP(&generate, "generate", "g", false, "generates a random, unique gateway")
 	createCommand.Flags().
-		StringVarP(&gatewayFormData.GatewayId, "name", "n", "", "optionally define your own gateway")
+		StringVarP(&gatewayFormData.GatewayId, "gateway-id", "i", "", "optionally define your own gateway")
 	createCommand.Flags().
-		StringVarP(&gatewayFormData.Description, "description", "d", "", "optionally add a description")
+		StringVarP(&gatewayFormData.DisplayName, "display-name", "d", "", "optionally add a display name")
 
 	return createCommand
 }
@@ -203,8 +203,9 @@ func createGateway(ctx *pkg.AppContext, data *GatewayFormData) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	message := fmt.Sprintf("Gateway created. Gateway ID: %s, display name: %s", response.Data.GatewayId, response.Data.DisplayName)
-	return message, nil
+
+	fmt.Printf("Gateway created. Gateway ID: %s, display name: %s\n", response.Data.GatewayId, response.Data.DisplayName)
+	return response.Data.GatewayId, nil
 }
 
 func GatewayCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
@@ -227,8 +228,8 @@ You can create a gateway by running:
 	return currentCmd
 }
 
-func setCurrentGateway(ns string) error {
-	viper.Set("gateway", ns)
+func setCurrentGateway(gw string) error {
+	viper.Set("gateway", gw)
 	err := viper.WriteConfig()
 	if err != nil {
 		return err

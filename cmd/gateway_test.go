@@ -67,35 +67,35 @@ ns-456`,
 			method: "POST",
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, map[string]interface{}{
-					"name": "ns-qwerty",
+					"gatewayId": "ns-qwerty",
 				})
 			},
 		},
 		{
-			name:   "new license plate with description",
-			args:   []string{"create", "--generate", "--description", "my description"},
+			name:   "new license plate with display name",
+			args:   []string{"create", "--generate", "--display-name", "my display name"},
 			expect: "ns-qwerty",
 			method: "POST",
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, map[string]interface{}{
-					"name": "ns-qwerty",
+					"gatewayId": "ns-qwerty",
 				})
 			},
 		},
 		{
 			name:   "new name",
-			args:   []string{"create", "--name", "ns-sampler", "--description", "my description"},
+			args:   []string{"create", "--gateway-id", "ns-sampler", "--display-name", "my display name"},
 			expect: "ns-sampler",
 			method: "POST",
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, map[string]interface{}{
-					"name": "ns-sampler",
+					"gatewayId": "ns-sampler",
 				})
 			},
 		},
 		{
 			name: "new name fails",
-			args: []string{"create", "--name", "ns"},
+			args: []string{"create", "--gateway-id", "ns"},
 			expect: heredoc.Doc(`
         Error: Validation Failed
         Gateway name must be between 5 and 15 alpha-numeric lowercase characters and start and end with an alphabet.
