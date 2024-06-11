@@ -87,7 +87,6 @@ type statusMsg int
 func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 	return func() tea.Msg {
 		data := &GatewayFormData{}
-		data.GatewayId = m.Prompts[gateway].TextInput.Value()
 		data.DisplayName = m.Prompts[displayName].TextInput.Value()
 
 		gw, err := createGateway(m.Ctx, data)
@@ -99,17 +98,14 @@ func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 }
 
 const (
-	gateway = iota
-	displayName
+	displayName = iota
 )
 
 func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
-	var prompts = make([]pkg.PromptField, 2)
+	var prompts = make([]pkg.PromptField, 1)
 
-	prompts[gateway] = pkg.NewTextInput("Gateway ID", "Must be between 3-15 characters", true)
-	prompts[gateway].TextInput.Focus()
-	prompts[gateway].Validator = validateGateway
-	prompts[displayName] = pkg.NewTextInput("Display name", "A short, human readable name", false)
+	prompts[displayName] = pkg.NewTextInput("Display name", "A short, human-readable name", false)
+	prompts[displayName].TextInput.Focus()
 
 	s := spinner.New()
 	s.Spinner = spinner.Dot
@@ -118,13 +114,15 @@ func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 		Action: runCreateRequest,
 		Ctx:    ctx,
 		Header: heredoc.Doc(`
-      Create Gateway
+Create Gateway
 
-      GatewayIds must be:
-      - Alphanumeric (letters, numbers and dashes only, no special characters)
-      - Unique to all other gateways
+Hit enter to accept the default display name or provide a name below.
 
-    `),
+Display names may consist of:
+- Letters, numbers, spaces or the special characters -()_
+- No more than 30 characters
+
+`),
 		Prompts: prompts,
 		Spinner: s,
 	}
@@ -163,7 +161,6 @@ func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
-			// fmt.Println(gateway)
 			return nil
 		}),
 	}
