@@ -123,7 +123,7 @@ func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 		Header: heredoc.Doc(`
 Create Gateway
 
-Hit enter to accept the default display name or provide a name below.
+Hit enter to accept the default display name (<IDIR>'s gateway) or provide a name below.
 
 Display names may consist of:
 - Letters, numbers, spaces or the special characters -()_
@@ -172,11 +172,11 @@ func GatewayCreateCmd(ctx *pkg.AppContext) *cobra.Command {
 		}),
 	}
 	createCommand.Flags().
-		BoolVarP(&generate, "generate", "g", false, "generates a random, unique gateway")
+		BoolVarP(&generate, "generate", "g", false, "generates a unique gateway with the default display name")
 	createCommand.Flags().
-		StringVarP(&gatewayFormData.GatewayId, "gateway-id", "i", "", "optionally define your own gateway")
+		StringVarP(&gatewayFormData.GatewayId, "gateway-id", "i", "", "optionally specify the gateway ID")
 	createCommand.Flags().
-		StringVarP(&gatewayFormData.DisplayName, "display-name", "d", "", "optionally add a display name")
+		StringVarP(&gatewayFormData.DisplayName, "display-name", "d", "", "optionally set the gateway display name")
 
 	return createCommand
 }
@@ -208,7 +208,12 @@ func createGateway(ctx *pkg.AppContext, data *GatewayFormData) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("Gateway created. Gateway ID: %s, display name: %s\n", response.Data.GatewayId, response.Data.DisplayName)
+	if response.Data.DisplayName != "" {
+		fmt.Printf("Gateway created. Gateway ID: %s, display name: %s\n", response.Data.GatewayId, response.Data.DisplayName)
+	} else {
+		fmt.Printf("Gateway created. Gateway ID: %s\n", response.Data.GatewayId)
+	}
+
 	return response.Data.GatewayId, nil
 }
 
