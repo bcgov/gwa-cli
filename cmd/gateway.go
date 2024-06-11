@@ -93,6 +93,13 @@ func runCreateRequest(m pkg.GenerateModel) tea.Cmd {
 		if err != nil {
 			return pkg.PromptOutputErr{Err: err}
 		}
+		fmt.Println(gw)
+
+		err = setCurrentGateway(gw)
+		if err != nil {
+			return pkg.PromptOutputErr{Err: err}
+		}
+
 		return pkg.PromptCompleteEvent(gw)
 	}
 }
