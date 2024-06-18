@@ -53,13 +53,14 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 			loader.Start()
 			response, err := r.Do()
 			if err != nil {
+				loader.Stop()
 				if response.StatusCode == http.StatusUnauthorized {
 					fmt.Println()
 					fmt.Println(
 						heredoc.Doc(`
-              Next Steps:
-              Run gwa login to obtain another auth token
-            `),
+							Next Steps:
+							Run gwa login to obtain another auth token
+						`),
 					)
 				}
 				return err
