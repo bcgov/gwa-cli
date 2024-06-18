@@ -8,7 +8,7 @@ on:
 env:
   GWA_API_HOST: api.gov.bc.ca
   GWA_CLIENT_ID: gwa-cli
-  GWA_VERSION: v2
+  GWA_VERSION: v3
 
 jobs:
   release-tag:
