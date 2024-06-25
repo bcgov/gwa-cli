@@ -13,6 +13,7 @@ import (
 
 func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var isJSON bool
+	var isVerbose bool
 
 	var statusCmd = &cobra.Command{
 		Use:   "status",
@@ -42,8 +43,13 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				return nil
 			}
 
+			var tbl table.Table
 			if len(data) > 0 {
-				tbl := table.New("Status", "Name", "Reason", "Upstream")
+				if isVerbose {
+					tbl = table.New("Status", "Name", "Reason", "Upstream", "Host", "EnvHost")
+				} else {
+					tbl = table.New("Status", "Name", "Reason", "Upstream")
+				}
 
 				if buf != nil {
 					tbl.WithWriter(buf)
@@ -54,7 +60,11 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 					if item.Status == "DOWN" {
 						statusText = pkg.ErrorStyle.Render(item.Status)
 					}
-					tbl.AddRow(statusText, item.Name, item.Reason, item.Upstream)
+					if isVerbose {
+						tbl.AddRow(statusText, item.Name, item.Reason, item.Upstream, item.Host, item.EnvHost)
+					} else {
+						tbl.AddRow(statusText, item.Name, item.Reason, item.Upstream)
+					}
 				}
 				tbl.Print()
 			} else {
@@ -66,6 +76,7 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	}
 
 	statusCmd.Flags().BoolVar(&isJSON, "json", false, "Output status as a JSON string")
+	statusCmd.Flags().BoolVar(&isVerbose, "hosts", false, "Include host information in the output")
 
 	return statusCmd
 }

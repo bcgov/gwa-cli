@@ -87,6 +87,7 @@ func TestStatusCmds(t *testing.T) {
 func TestTableOutput(t *testing.T) {
 	tests := []struct {
 		name     string
+		args     []string
 		expect   []string
 		response httpmock.Responder
 	}{
@@ -96,6 +97,35 @@ func TestTableOutput(t *testing.T) {
 				"Status  Name                Reason            Upstream",
 				"UP      my-awesome-service  No reason at all  upstream.host.com",
 				"DOWN    my-awesome-service  No reason at all  upstream.host.com",
+			},
+			response: func(r *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(200, []map[string]interface{}{
+					{
+						"name":     "my-awesome-service",
+						"upstream": "upstream.host.com",
+						"status":   "UP",
+						"reason":   "No reason at all",
+						"env_host": "host.com",
+						"host":     "host.com",
+					},
+					{
+						"name":     "my-awesome-service",
+						"upstream": "upstream.host.com",
+						"status":   "DOWN",
+						"reason":   "No reason at all",
+						"env_host": "host.com",
+						"host":     "host.com",
+					},
+				})
+			},
+		},
+		{
+			name: "with hosts flag",
+			args: []string{"--hosts"},
+			expect: []string{
+				"Status  Name                Reason            Upstream           Host      EnvHost",
+				"UP      my-awesome-service  No reason at all  upstream.host.com  host.com  host.com",
+				"DOWN    my-awesome-service  No reason at all  upstream.host.com  host.com  host.com",
 			},
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, []map[string]interface{}{
@@ -129,7 +159,7 @@ func TestTableOutput(t *testing.T) {
 			URL := fmt.Sprintf("https://%s/gw/api/v2/gateways/ns-sampler/services", host)
 			httpmock.RegisterResponder("GET", URL, tt.response)
 
-			args := []string{"status"}
+			args := append([]string{"status"}, tt.args...)
 			ctx := &pkg.AppContext{
 				Gateway:    "ns-sampler",
 				ApiHost:    host,
