@@ -43,13 +43,18 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				return nil
 			}
 
-			var tbl table.Table
 			if len(data) > 0 {
+				var tbl table.Table
+				headers := []string{"Status", "Name", "Reason", "Upstream"}
 				if isVerbose {
-					tbl = table.New("Status", "Name", "Reason", "Upstream", "Host", "EnvHost")
-				} else {
-					tbl = table.New("Status", "Name", "Reason", "Upstream")
+					headers = append(headers, "Host", "EnvHost")
 				}
+
+				cols := make([]interface{}, len(headers))
+				for i, header := range headers {
+					cols[i] = header
+				}
+				tbl = table.New(cols...)
 
 				if buf != nil {
 					tbl.WithWriter(buf)
@@ -60,11 +65,11 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 					if item.Status == "DOWN" {
 						statusText = pkg.ErrorStyle.Render(item.Status)
 					}
+					row := []interface{}{statusText, item.Name, item.Reason, item.Upstream}
 					if isVerbose {
-						tbl.AddRow(statusText, item.Name, item.Reason, item.Upstream, item.Host, item.EnvHost)
-					} else {
-						tbl.AddRow(statusText, item.Name, item.Reason, item.Upstream)
+						row = append(row, item.Host, item.EnvHost)
 					}
+					tbl.AddRow(row...)
 				}
 				tbl.Print()
 			} else {
