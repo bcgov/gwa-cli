@@ -47,7 +47,7 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				var tbl table.Table
 				headers := []string{"Status", "Name", "Reason", "Upstream"}
 				if isVerbose {
-					headers = append(headers, "Host", "EnvHost")
+					headers = append(headers, "Host")
 				}
 
 				cols := make([]interface{}, len(headers))
@@ -67,7 +67,8 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 					}
 					row := []interface{}{statusText, item.Name, item.Reason, item.Upstream}
 					if isVerbose {
-						row = append(row, item.Host, item.EnvHost)
+						envHostWithProtocol := "https://" + item.EnvHost
+						row = append(row, envHostWithProtocol)
 					}
 					tbl.AddRow(row...)
 				}

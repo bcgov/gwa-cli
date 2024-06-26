@@ -95,14 +95,14 @@ func TestTableOutput(t *testing.T) {
 			name: "multiple rows",
 			expect: []string{
 				"Status  Name                Reason            Upstream",
-				"UP      my-awesome-service  No reason at all  upstream.host.com",
-				"DOWN    my-awesome-service  No reason at all  upstream.host.com",
+				"UP      my-awesome-service  No reason at all  https://upstream.host.com",
+				"DOWN    my-awesome-service  No reason at all  https://upstream.host.com",
 			},
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, []map[string]interface{}{
 					{
 						"name":     "my-awesome-service",
-						"upstream": "upstream.host.com",
+						"upstream": "https://upstream.host.com",
 						"status":   "UP",
 						"reason":   "No reason at all",
 						"env_host": "host.com",
@@ -110,7 +110,7 @@ func TestTableOutput(t *testing.T) {
 					},
 					{
 						"name":     "my-awesome-service",
-						"upstream": "upstream.host.com",
+						"upstream": "https://upstream.host.com",
 						"status":   "DOWN",
 						"reason":   "No reason at all",
 						"env_host": "host.com",
@@ -123,15 +123,15 @@ func TestTableOutput(t *testing.T) {
 			name: "with hosts flag",
 			args: []string{"--hosts"},
 			expect: []string{
-				"Status  Name                Reason            Upstream           Host      EnvHost",
-				"UP      my-awesome-service  No reason at all  upstream.host.com  host.com  host.com",
-				"DOWN    my-awesome-service  No reason at all  upstream.host.com  host.com  host.com",
+				"Status  Name                Reason            Upstream                   Host",
+				"UP      my-awesome-service  No reason at all  https://upstream.host.com  https://host.com",
+				"DOWN    my-awesome-service  No reason at all  https://upstream.host.com  https://host.com",
 			},
 			response: func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, []map[string]interface{}{
 					{
 						"name":     "my-awesome-service",
-						"upstream": "upstream.host.com",
+						"upstream": "https://upstream.host.com",
 						"status":   "UP",
 						"reason":   "No reason at all",
 						"env_host": "host.com",
@@ -139,7 +139,7 @@ func TestTableOutput(t *testing.T) {
 					},
 					{
 						"name":     "my-awesome-service",
-						"upstream": "upstream.host.com",
+						"upstream": "https://upstream.host.com",
 						"status":   "DOWN",
 						"reason":   "No reason at all",
 						"env_host": "host.com",
