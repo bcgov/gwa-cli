@@ -15,7 +15,7 @@ Currently documentation is limited to the APS [USER-JOURNEY.md](https://github.c
 To run help on any command while using the CLI:
 
 ```sh
-$ gwa-cli login --help
+$ gwa login --help
 You can login via device login or by using client credentials
 
 To use device login, simply run the command like so:
@@ -66,8 +66,8 @@ Tools:
    Test any commmands by running `just run` in the `cwd`. You can also use `$ just test` to run all tests.
 
    ```sh
-   $ just run namespace current
-   your-namespace
+   $ just run gateway current
+   your-gateway
    $ just test
    ?   	github.com/bcgov/gwa-cli	[no test files]
    ok  	github.com/bcgov/gwa-cli/cmd
@@ -106,7 +106,7 @@ To install locally you can follow the first 2 steps in Development above, then r
 ```sh
 $ just install
 ...
-$  gwa-cli
+$  gwa
 gwa version 2.0.0-beta
 ```
 
@@ -117,8 +117,7 @@ Shell completions for all the commands ships with each version. Completions allo
 To install completions, run this after installing, using `zsh` for example:
 
 ```sh
-$ gwa-cli completion zsh --help
-$ gwa-cli completion zsh | pbcopy
+$ gwa completion zsh --help
 ```
 
-Then follow the instructions from the help command and paste the output where it needs to live. Bash, Fish and Powershell are also supported.
+Then follow the brief instructions from the help command. Bash, Fish and Powershell are also supported.

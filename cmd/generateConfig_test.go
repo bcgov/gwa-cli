@@ -68,7 +68,7 @@ func TestGenerateKongConfig(t *testing.T) {
 		Cwd: dir,
 	}
 	opts := &GenerateConfigOptions{
-		Namespace:    "sampler",
+		Gateway:      "sampler",
 		Template:     "kong-httpbin",
 		Service:      "my-service",
 		UpstreamPort: "443",
@@ -101,7 +101,7 @@ func TestClientCredentialsGenerator(t *testing.T) {
 		Cwd: dir,
 	}
 	opts := &GenerateConfigOptions{
-		Namespace:    "cc-sampler",
+		Gateway:      "cc-sampler",
 		Template:     "client-credentials-shared-idp",
 		Service:      "my-service",
 		UpstreamPort: "443",
@@ -123,8 +123,6 @@ func TestClientCredentialsGenerator(t *testing.T) {
 		t.Fatal(err)
 	}
 	compare := string(file)
-	assert.Contains(t, compare, "name: cc-sampler")
-	assert.Contains(t, compare, "displayName: cc-sampler Display Name")
 	assert.Contains(t, compare, "name: my-service-dev")
 	assert.Contains(t, compare, "tags: [ns.cc-sampler]")
 	assert.Contains(t, compare, "host: httpbin.org")

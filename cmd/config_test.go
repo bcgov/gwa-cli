@@ -38,8 +38,8 @@ func TestSuccessfulConfigCommands(t *testing.T) {
 			args: []string{"set", "host", "my.local.dev:8000"},
 		},
 		{
-			name: "set namespace",
-			args: []string{"set", "namespace", "ns-sampler"},
+			name: "set gateway",
+			args: []string{"set", "gateway", "ns-sampler"},
 		},
 		{
 			name: "set scheme",
@@ -56,9 +56,9 @@ func TestSuccessfulConfigCommands(t *testing.T) {
 			configKey: "host",
 		},
 		{
-			name:      "set namespace flag",
-			args:      []string{"set", "--namespace", "ns-sampler"},
-			configKey: "namespace",
+			name:      "set gateway flag",
+			args:      []string{"set", "--gateway", "ns-sampler"},
+			configKey: "gateway",
 		},
 		{
 			name:      "set scheme flag",
@@ -71,8 +71,8 @@ func TestSuccessfulConfigCommands(t *testing.T) {
 			configKey: "api_key",
 		},
 		{
-			name: "get namespace",
-			args: []string{"get", "namespace"},
+			name: "get gateway",
+			args: []string{"get", "gateway"},
 			expect: `ns-sampler
 `,
 		},
@@ -127,8 +127,8 @@ func TestErrorConfigCommands(t *testing.T) {
 		},
 		{
 			name:   "no flag value set",
-			args:   []string{"set", "--namespace"},
-			expect: "flag needs an argument: --namespace",
+			args:   []string{"set", "--gateway"},
+			expect: "flag needs an argument: --gateway",
 		},
 	}
 	for _, tt := range tests {

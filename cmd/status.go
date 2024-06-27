@@ -13,6 +13,7 @@ import (
 
 func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	var isJSON bool
+	var isVerbose bool
 
 	var statusCmd = &cobra.Command{
 		Use:   "status",
@@ -20,13 +21,13 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		Example: heredoc.Doc(`$ gwa status
   $ gwa status --json`),
 		RunE: func(_ *cobra.Command, _ []string) error {
-			if ctx.Namespace == "" {
+			if ctx.Gateway == "" {
 				fmt.Println(heredoc.Doc(`
-          You can create a namespace by running:
-              $ gwa namespace create
+          You can create a gateway by running:
+              $ gwa gateway create
           `),
 				)
-				return fmt.Errorf("no namespace has been defined")
+				return fmt.Errorf("no gateway has been defined")
 			}
 			data, err := FetchStatus(ctx)
 			if err != nil {
@@ -43,7 +44,17 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			}
 
 			if len(data) > 0 {
-				tbl := table.New("Status", "Name", "Reason", "Upstream")
+				var tbl table.Table
+				headers := []string{"Status", "Name", "Reason", "Upstream"}
+				if isVerbose {
+					headers = append(headers, "Host")
+				}
+
+				cols := make([]interface{}, len(headers))
+				for i, header := range headers {
+					cols[i] = header
+				}
+				tbl = table.New(cols...)
 
 				if buf != nil {
 					tbl.WithWriter(buf)
@@ -54,7 +65,12 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 					if item.Status == "DOWN" {
 						statusText = pkg.ErrorStyle.Render(item.Status)
 					}
-					tbl.AddRow(statusText, item.Name, item.Reason, item.Upstream)
+					row := []interface{}{statusText, item.Name, item.Reason, item.Upstream}
+					if isVerbose {
+						envHostWithProtocol := "https://" + item.EnvHost
+						row = append(row, envHostWithProtocol)
+					}
+					tbl.AddRow(row...)
 				}
 				tbl.Print()
 			} else {
@@ -66,6 +82,7 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	}
 
 	statusCmd.Flags().BoolVar(&isJSON, "json", false, "Output status as a JSON string")
+	statusCmd.Flags().BoolVar(&isVerbose, "hosts", false, "Include host information in the output")
 
 	return statusCmd
 }
@@ -80,7 +97,7 @@ type StatusJson struct {
 }
 
 func FetchStatus(ctx *pkg.AppContext) ([]StatusJson, error) {
-	path := fmt.Sprintf("/gw/api/%s/namespaces/%s/services", ctx.ApiVersion, ctx.Namespace)
+	path := fmt.Sprintf("/gw/api/%s/gateways/%s/services", ctx.ApiVersion, ctx.Gateway)
 	URL, _ := ctx.CreateUrl(path, nil)
 	request, err := pkg.NewApiGet[[]StatusJson](ctx, URL)
 	if err != nil {
