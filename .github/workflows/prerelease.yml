@@ -20,7 +20,7 @@ jobs:
       - id: release
         uses: rymndhng/release-on-push-action@v0.28.0
         with:
-          bump_version_scheme: major
+          bump_version_scheme: patch
           release_body: "This is a prerelease version intended for testing purposes. It may contain new features, improvements, and bug fixes that are not yet fully stable. We encourage you to try it out and provide feedback. If you encounter any issues, please report them on our issue tracker. Thank you for helping us improve!"
     outputs:
       version_number: ${{ steps.release.outputs.tag_name }}
