@@ -29,6 +29,17 @@ type GenerateConfigOptions struct {
 	Out              string
 }
 
+type Response struct {
+	Available  bool       `json:"available"`
+	Suggestion Suggestion `json:"suggestion"`
+}
+
+type Suggestion struct {
+	ServiceName string   `json:"serviceName"`
+	Names       []string `json:"names"`
+	Hosts       []string `json:"hosts"`
+}
+
 func (o *GenerateConfigOptions) IsEmpty() bool {
 	return o.Template == "" && o.Service == "" && o.Upstream == ""
 }
@@ -40,8 +51,34 @@ func (o *GenerateConfigOptions) ValidateTemplate() error {
 	return fmt.Errorf("%s is not a valid template", o.Template)
 }
 
-func (o *GenerateConfigOptions) Exec() error {
+func (o *GenerateConfigOptions) ValidateService(ctx *pkg.AppContext, service string) error {
+	path := fmt.Sprintf("/ds/api/v3/routes/availability?gatewayId=%s&serviceName=%s", ctx.Gateway, service)
+	URL, _ := ctx.CreateUrl(path, nil)
+	decodedURL, err := url.QueryUnescape(URL)
+	if err != nil {
+		return err
+	}
+	request, err := pkg.NewApiGet[Response](ctx, decodedURL)
+	if err != nil {
+		return err
+	}
+	response, err := request.Do()
+	if err != nil {
+		return err
+	}
+
+	if !response.Data.Available {
+		return fmt.Errorf("Service %s is already in use. Suggestion: %s", service, response.Data.Suggestion.ServiceName)
+	}
+	return nil
+}
+
+func (o *GenerateConfigOptions) Exec(ctx *pkg.AppContext) error {
 	err := o.ValidateTemplate()
+	if err != nil {
+		return err
+	}
+	err = o.ValidateService(ctx, o.Service)
 	if err != nil {
 		return err
 	}
@@ -126,7 +163,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 					return err
 				}
 			}
-			err := opts.Exec()
+			err := opts.Exec(ctx)
 			if err != nil {
 				return err
 			}
@@ -199,6 +236,13 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 
 	prompts[service] = pkg.NewTextInput("Service", "", true)
 	prompts[service].TextInput.Focus()
+	prompts[service].Validator = func(input string) error {
+		err := opts.ValidateService(ctx, input)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 
 	prompts[template] = pkg.NewList("Template", []string{
 		"client-credentials-shared-idp",
