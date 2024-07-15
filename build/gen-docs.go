@@ -19,7 +19,9 @@ func main() {
 
 func writeDocument(rootCmd *cobra.Command) string {
 	var output strings.Builder
-	output.WriteString("# GWA CLI Commands\n\n")
+	output.WriteString("---\n")
+	output.WriteString("title: GWA CLI Commands\n")
+	output.WriteString("---\n\n")
 	output.WriteString(fmt.Sprintf("%s\n", rootCmd.Long))
 
 	for _, cmd := range rootCmd.Commands() {
