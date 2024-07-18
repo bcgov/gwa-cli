@@ -87,7 +87,7 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".gwa-config")
 		viper.SetDefault("scheme", "https")
-		pkg.Warning(fmt.Sprintf("No config file exists, creating new file at %s/.gwa-config.yml", home))
+		pkg.Warning(fmt.Sprintf("No config file exists, creating new file at %s/.gwa-config.yaml", home))
 
 		viper.SafeWriteConfig()
 	}

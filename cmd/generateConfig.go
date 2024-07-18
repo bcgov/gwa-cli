@@ -149,7 +149,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 	generateConfigCmd.Flags().StringVarP(&opts.Upstream, "upstream", "u", "", "The upstream implementation of the API")
 	generateConfigCmd.Flags().StringVar(&opts.Organization, "org", "ministry-of-citizens-services", "Set the organization")
 	generateConfigCmd.Flags().StringVar(&opts.OrganizationUnit, "org-unit", "databc", "Set the organization unit")
-	generateConfigCmd.Flags().StringVarP(&opts.Out, "out", "o", "gw-config.yml", "The file to output the generate config to")
+	generateConfigCmd.Flags().StringVarP(&opts.Out, "out", "o", "gw-config.yaml", "The file to output the generate config to")
 
 	return generateConfigCmd
 }
@@ -214,7 +214,7 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 	prompts[organization] = pkg.NewTextInput("Organization", "", false)
 	prompts[orgUnit] = pkg.NewTextInput("Org Unit", "", false)
 	prompts[outfile] = pkg.NewTextInput("Filename", "Must be a YAML file", true)
-	prompts[outfile].TextInput.SetValue("gw-config.yml")
+	prompts[outfile].TextInput.SetValue("gw-config.yaml")
 	prompts[outfile].Validator = func(input string) error {
 		if strings.HasSuffix(input, ".yml") || strings.HasSuffix(input, ".yaml") {
 			return nil
