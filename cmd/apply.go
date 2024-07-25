@@ -220,7 +220,7 @@ $ gwa apply --input gw-config.yaml
 		},
 	}
 
-	applyCmd.Flags().StringVarP(&opts.input, "input", "i", "gw-config.yml", "YAML file containing your configuration")
+	applyCmd.Flags().StringVarP(&opts.input, "input", "i", "", "YAML file containing your configuration")
 	applyCmd.MarkFlagRequired("input")
 
 	return applyCmd
