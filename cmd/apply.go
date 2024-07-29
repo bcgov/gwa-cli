@@ -100,7 +100,11 @@ func (o *ApplyOptions) Parse() error {
 			}
 		}
 	}
-	o.output = append([]interface{}{gatewayService}, o.output...)
+
+	// Only append gatewayService if it has configurations
+	if len(gatewayService.Config) > 0 {
+		o.output = append([]interface{}{gatewayService}, o.output...)
+	}
 	return nil
 }
 
@@ -142,13 +146,16 @@ $ gwa apply --input gw-config.yaml
 			if err != nil {
 				return err
 			}
-			pkg.Info("Namespace:" + ctx.Namespace)
+			pkg.Info("Gateway:" + ctx.Gateway)
 
 			counter := &PublishCounter{}
+			printBlankLine := false
+			var errors []string // Collect error messages here
 
 			for _, config := range opts.output {
 				switch c := config.(type) {
 				case GatewayService:
+					printBlankLine = true
 					fmt.Println()
 					fmt.Printf("↑ Publishing Gateway Services")
 					res, err := PublishGatewayService(ctx, c.Config)
@@ -156,11 +163,14 @@ $ gwa apply --input gw-config.yaml
 						counter.AddFailed()
 						fmt.Print("\r")
 						fmt.Printf("%s Gateway Services publish failed\n", pkg.Times())
-						pkg.Error(fmt.Sprintf("Publish Error: %v", err))
+						errorMessage := fmt.Sprintf("[GatewayService]: %v", err)
+						pkg.Error(errorMessage)
+						errors = append(errors, errorMessage)
 						break
 					}
 
 					counter.AddSuccess()
+					fmt.Println()
 					fmt.Printf("%s Gateway Services published\n", pkg.Checkmark())
 					fmt.Println(res.Results)
 					fmt.Print("\r")
@@ -172,13 +182,19 @@ $ gwa apply --input gw-config.yaml
 					break
 
 				case Resource:
+					if !printBlankLine {
+						fmt.Println()
+						printBlankLine = true
+					}
 					fmt.Printf("↑ [%s] %s", c.Kind, c.Config["name"])
 					result, err := PublishResource(ctx, c.Config, c.GetAction())
 					if err != nil {
 						counter.AddFailed()
 						fmt.Print("\r")
 						fmt.Printf("%s [%s] %s failed\n", pkg.Times(), c.Kind, c.Config["name"])
-						pkg.Error(fmt.Sprintf("Resource Error: %v", err))
+						errorMessage := fmt.Sprintf("Resource [%s] %s: %v", c.Kind, c.Config["name"], err)
+						pkg.Error(errorMessage)
+						errors = append(errors, errorMessage)
 						break
 					}
 
@@ -191,6 +207,14 @@ $ gwa apply --input gw-config.yaml
 
 			fmt.Println()
 			fmt.Println(counter.Print())
+
+			if len(errors) > 0 {
+				fmt.Println()
+				fmt.Println(pkg.Times(), pkg.PrintError("Errors encountered"))
+				for _, errMsg := range errors {
+					fmt.Println(errMsg)
+				}
+			}
 
 			return nil
 		},
@@ -216,7 +240,7 @@ func PublishResource(ctx *pkg.AppContext, doc map[string]interface{}, arg string
 	if err != nil {
 		return "", err
 	}
-	route := fmt.Sprintf("/ds/api/%s/namespaces/%s/%ss", ctx.ApiVersion, ctx.Namespace, arg)
+	route := fmt.Sprintf("/ds/api/%s/gateways/%s/%ss", ctx.ApiVersion, ctx.Gateway, arg)
 	URL, _ := ctx.CreateUrl(route, nil)
 	request, err := pkg.NewApiPut[PutResponse](ctx, URL, bytes.NewBuffer(body))
 	if err != nil {

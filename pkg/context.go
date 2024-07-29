@@ -17,7 +17,7 @@ type AppContext struct {
 	Cwd        string
 	Debug      bool
 	Host       string
-	Namespace  string
+	Gateway    string
 	Scheme     string
 	Version    string
 }

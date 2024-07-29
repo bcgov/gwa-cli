@@ -36,7 +36,7 @@ func setupConfig(dir string) error {
 
 func setupGetTests(args []string, response httpmock.Responder, buf *bytes.Buffer) *cobra.Command {
 	ctx := &pkg.AppContext{
-		Namespace:  "ns-sampler",
+		Gateway:    "ns-sampler",
 		ApiHost:    apiHost,
 		ApiVersion: "v2",
 	}
@@ -171,7 +171,7 @@ func TestGetCmdTables(t *testing.T) {
 				"a-unit-test-dataset  A Unit Test Dataset",
 			},
 			response: datasetsResponse,
-			url:      "/ds/api/v2/namespaces/ns-sampler/directory",
+			url:      "/ds/api/v2/gateways/ns-sampler/directory",
 		},
 		{
 			name: "get issuers",
@@ -181,7 +181,7 @@ func TestGetCmdTables(t *testing.T) {
 				"APS IdP  client-credentials  auto  janis@idir",
 			},
 			response: issuersResponse,
-			url:      "/ds/api/v2/namespaces/ns-sampler/issuers",
+			url:      "/ds/api/v2/gateways/ns-sampler/issuers",
 		},
 		{
 			name: "get products",
@@ -191,7 +191,7 @@ func TestGetCmdTables(t *testing.T) {
 				"DemoNet  132QWE  2",
 			},
 			response: productsResponse,
-			url:      "/ds/api/v2/namespaces/ns-sampler/products",
+			url:      "/ds/api/v2/gateways/ns-sampler/products",
 		},
 		{
 			name: "get org-units",
@@ -347,7 +347,7 @@ func TestGetJsonYamlCmd(t *testing.T) {
 			if operator == "datasets" {
 				operator = "directory"
 			}
-			URL := fmt.Sprintf("https://%s/ds/api/v2/namespaces/ns-sampler/%s", host, operator)
+			URL := fmt.Sprintf("https://%s/ds/api/v2/gateways/ns-sampler/%s", host, operator)
 			httpmock.RegisterResponder("POST", authHost, func(r *http.Request) (*http.Response, error) {
 				return httpmock.NewJsonResponse(200, map[string]interface{}{
 					"access_token":       "123ABC",
@@ -369,7 +369,7 @@ func TestGetter(t *testing.T) {
 	ctx := &pkg.AppContext{
 		ApiVersion: "v2",
 		ApiHost:    "aps.gov.bc.ca",
-		Namespace:  "ns-sampler",
+		Gateway:    "ns-sampler",
 	}
 	tests := []struct {
 		name     string
@@ -384,7 +384,7 @@ func TestGetter(t *testing.T) {
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "Title"},
 				Layout:       Basic,
-				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/directory",
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/gateways/ns-sampler/directory",
 			},
 		},
 		{
@@ -417,7 +417,7 @@ func TestGetter(t *testing.T) {
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "Flow", "Mode", "Owner"},
 				Layout:       Issuers,
-				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/issuers",
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/gateways/ns-sampler/issuers",
 			},
 			filters: &GetFilters{
 				Org: "ministry-of-citizen-services",
@@ -430,7 +430,7 @@ func TestGetter(t *testing.T) {
 				Ctx:          ctx,
 				TableHeaders: []string{"Name", "App ID", "Environments"},
 				Layout:       Products,
-				Url:          "https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/products",
+				Url:          "https://aps.gov.bc.ca/ds/api/v2/gateways/ns-sampler/products",
 			},
 			filters: &GetFilters{
 				Org: "ministry-of-citizen-services",
