@@ -8,117 +8,67 @@
 
 `gwa` is a tool for composing, validating and generating Kong Gateway configuration files from OpenAPI (aka Swagger) specs and managing Kong Plugins.
 
-## Documentation
-
-Currently documentation is limited to the APS [USER-JOURNEY.md](https://github.com/bcgov/gwa-api/blob/dev/USER-JOURNEY.md) and via the installed executable's help commands. A hosted website option is in the works and will be available soon.
-
-To run help on any command while using the CLI:
-
-```sh
-$ gwa-cli login --help
-You can login via device login or by using client credentials
-
-To use device login, simply run the command like so:
-    $ gwa login
-
-To use your credentials you must supply both a client-id and client-secret:
-    $ gwa login --client-id <YOUR_CLIENT_ID> --client-secret <YOUR_CLIENT_SECRET>
-...
-
-```
-
-To generate a Markdown-formatted string of every command's documentation to `stdout`, run `$ just docs`. You could then pipe it to a file like so `$ just docs > gwa-commands.md`, though this will be just a temporary solution.
-
-## Development
-
-Prerequisites:
-- [Go](https://go.dev) 1.20 or higher
-- [Just](https://github.com/casey/just) (alternative to `make`)
-- [GoReleaser](https://goreleaser.com)
-
-Tools:
-- [Cobra] Command line argument parser
-- [Viper](https://github.com/spf13/viper) Configuration file manager, integrates tightly with Cobra
-- [Lipgloss](https://github.com/charmbracelet/lipgloss) Styles and colours
-
-#### Steps to set up dev environment
-
-1. Verify you have Go 1.20+ installed
-
-   ```sh
-   $ go version
-   ```
-   If you don't have `go` installed on your machine, follow instructions on [the Go website](https://golang.org/doc/install).
-
-2. Clone this repository
-
-   ```sh
-   $ git clone git@github.com:bcgov/gwa-cli.git
-   $ cd gwa-cli
-   $ mv env.example .env
-   ```
-   **Note** Some local environments require Go projects are run from the `$HOME/go/src` directory. If any `module not found` errors are reported, try moving it.
-
-   Also be sure to fill in the environment variables before running a command.
-
-3. Run commands
-
-   Test any commmands by running `just run` in the `cwd`. You can also use `$ just test` to run all tests.
-
-   ```sh
-   $ just run namespace current
-   your-namespace
-   $ just test
-   ?   	github.com/bcgov/gwa-cli	[no test files]
-   ok  	github.com/bcgov/gwa-cli/cmd
-   ok  	github.com/bcgov/gwa-cli/pkg
-   ```
-
-4. Set up your IDE
-
-   Go has great tooling which is required to ensure code contributed is formatted consitently and is type-safe.
-
-   - **VSCode:** Install the [official Go extension](https://marketplace.visualstudio.com/items?itemName=golang.Go)
-   - **NeoVim:** [go.nvim](https://github.com/ray-x/go.nvim) is a great plugin
-
-#### Nix develop (optional)
-
-Instead of installing Go on your system you can alternatively use Nix to manage Go and other dependencies for you. This option assumes you already running NixOS or have Nix installed.
-
-Simply run `$ nix develop` in the project root. This will pull all the dependencies needed to work on this project. Remember to run `exit` to leave the Nix shell when done.
-
-## Deployment
-
-Details on how the deployment process work are coming soon as we migrate codebase languages.
-
-Make sure you have GoReleaser installed to test locally.
-
-###### Tip
-
-A dry-run of the build process can be executed by running `$ just release`. This will compile your source code into a `/dist` folder where you can run any platform's executable.
+---
 
 ## Installation
+To get started with `gwa`, follow the detailed instructions provided in the DevHub [how-to](https://dev.developer.gov.bc.ca/docs/default/component/aps-infra-platform-docs/how-to/gwa-install/) guide. This guide covers all the steps required to install and configure the tool on your system.
 
-Currently `gwa` is only installable by building from source. The releases page will be updated one it's ready.
+---
 
-To install locally you can follow the first 2 steps in Development above, then run
+## Usage
 
-```sh
-$ just install
-...
-$  gwa-cli
-gwa version 2.0.0-beta
-```
+### Use `--help`
 
-#### Completions
+To make the most out of the `gwa` tool, you can use the `--help` command to get detailed information on its various commands and options. Here's how you can use it:
 
-Shell completions for all the commands ships with each version. Completions allow you to tab while entering commands to cycle though a list of possible commands.
+#### Basic Usage of `--help`
+The `--help` flag can be used with any command within the `gwa` tool to display information about that command, including its purpose, options, and examples.
 
-To install completions, run this after installing, using `zsh` for example:
+1. **General Help**: To get an overview of all available commands, simply run:
+    ```sh
+       gwa --help
+    ```
+    This will list all the primary commands and provide a brief description of each.
+       
+2. **Command-Specific Help**: To get detailed information about a specific command, use `--help` with the command in question. For example, if you want to learn more about the gateway command, you can run:
+    ```sh
+       gwa gateway --help
+    ```
+    This will provide detailed information about the gateway command, including its syntax, options, and examples.
 
-```sh
-$ gwa-cli completion zsh --help
-$ gwa-cli completion zsh | pbcopy
-```
+### Explore CLI commands
 
-Then follow the instructions from the help command and paste the output where it needs to live. Bash, Fish and Powershell are also supported.
+Learn how to effectively use `gwa` by exploring the available CLI commands and their options. Refer to the comprehensive DevHub [CLI commands page](https://dev.developer.gov.bc.ca/docs/default/component/aps-infra-platform-docs/reference/gwa-commands/) for detailed instructions and examples on how to utilize the tool for your needs.
+
+---
+
+## Contact / Support Info
+
+If you need support or have any questions about using `gwa`, you can reach out to our team in the following ways:
+
+### Rocket.Chat
+
+Create an account on [Rocket.Chat](https://docs.developer.gov.bc.ca/join-bc-rocket-chat/) and join the [#aps-ops](https://chat.developer.gov.bc.ca/channel/aps-ops) channel. Rocket.Chat is a community platform where you can connect with our team and other users. In this channel, you can:
+
+- Ask questions
+- Share feedback
+- Get real-time support
+- Engage with other users who might have similar questions or use cases
+
+### GitHub Issue Tracker
+
+Alternatively, if you prefer asynchronous communication or need to report a bug, request a feature, or provide feedback, please use our GitHub [issue tracker](https://github.com/bcgov/gwa-cli/issues). On our GitHub issue tracker, you can:
+
+- File new issues for bugs or feature requests
+- Track the status of reported issues
+- Contribute to discussions on existing issues
+- View the roadmap and planned enhancements
+
+By using either of these methods, our team will be able to assist you promptly and effectively. We are committed to ensuring you have a positive experience with `gwa` and are here to answer any questions you might have.
+
+---
+
+## Want to contribute?
+
+This section provides a direct [link](https://github.com/bcgov/gwa-cli/blob/main/contribute.md) to the document outlining how you can contribute to our project. Whether you are looking to add new features, fix bugs, or provide feedback, this guide will walk you through the necessary steps and requirements.
+
