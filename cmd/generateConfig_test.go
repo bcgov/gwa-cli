@@ -132,3 +132,38 @@ func TestClientCredentialsGenerator(t *testing.T) {
 	assert.Contains(t, compare, "paths: [/post]")
 	assert.Contains(t, compare, "allowed_aud: ap-cc-sampler-default-dev")
 }
+
+func TestQuickStartGenerator(t *testing.T) {
+	dir := t.TempDir()
+	ctx := &pkg.AppContext{
+		Cwd: dir,
+	}
+	opts := &GenerateConfigOptions{
+		Gateway:      "cc-sampler",
+		Template:     "quick-start",
+		Service:      "my-service",
+		UpstreamPort: "443",
+		UpstreamUrl: &url.URL{
+			Host:   "httpbin.org",
+			Path:   "/post",
+			Scheme: "https",
+		},
+		Organization:     "ministry-of-citizens-services",
+		OrganizationUnit: "databc",
+		Out:              "gw-config.yaml",
+	}
+	err := GenerateConfig(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	file, err := os.ReadFile(path.Join(ctx.Cwd, opts.Out))
+	if err != nil {
+		t.Fatal(err)
+	}
+	compare := string(file)
+	assert.Contains(t, compare, "name: my-service-dev")
+	assert.Contains(t, compare, "tags: [ns.cc-sampler]")
+	assert.Contains(t, compare, "url: https://httpbin.org/post")
+	assert.Contains(t, compare, "- my-service.dev.api.gov.bc.ca")
+	assert.Contains(t, compare, "paths: [/post]")
+}
