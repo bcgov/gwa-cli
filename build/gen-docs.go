@@ -22,6 +22,7 @@ func writeDocument(rootCmd *cobra.Command) string {
 	output.WriteString("---\n")
 	output.WriteString("title: GWA CLI Commands\n")
 	output.WriteString("---\n\n")
+	output.WriteString("<!-- NOTE: This file is generated from gwa-cli, do not edit directly -->\n\n")
 	output.WriteString(fmt.Sprintf("%s\n", rootCmd.Long))
 
 	for _, cmd := range rootCmd.Commands() {
