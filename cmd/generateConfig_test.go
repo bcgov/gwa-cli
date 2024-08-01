@@ -1,12 +1,14 @@
 package cmd
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"path"
 	"testing"
 
 	"github.com/bcgov/gwa-cli/pkg"
+	"github.com/jarcoal/httpmock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -133,6 +135,55 @@ func TestClientCredentialsGenerator(t *testing.T) {
 	assert.Contains(t, compare, "allowed_aud: ap-cc-sampler-default-dev")
 }
 
+func TestValidateService_Available(t *testing.T) {
+	ctx := &pkg.AppContext{
+		Gateway: "test-gateway",
+		ApiHost: "api.gov.ca",
+	}
+	serviceName := "available-service"
+
+	// Activate httpmock and register the mock response
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	URL := fmt.Sprintf("https://%s/ds/api/v3/routes/availability?gatewayId=%s&serviceName=%s", ctx.ApiHost, ctx.Gateway, serviceName)
+	httpmock.RegisterResponder("GET", URL,
+		httpmock.NewJsonResponderOrPanic(200, Response{
+			Available: true,
+		}),
+	)
+
+	opts := &GenerateConfigOptions{}
+	err := opts.ValidateService(ctx, serviceName)
+	assert.NoError(t, err, "expected no error when service name is available")
+}
+
+func TestValidateService_NotAvailable(t *testing.T) {
+	ctx := &pkg.AppContext{
+		Gateway: "test-gateway",
+		ApiHost: "api.gov.ca",
+	}
+	serviceName := "unavailable-service"
+
+	// Activate httpmock and register the mock response
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	URL := fmt.Sprintf("https://%s/ds/api/v3/routes/availability?gatewayId=%s&serviceName=%s", ctx.ApiHost, ctx.Gateway, serviceName)
+	httpmock.RegisterResponder("GET", URL,
+		httpmock.NewJsonResponderOrPanic(200, Response{
+			Available: false,
+			Suggestion: Suggestion{
+				ServiceName: "suggested-service-name",
+			},
+		}),
+	)
+
+	opts := &GenerateConfigOptions{}
+	err := opts.ValidateService(ctx, serviceName)
+	assert.Error(t, err, "expected error when service name is not available")
+	assert.Contains(t, err.Error(), "Service unavailable-service is already in use. Suggestion: suggested-service-name")
+=======
 func TestQuickStartGenerator(t *testing.T) {
 	dir := t.TempDir()
 	ctx := &pkg.AppContext{
@@ -166,4 +217,3 @@ func TestQuickStartGenerator(t *testing.T) {
 	assert.Contains(t, compare, "url: https://httpbin.org/post")
 	assert.Contains(t, compare, "- my-service.dev.api.gov.bc.ca")
 	assert.Contains(t, compare, "paths: [/post]")
-}
