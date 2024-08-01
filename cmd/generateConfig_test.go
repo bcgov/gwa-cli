@@ -183,7 +183,8 @@ func TestValidateService_NotAvailable(t *testing.T) {
 	err := opts.ValidateService(ctx, serviceName)
 	assert.Error(t, err, "expected error when service name is not available")
 	assert.Contains(t, err.Error(), "Service unavailable-service is already in use. Suggestion: suggested-service-name")
-=======
+}
+
 func TestQuickStartGenerator(t *testing.T) {
 	dir := t.TempDir()
 	ctx := &pkg.AppContext{
@@ -217,3 +218,4 @@ func TestQuickStartGenerator(t *testing.T) {
 	assert.Contains(t, compare, "url: https://httpbin.org/post")
 	assert.Contains(t, compare, "- my-service.dev.api.gov.bc.ca")
 	assert.Contains(t, compare, "paths: [/post]")
+}
