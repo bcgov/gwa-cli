@@ -127,8 +127,8 @@ Create Gateway
 Hit enter to accept the default display name (<IDIR>'s gateway) or provide a name below.
 
 Display names may consist of:
-- Letters, numbers, spaces or the special characters -()_
-- No more than 30 characters
+- Letters, numbers, spaces or the special characters -()_/.'
+- 3-30 characters
 
 `),
 		Prompts: prompts,
