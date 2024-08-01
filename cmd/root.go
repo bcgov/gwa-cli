@@ -17,7 +17,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 		Use:          "gwa <command> <subcommand> [flags]",
 		Short:        "CLI tool supported by the APS team",
 		SilenceUsage: true,
-		Long:         `GWA CLI helps manage gateway resources in a declarative fashion.`,
+		Long:         `GWA command line interface (CLI) helps manage gateway resources in a declarative fashion.`,
 		Version:      ctx.Version,
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Debug {
@@ -87,7 +87,7 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".gwa-config")
 		viper.SetDefault("scheme", "https")
-		pkg.Warning(fmt.Sprintf("No config file exists, creating new file at %s/.gwa-config.yml", home))
+		pkg.Warning(fmt.Sprintf("No config file exists, creating new file at %s/.gwa-config.yaml", home))
 
 		viper.SafeWriteConfig()
 	}

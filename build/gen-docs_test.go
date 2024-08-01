@@ -24,7 +24,7 @@ func TestWriteDocument(t *testing.T) {
 	configCmd.AddCommand(configGetCmd)
 	rootCmd.AddCommand(configCmd)
 	output := writeDocument(rootCmd)
-	expect := "# GWA CLI Commands\n\nThis is a long title\n\n## config\n\n**Usage:** `gwa config`\n\n\n### config.get\n\n**Usage:** `gwa config get`\n\n"
+	expect := "---\ntitle: GWA CLI Commands\n---\n\n<!-- NOTE: This file is generated from gwa-cli, do not edit directly -->\n\nThis is a long title\n\n## config\n\n**Usage:** `gwa config`\n\n\n### config.get\n\n**Usage:** `gwa config get`\n\n"
 	assert.Equal(t, expect, output)
 }
 

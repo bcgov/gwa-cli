@@ -108,7 +108,7 @@ $ gwa config set --gateway ns-sampler
 		}),
 	}
 
-	configSetCmd.Flags().String("token", "", "set the gateway")
+	configSetCmd.Flags().String("token", "", "set the authentication token")
 	viper.BindPFlag("api_key", configSetCmd.Flags().Lookup("token"))
 	configSetCmd.Flags().String("gateway", "", "set the gateway")
 	viper.BindPFlag("gateway", configSetCmd.Flags().Lookup("gateway"))
