@@ -45,7 +45,7 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:   "list",
 		Short: "List all your managed gateways",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
-			path := fmt.Sprintf("/ds/api/v3/gateways")
+			path := "/ds/api/v3/gateways"
 			URL, _ := ctx.CreateUrl(path, nil)
 			r, err := pkg.NewApiGet[[]GatewayFormData](ctx, URL)
 			if err != nil {
@@ -242,7 +242,38 @@ You can create a gateway by running:
 				return fmt.Errorf("no gateway has been defined")
 			}
 
-			fmt.Println(ctx.Gateway)
+			path := fmt.Sprintf("/ds/api/v3/gateways/%s", ctx.Gateway)
+			URL, _ := ctx.CreateUrl(path, nil)
+
+			r, err := pkg.NewApiGet[GatewayFormData](ctx, URL)
+			if err != nil {
+				return err
+			}
+			loader := pkg.NewSpinner()
+			loader.Start()
+			response, err := r.Do()
+			if err != nil {
+				loader.Stop()
+				if response.StatusCode == http.StatusUnauthorized {
+					fmt.Println()
+					fmt.Println(
+						heredoc.Doc(`
+							Next Steps:
+							Run gwa login to obtain another auth token
+						`),
+					)
+				}
+				return err
+			}
+			loader.Stop()
+
+			headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+  			columnFmt := color.New(color.FgYellow).SprintfFunc()
+			tbl := table.New("Display Name", "Gateway ID")
+			tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+			tbl.AddRow(response.Data.DisplayName, ctx.Gateway)
+			tbl.Print()
+
 			return nil
 		},
 	}
