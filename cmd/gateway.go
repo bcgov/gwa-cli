@@ -10,6 +10,8 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -45,7 +47,7 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			path := fmt.Sprintf("/ds/api/%s/gateways", ctx.ApiVersion)
 			URL, _ := ctx.CreateUrl(path, nil)
-			r, err := pkg.NewApiGet[[]string](ctx, URL)
+			r, err := pkg.NewApiGet[[]GatewayFormData](ctx, URL)
 			if err != nil {
 				return err
 			}
@@ -71,8 +73,17 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 				fmt.Println("You have no gateways")
 			}
 
-			for _, n := range response.Data {
-				fmt.Println(n)
+			if len(response.Data) > 0 {
+				headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+  				columnFmt := color.New(color.FgYellow).SprintfFunc()
+				tbl := table.New("Display Name", "Gateway ID")
+				tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+				for _, n := range response.Data {
+					tbl.AddRow(n.DisplayName, n.GatewayId)
+				}
+			
+				tbl.Print()
 			}
 
 			return nil
