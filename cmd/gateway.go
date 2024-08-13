@@ -45,7 +45,7 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 		Use:   "list",
 		Short: "List all your managed gateways",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
-			path := fmt.Sprintf("/ds/api/%s/gateways", ctx.ApiVersion)
+			path := fmt.Sprintf("/ds/api/v3/gateways")
 			URL, _ := ctx.CreateUrl(path, nil)
 			r, err := pkg.NewApiGet[[]GatewayFormData](ctx, URL)
 			if err != nil {
