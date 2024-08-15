@@ -45,7 +45,7 @@ func GatewayListCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		Use:   "list",
 		Short: "List all your managed gateways",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
-			path := "/ds/api/v3/gateways"
+			path := fmt.Sprintf("/ds/api/%s/gateways", ctx.ApiVersion)
 			URL, _ := ctx.CreateUrl(path, nil)
 			r, err := pkg.NewApiGet[[]GatewayFormData](ctx, URL)
 			if err != nil {
@@ -247,7 +247,7 @@ You can create a gateway by running:
 				return fmt.Errorf("no gateway has been defined")
 			}
 
-			path := fmt.Sprintf("/ds/api/v3/gateways/%s", ctx.Gateway)
+			path := fmt.Sprintf("/ds/api/%s/gateways/%s", ctx.ApiVersion, ctx.Gateway)
 			URL, _ := ctx.CreateUrl(path, nil)
 
 			r, err := pkg.NewApiGet[GatewayFormData](ctx, URL)
