@@ -18,16 +18,16 @@ import (
 	"github.com/bcgov/gwa-cli/pkg"
 )
 
-func NewGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
+func NewGatewayCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	gatewayCmd := &cobra.Command{
 		Use:   "gateway",
 		Short: "Manage your gateways",
 		Long:  `Gateways are used to organize your services.`,
 	}
-	gatewayCmd.AddCommand(GatewayListCmd(ctx))
+	gatewayCmd.AddCommand(GatewayListCmd(ctx, buf))
 	gatewayCmd.AddCommand(GatewayCreateCmd(ctx))
 	gatewayCmd.AddCommand(GatewayDestroyCmd(ctx))
-	gatewayCmd.AddCommand(GatewayCurrentCmd(ctx))
+	gatewayCmd.AddCommand(GatewayCurrentCmd(ctx, buf))
 	return gatewayCmd
 }
 
@@ -40,7 +40,7 @@ func (n *GatewayFormData) IsEmpty() bool {
 	return n.DisplayName == "" && n.GatewayId == ""
 }
 
-func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
+func GatewayListCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	listCommand := &cobra.Command{
 		Use:   "list",
 		Short: "List all your managed gateways",
@@ -77,6 +77,11 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 				headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
   				columnFmt := color.New(color.FgYellow).SprintfFunc()
 				tbl := table.New("Display Name", "Gateway ID")
+
+				if buf != nil {
+					tbl.WithWriter(buf)
+				}
+				
 				tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 				for _, n := range response.Data {
@@ -229,7 +234,7 @@ func createGateway(ctx *pkg.AppContext, data *GatewayFormData) (string, error) {
 	return response.Data.GatewayId, nil
 }
 
-func GatewayCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
+func GatewayCurrentCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	currentCmd := &cobra.Command{
 		Use:   "current",
 		Short: "Display the current gateway",
@@ -270,6 +275,9 @@ You can create a gateway by running:
 			headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
   			columnFmt := color.New(color.FgYellow).SprintfFunc()
 			tbl := table.New("Display Name", "Gateway ID")
+			if buf != nil {
+				tbl.WithWriter(buf)
+			}
 			tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 			tbl.AddRow(response.Data.DisplayName, ctx.Gateway)
 			tbl.Print()

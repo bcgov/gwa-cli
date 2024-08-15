@@ -39,7 +39,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd.AddCommand(NewApplyCmd(ctx))
 	rootCmd.AddCommand(NewGenerateConfigCmd(ctx))
 	rootCmd.AddCommand(NewLoginCmd(ctx))
-	rootCmd.AddCommand(NewGatewayCmd(ctx))
+	rootCmd.AddCommand(NewGatewayCmd(ctx, nil))
 	rootCmd.AddCommand(NewStatusCmd(ctx, nil))
 	// Disable these for now since they don't do anything
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-confg.yaml)")
