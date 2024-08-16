@@ -56,15 +56,13 @@ func GatewayListCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			response, err := r.Do()
 			if err != nil {
 				loader.Stop()
-				if response.StatusCode == http.StatusUnauthorized {
-					fmt.Println()
-					fmt.Println(
-						heredoc.Doc(`
-							Next Steps:
-							Run gwa login to obtain another auth token
-						`),
-					)
-				}
+				fmt.Println()
+				fmt.Println(
+					heredoc.Doc(`
+						Next Steps:
+						Run gwa login to obtain another auth token
+					`),
+				)
 				return err
 			}
 			loader.Stop()
@@ -260,6 +258,14 @@ You can create a gateway by running:
 			if err != nil {
 				loader.Stop()
 				if response.StatusCode == http.StatusUnauthorized {
+					fmt.Println()
+					fmt.Printf(`Next Steps:
+1. Run gwa gateway list
+2. Check if %s is in the list
+3. If not, run gwa config set gateway <Gateway ID> with a valid Gateway ID
+`, ctx.Gateway)		
+					fmt.Println()
+				} else {
 					fmt.Println()
 					fmt.Println(
 						heredoc.Doc(`
