@@ -29,19 +29,56 @@ type GenerateConfigOptions struct {
 	Out              string
 }
 
+type Response struct {
+	Available  bool       `json:"available"`
+	Suggestion Suggestion `json:"suggestion"`
+}
+
+type Suggestion struct {
+	ServiceName string   `json:"serviceName"`
+	Names       []string `json:"names"`
+	Hosts       []string `json:"hosts"`
+}
+
 func (o *GenerateConfigOptions) IsEmpty() bool {
 	return o.Template == "" && o.Service == "" && o.Upstream == ""
 }
 
 func (o *GenerateConfigOptions) ValidateTemplate() error {
-	if o.Template == "kong-httpbin" || o.Template == "client-credentials-shared-idp" {
+	if o.Template == "kong-httpbin" || o.Template == "client-credentials-shared-idp" || o.Template == "quick-start" {
 		return nil
 	}
 	return fmt.Errorf("%s is not a valid template", o.Template)
 }
 
-func (o *GenerateConfigOptions) Exec() error {
+func (o *GenerateConfigOptions) ValidateService(ctx *pkg.AppContext, service string) error {
+	path := fmt.Sprintf("/ds/api/%s/routes/availability?gatewayId=%s&serviceName=%s", ctx.ApiVersion, ctx.Gateway, service)
+	URL, _ := ctx.CreateUrl(path, nil)
+	decodedURL, err := url.QueryUnescape(URL)
+	if err != nil {
+		return err
+	}
+	request, err := pkg.NewApiGet[Response](ctx, decodedURL)
+	if err != nil {
+		return err
+	}
+	response, err := request.Do()
+	if err != nil {
+		return err
+	}
+
+	if !response.Data.Available {
+		return fmt.Errorf("Service %s is already in use. Suggestion: %s", service, response.Data.Suggestion.ServiceName)
+	}
+	return nil
+}
+
+func (o *GenerateConfigOptions) Exec(ctx *pkg.AppContext) error {
 	err := o.ValidateTemplate()
+	if err != nil {
+		return err
+	}
+	err = o.ValidateService(ctx, o.Service)
 	if err != nil {
 		return err
 	}
@@ -90,7 +127,7 @@ func NewGenerateConfigCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "Generate gateway resources based on pre-defined templates",
 		Args:  cobra.OnlyValidArgs,
 		Example: heredoc.Doc(`
-$ gwa generate-config --template kong-httpbin \
+$ gwa generate-config --template quick-start \
     --service my-service \
 	--upstream https://httpbin.org
 
@@ -126,7 +163,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 					return err
 				}
 			}
-			err := opts.Exec()
+			err := opts.Exec(ctx)
 			if err != nil {
 				return err
 			}
@@ -144,12 +181,12 @@ $ gwa generate-config --template client-credentials-shared-idp \
 		}),
 	}
 
-	generateConfigCmd.Flags().StringVarP(&opts.Template, "template", "t", "", "Name of a pre-defined template (kong-httpbin, client-credentials-shared-idp)")
+	generateConfigCmd.Flags().StringVarP(&opts.Template, "template", "t", "", "Name of a pre-defined template (quick-start, client-credentials-shared-idp, kong-httpbin)")
 	generateConfigCmd.Flags().StringVarP(&opts.Service, "service", "s", "", "A unique service subdomain for your vanity url: https://<service>.api.gov.bc.ca")
 	generateConfigCmd.Flags().StringVarP(&opts.Upstream, "upstream", "u", "", "The upstream implementation of the API")
 	generateConfigCmd.Flags().StringVar(&opts.Organization, "org", "ministry-of-citizens-services", "Set the organization")
 	generateConfigCmd.Flags().StringVar(&opts.OrganizationUnit, "org-unit", "databc", "Set the organization unit")
-	generateConfigCmd.Flags().StringVarP(&opts.Out, "out", "o", "gw-config.yml", "The file to output the generate config to")
+	generateConfigCmd.Flags().StringVarP(&opts.Out, "out", "o", "gw-config.yaml", "The file to output the generate config to")
 
 	return generateConfigCmd
 }
@@ -199,10 +236,18 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 
 	prompts[service] = pkg.NewTextInput("Service", "", true)
 	prompts[service].TextInput.Focus()
+	prompts[service].Validator = func(input string) error {
+		err := opts.ValidateService(ctx, input)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 
 	prompts[template] = pkg.NewList("Template", []string{
 		"client-credentials-shared-idp",
 		"kong-httpbin",
+		"quick-start",
 	})
 
 	prompts[upstream] = pkg.NewTextInput("Upstream (URL)", "", true)
@@ -214,7 +259,7 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 	prompts[organization] = pkg.NewTextInput("Organization", "", false)
 	prompts[orgUnit] = pkg.NewTextInput("Org Unit", "", false)
 	prompts[outfile] = pkg.NewTextInput("Filename", "Must be a YAML file", true)
-	prompts[outfile].TextInput.SetValue("gw-config.yml")
+	prompts[outfile].TextInput.SetValue("gw-config.yaml")
 	prompts[outfile].Validator = func(input string) error {
 		if strings.HasSuffix(input, ".yml") || strings.HasSuffix(input, ".yaml") {
 			return nil

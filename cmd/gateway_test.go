@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"os"
@@ -41,13 +42,20 @@ func TestGatewayCommands(t *testing.T) {
 		{
 			name: "list gateways",
 			args: []string{"list"},
-			expect: `ns-123
-ns-456`,
+			expect: `Display Name     Gateway ID  
+janis's Gateway  gw-1        
+janis's Gateway  gw-2        `,
 			method: "GET",
 			response: func(r *http.Request) (*http.Response, error) {
-				return httpmock.NewJsonResponse(200, []string{
-					"ns-123",
-					"ns-456",
+				return httpmock.NewJsonResponse(200, []GatewayFormData{
+					{
+						GatewayId: "gw-1",
+						DisplayName: "janis's Gateway",
+					},
+					{
+						GatewayId: "gw-2",
+						DisplayName: "janis's Gateway",
+					},
 				})
 			},
 		},
@@ -137,23 +145,33 @@ ns-456`,
 		{
 			name:   "show current gateway",
 			args:   []string{"current"},
-			expect: "ns-sampler",
+			expect: `Display Name     Gateway ID  
+janis's Gateway  ns-sampler  
+`,
+			method: "GET",
+			gateway: "/ns-sampler",
+			response: func(r *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(200, map[string]interface{}{
+					"displayName": "janis's Gateway",
+				})
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			buf := &bytes.Buffer{}
 			dir := t.TempDir()
 			setup(dir)
 			if tt.response != nil {
 				httpmock.Activate()
 				defer httpmock.DeactivateAndReset()
-				URL := fmt.Sprintf("https://api.gov.ca/ds/api/v2/gateways%s", tt.gateway)
+				URL := fmt.Sprintf("https://api.gov.ca/ds/api/v3/gateways%s", tt.gateway)
 				httpmock.RegisterResponder(tt.method, URL, tt.response)
 			}
 			ctx := &pkg.AppContext{
 				ApiHost:    "api.gov.ca",
-				ApiVersion: "v2",
+				ApiVersion: "v3",
 				Gateway:    "ns-sampler",
 			}
 			args := append([]string{"gateway"}, tt.args...)
@@ -161,13 +179,20 @@ ns-456`,
 				Use:          "gwa",
 				SilenceUsage: true,
 			}
-			mainCmd.AddCommand(NewGatewayCmd(ctx))
+			mainCmd.AddCommand(NewGatewayCmd(ctx, buf))
 			mainCmd.SetArgs(args)
-			out := capturer.CaptureOutput(func() {
-				mainCmd.Execute()
-			})
 
-			assert.Contains(t, out, tt.expect, "Expect: %v\nActual: %v\n", tt.expect, out)
+			// Use buffer to capture table output
+			if (tt.name == "list gateways" || tt.name == "show current gateway") {
+				mainCmd.Execute()
+				out := buf.String()
+				assert.Contains(t, out, tt.expect, "Expect: %v\nActual: %v\n", tt.expect, out)
+			} else {
+				out := capturer.CaptureOutput(func() {
+					mainCmd.Execute()
+				})
+				assert.Contains(t, out, tt.expect, "Expect: %v\nActual: %v\n", tt.expect, out)
+			}
 		})
 	}
 }

@@ -10,22 +10,24 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/fatih/color"
+	"github.com/rodaine/table"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"github.com/bcgov/gwa-cli/pkg"
 )
 
-func NewGatewayCmd(ctx *pkg.AppContext) *cobra.Command {
+func NewGatewayCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	gatewayCmd := &cobra.Command{
 		Use:   "gateway",
 		Short: "Manage your gateways",
 		Long:  `Gateways are used to organize your services.`,
 	}
-	gatewayCmd.AddCommand(GatewayListCmd(ctx))
+	gatewayCmd.AddCommand(GatewayListCmd(ctx, buf))
 	gatewayCmd.AddCommand(GatewayCreateCmd(ctx))
 	gatewayCmd.AddCommand(GatewayDestroyCmd(ctx))
-	gatewayCmd.AddCommand(GatewayCurrentCmd(ctx))
+	gatewayCmd.AddCommand(GatewayCurrentCmd(ctx, buf))
 	return gatewayCmd
 }
 
@@ -38,14 +40,14 @@ func (n *GatewayFormData) IsEmpty() bool {
 	return n.DisplayName == "" && n.GatewayId == ""
 }
 
-func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
+func GatewayListCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	listCommand := &cobra.Command{
 		Use:   "list",
 		Short: "List all your managed gateways",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			path := fmt.Sprintf("/ds/api/%s/gateways", ctx.ApiVersion)
 			URL, _ := ctx.CreateUrl(path, nil)
-			r, err := pkg.NewApiGet[[]string](ctx, URL)
+			r, err := pkg.NewApiGet[[]GatewayFormData](ctx, URL)
 			if err != nil {
 				return err
 			}
@@ -54,15 +56,13 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 			response, err := r.Do()
 			if err != nil {
 				loader.Stop()
-				if response.StatusCode == http.StatusUnauthorized {
-					fmt.Println()
-					fmt.Println(
-						heredoc.Doc(`
-							Next Steps:
-							Run gwa login to obtain another auth token
-						`),
-					)
-				}
+				fmt.Println()
+				fmt.Println(
+					heredoc.Doc(`
+						Next Steps:
+						Run gwa login to obtain another auth token
+					`),
+				)
 				return err
 			}
 			loader.Stop()
@@ -71,8 +71,22 @@ func GatewayListCmd(ctx *pkg.AppContext) *cobra.Command {
 				fmt.Println("You have no gateways")
 			}
 
-			for _, n := range response.Data {
-				fmt.Println(n)
+			if len(response.Data) > 0 {
+				headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+  				columnFmt := color.New(color.FgYellow).SprintfFunc()
+				tbl := table.New("Display Name", "Gateway ID")
+
+				if buf != nil {
+					tbl.WithWriter(buf)
+				}
+				
+				tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+
+				for _, n := range response.Data {
+					tbl.AddRow(n.DisplayName, n.GatewayId)
+				}
+			
+				tbl.Print()
 			}
 
 			return nil
@@ -127,8 +141,8 @@ Create Gateway
 Hit enter to accept the default display name (<IDIR>'s gateway) or provide a name below.
 
 Display names may consist of:
-- Letters, numbers, spaces or the special characters -()_
-- No more than 30 characters
+- Letters, numbers, spaces or the special characters -()_/.'
+- 3-30 characters
 
 `),
 		Prompts: prompts,
@@ -218,7 +232,7 @@ func createGateway(ctx *pkg.AppContext, data *GatewayFormData) (string, error) {
 	return response.Data.GatewayId, nil
 }
 
-func GatewayCurrentCmd(ctx *pkg.AppContext) *cobra.Command {
+func GatewayCurrentCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 	currentCmd := &cobra.Command{
 		Use:   "current",
 		Short: "Display the current gateway",
@@ -231,7 +245,49 @@ You can create a gateway by running:
 				return fmt.Errorf("no gateway has been defined")
 			}
 
-			fmt.Println(ctx.Gateway)
+			path := fmt.Sprintf("/ds/api/%s/gateways/%s", ctx.ApiVersion, ctx.Gateway)
+			URL, _ := ctx.CreateUrl(path, nil)
+
+			r, err := pkg.NewApiGet[GatewayFormData](ctx, URL)
+			if err != nil {
+				return err
+			}
+			loader := pkg.NewSpinner()
+			loader.Start()
+			response, err := r.Do()
+			if err != nil {
+				loader.Stop()
+				if response.StatusCode == http.StatusUnauthorized {
+					fmt.Println()
+					fmt.Printf(`Next Steps:
+1. Run gwa gateway list
+2. Check if %s is in the list
+3. If not, run gwa config set gateway <Gateway ID> with a valid Gateway ID
+`, ctx.Gateway)		
+					fmt.Println()
+				} else {
+					fmt.Println()
+					fmt.Println(
+						heredoc.Doc(`
+							Next Steps:
+							Run gwa login to obtain another auth token
+						`),
+					)
+				}
+				return err
+			}
+			loader.Stop()
+
+			headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
+  			columnFmt := color.New(color.FgYellow).SprintfFunc()
+			tbl := table.New("Display Name", "Gateway ID")
+			if buf != nil {
+				tbl.WithWriter(buf)
+			}
+			tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
+			tbl.AddRow(response.Data.DisplayName, ctx.Gateway)
+			tbl.Print()
+
 			return nil
 		},
 	}
