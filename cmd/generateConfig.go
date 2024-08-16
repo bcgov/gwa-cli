@@ -52,7 +52,7 @@ func (o *GenerateConfigOptions) ValidateTemplate() error {
 }
 
 func (o *GenerateConfigOptions) ValidateService(ctx *pkg.AppContext, service string) error {
-	path := fmt.Sprintf("/ds/api/v3/routes/availability?gatewayId=%s&serviceName=%s", ctx.Gateway, service)
+	path := fmt.Sprintf("/ds/api/%s/routes/availability?gatewayId=%s&serviceName=%s", ctx.ApiVersion, ctx.Gateway, service)
 	URL, _ := ctx.CreateUrl(path, nil)
 	decodedURL, err := url.QueryUnescape(URL)
 	if err != nil {
