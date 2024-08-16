@@ -139,6 +139,7 @@ func TestValidateService_Available(t *testing.T) {
 	ctx := &pkg.AppContext{
 		Gateway: "test-gateway",
 		ApiHost: "api.gov.ca",
+		ApiVersion: "v3",
 	}
 	serviceName := "available-service"
 
@@ -162,6 +163,7 @@ func TestValidateService_NotAvailable(t *testing.T) {
 	ctx := &pkg.AppContext{
 		Gateway: "test-gateway",
 		ApiHost: "api.gov.ca",
+		ApiVersion: "v3",
 	}
 	serviceName := "unavailable-service"
 
