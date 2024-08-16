@@ -44,8 +44,8 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	// Disable these for now since they don't do anything
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-confg.yaml)")
 	// rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "only print results, ideal for CI/CD")
+	// rootCmd.PersistentFlags().StringVar(&ctx.ApiVersion, "api-version", ctx.ApiVersion, "Set the global API version")
 	rootCmd.PersistentFlags().BoolVarP(&ctx.Debug, "debug", "D", false, "Print debug information to stdout when the command has exited")
-	rootCmd.PersistentFlags().StringVar(&ctx.ApiVersion, "api-version", ctx.ApiVersion, "Set the global API version")
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiHost, "host", ctx.ApiHost, "Set the default host to use for the API")
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
 	rootCmd.PersistentFlags().StringVar(&ctx.Gateway, "gateway", "", "Assign the gateway you would like to use")
