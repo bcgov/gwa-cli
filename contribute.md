@@ -96,7 +96,7 @@ Make sure you have GoReleaser installed to test locally.
 
 At present, `gwa` can only be installed by building from source. You can find the latest release of `gwa-cli` [here](https://github.com/bcgov/gwa-cli/releases).
 
-To install locally you can follow the first 2 steps in Development above, then run:
+To install locally you can follow the first 2 steps in Development above, then run
 
 ```sh
 $ just install
