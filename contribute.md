@@ -102,7 +102,7 @@ To install locally you can follow the first 2 steps in Development above, then r
 $ just install
 ...
 $  gwa-cli
-gwa version 3.0.0
+gwa version 3.0.2
 ```
 
 ## Completions
