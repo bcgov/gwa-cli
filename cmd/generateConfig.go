@@ -62,9 +62,9 @@ func (o *GenerateConfigOptions) ValidateService(ctx *pkg.AppContext, service str
 	if err != nil {
 		return err
 	}
-	
+
 	loader := pkg.NewSpinner()
-	loader.Prefix = "Checking Service availability: "
+	loader.Suffix = " Checking service availability"
 	loader.Start()
 	response, err := request.Do()
 	if err != nil {
@@ -73,8 +73,9 @@ func (o *GenerateConfigOptions) ValidateService(ctx *pkg.AppContext, service str
 	loader.Stop()
 
 	if !response.Data.Available {
-		return fmt.Errorf("Service %s is already in use. Suggestion: %s", service, response.Data.Suggestion.ServiceName)
+		return fmt.Errorf("Checking service availability: Service %s is already in use. Suggestion: %s", service, response.Data.Suggestion.ServiceName)
 	}
+
 	return nil
 }
 
