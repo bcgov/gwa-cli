@@ -60,7 +60,7 @@ func GatewayListCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				fmt.Println(
 					heredoc.Doc(`
 						Next Steps:
-						Run gwa login to obtain another auth token
+						Run 'gwa login' to obtain another auth token
 					`),
 				)
 				return err
@@ -255,9 +255,9 @@ func GatewayCurrentCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 
 			if err != nil {
 				if response.StatusCode == http.StatusUnauthorized {
-					return fmt.Errorf("%v\n\nNext steps:\n1. Run gwa gateway list\n2. Check if %s is in the list\n3. If not, run gwa config set gateway <Gateway ID> with a valid Gateway ID", err, ctx.Gateway)
+					return fmt.Errorf("%v\n\nNext steps:\n1. Run 'gwa gateway list'\n2. Check if '%s' is in the list\n3. If not, run 'gwa config set gateway <Gateway ID>' with a valid Gateway ID", err, ctx.Gateway)
 				} else {
-					return fmt.Errorf("%v\n\nNext steps:\nRun gwa login to obtain another auth token", err)
+					return fmt.Errorf("%v\n\nNext steps:\nRun 'gwa login' to obtain another auth token", err)
 				}
 			}
 
