@@ -47,7 +47,7 @@ func NewLoginCmd(ctx *pkg.AppContext) *cobra.Command {
 				loginMethod = "device login"
 			}
 
-			fmt.Printf("\n"+pkg.Checkmark()+" Successfully logged in using %s.\n\n", loginMethod)
+			fmt.Printf("\n"+pkg.Checkmark()+" Logged into '%s' using %s.\n\n", ctx.ApiHost, loginMethod)
 
 			// List available gateways
 			buf := new(bytes.Buffer)
