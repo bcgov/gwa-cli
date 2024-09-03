@@ -57,7 +57,7 @@ func NewLoginCmd(ctx *pkg.AppContext) *cobra.Command {
 			}
 
 			if buf.Len() > 0 {
-				fmt.Println("You have access to the following Gateways and can switch between them with 'gwa config set gateway <gateway-id>':")
+				fmt.Println("You have access to the following Gateways and can switch between them with 'gwa config set gateway <gateway-id>':\n")
 				fmt.Println(buf.String())
 			} else {
 				fmt.Println("You don't have any Gateways. You can create one with 'gwa gateway create'.")
@@ -71,7 +71,7 @@ func NewLoginCmd(ctx *pkg.AppContext) *cobra.Command {
 			} else {
 				lines := strings.Split(buf.String(), "\n")
 				if len(lines) >= 2 {
-					fmt.Printf("Using Gateway: \n%s\n", strings.TrimSpace(lines[1]))
+					fmt.Printf("Currently using: \n%s\n", strings.TrimSpace(lines[1]))
 				} else {
 					fmt.Println("Unable to determine current Gateway.")
 				}
