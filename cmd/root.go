@@ -48,7 +48,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd.PersistentFlags().BoolVarP(&ctx.Debug, "debug", "D", false, "Print debug information to stdout when the command has exited")
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiHost, "host", ctx.ApiHost, "Set the default host to use for the API")
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
-	rootCmd.PersistentFlags().StringVar(&ctx.Gateway, "gateway", "", "Assign the gateway you would like to use")
+	rootCmd.PersistentFlags().StringVar(&ctx.Gateway, "gateway", "", "Assign the Gateway (ID) you would like to use")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	return rootCmd

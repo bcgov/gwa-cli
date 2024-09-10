@@ -60,7 +60,7 @@ func GatewayListCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				fmt.Println(
 					heredoc.Doc(`
 						Next Steps:
-						Run gwa login to obtain another auth token
+						Run 'gwa login' to obtain another auth token
 					`),
 				)
 				return err
@@ -73,19 +73,19 @@ func GatewayListCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 
 			if len(response.Data) > 0 {
 				headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-  				columnFmt := color.New(color.FgYellow).SprintfFunc()
+				columnFmt := color.New(color.FgYellow).SprintfFunc()
 				tbl := table.New("Display Name", "Gateway ID")
 
 				if buf != nil {
 					tbl.WithWriter(buf)
 				}
-				
+
 				tbl.WithHeaderFormatter(headerFmt).WithFirstColumnFormatter(columnFmt)
 
 				for _, n := range response.Data {
 					tbl.AddRow(n.DisplayName, n.GatewayId)
 				}
-			
+
 				tbl.Print()
 			}
 
@@ -238,10 +238,6 @@ func GatewayCurrentCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		Short: "Display the current gateway",
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Gateway == "" {
-				fmt.Println(heredoc.Doc(`
-You can create a gateway by running:
-    $ gwa gateway create
-`))
 				return fmt.Errorf("no gateway has been defined")
 			}
 
@@ -255,31 +251,18 @@ You can create a gateway by running:
 			loader := pkg.NewSpinner()
 			loader.Start()
 			response, err := r.Do()
-			if err != nil {
-				loader.Stop()
-				if response.StatusCode == http.StatusUnauthorized {
-					fmt.Println()
-					fmt.Printf(`Next Steps:
-1. Run gwa gateway list
-2. Check if %s is in the list
-3. If not, run gwa config set gateway <Gateway ID> with a valid Gateway ID
-`, ctx.Gateway)		
-					fmt.Println()
-				} else {
-					fmt.Println()
-					fmt.Println(
-						heredoc.Doc(`
-							Next Steps:
-							Run gwa login to obtain another auth token
-						`),
-					)
-				}
-				return err
-			}
 			loader.Stop()
 
+			if err != nil {
+				if response.StatusCode == http.StatusUnauthorized {
+					return fmt.Errorf("%v\n\nNext steps:\n1. Run 'gwa gateway list'\n2. Check if '%s' is in the list\n3. If not, run 'gwa config set gateway <Gateway ID>' with a valid Gateway ID", err, ctx.Gateway)
+				} else {
+					return fmt.Errorf("%v\n\nNext steps:\nRun 'gwa login' to obtain another auth token", err)
+				}
+			}
+
 			headerFmt := color.New(color.FgGreen, color.Underline).SprintfFunc()
-  			columnFmt := color.New(color.FgYellow).SprintfFunc()
+			columnFmt := color.New(color.FgYellow).SprintfFunc()
 			tbl := table.New("Display Name", "Gateway ID")
 			if buf != nil {
 				tbl.WithWriter(buf)
