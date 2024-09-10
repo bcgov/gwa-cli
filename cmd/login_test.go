@@ -110,11 +110,13 @@ func TestDeviceLoginSuccess(t *testing.T) {
 		mainCmd.Execute()
 	})
 	assert.Contains(t, out, fmt.Sprintf(`
+To complete the login process, please follow these steps:
+1. Open this URL in your web browser: %s
+2. Enter this code when prompted: ABCD-EFGH
+3. Complete the IDIR authentication process in your browser
+4. Return to this terminal window after successful authentication
 
-Please sign in at %s
-Input the following code ABCD-EFGH
-
-Waiting for authentication handshake...`, verificationUrl))
+Waiting for you to complete the login process...`, verificationUrl))
 }
 
 func TestClientCredentialLogin(t *testing.T) {

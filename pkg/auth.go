@@ -221,10 +221,12 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.
 		return err
 	}
 
-	urlLine := fmt.Sprintf("\n\nPlease sign in at %s", response.Data.VerificationUri)
-	fmt.Println(urlLine)
-	fmt.Println("Input the following code", boldText.Render(response.Data.UserCode))
-	fmt.Print("\nWaiting for authentication handshake...")
+	fmt.Println("\nTo complete the login process, please follow these steps:")
+	fmt.Printf("1. Open this URL in your web browser: %s\n", boldText.Render(response.Data.VerificationUri))
+	fmt.Printf("2. Enter this code when prompted: %s\n", boldText.Render(response.Data.UserCode))
+	fmt.Println("3. Complete the IDIR authentication process in your browser")
+	fmt.Println("4. Return to this terminal window after successful authentication")
+	fmt.Println("\nWaiting for you to complete the login process...")
 
 	for i := 0; i < 60; i++ {
 		err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode)
