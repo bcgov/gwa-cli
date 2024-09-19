@@ -60,7 +60,7 @@ func NewConfigSetCmd(ctx *pkg.AppContext) *cobra.Command {
 Exposes some specific config values that can be defined by the user.
 
 %s
-  gateway:         The default gateway used
+  gateway:         The default Gateway (ID) used 
   token:           Use only if you have a token you know is authenticated
   host:            The API host you wish to communicate with
   scheme:          http or https
@@ -110,7 +110,7 @@ $ gwa config set --gateway ns-sampler
 
 	configSetCmd.Flags().String("token", "", "set the authentication token")
 	viper.BindPFlag("api_key", configSetCmd.Flags().Lookup("token"))
-	configSetCmd.Flags().String("gateway", "", "set the gateway")
+	configSetCmd.Flags().String("gateway", "", "set the Gateway (ID)")
 	viper.BindPFlag("gateway", configSetCmd.Flags().Lookup("gateway"))
 	configSetCmd.Flags().String("host", "", "set the host")
 	viper.BindPFlag("host", configSetCmd.Flags().Lookup("host"))
