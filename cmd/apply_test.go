@@ -20,7 +20,7 @@ var kongConfig = `services:
     tags: [ ns.aps-moh-proto ]
 `
 
-var input = `kind: Namespace
+var input = `kind: Gateway
 name: ns-sampler
 displayName: ns-sampler Display Name
 ---
@@ -71,7 +71,7 @@ func TestApplyOptions(t *testing.T) {
 				"host": "api.co2.com",
 			},
 		}},
-		Skipped{Name: "ns-sampler", Kind: "Namespace"},
+		Skipped{Name: "ns-sampler", Kind: "Gateway"},
 		Resource{Kind: "CredentialIssuer", Config: map[string]interface{}{"name": "aps-moh-proto default"}},
 		Resource{Kind: "DraftDataset", Config: map[string]interface{}{"name": "my-service-dataset"}},
 		Resource{Kind: "Product", Config: map[string]interface{}{"name": "my-service API"}},
@@ -171,7 +171,7 @@ func TestPublishResource(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	httpmock.RegisterResponder(
 		"PUT",
-		"https://aps.gov.bc.ca/ds/api/v2/namespaces/ns-sampler/issuers",
+		"https://aps.gov.bc.ca/ds/api/v2/gateways/ns-sampler/issuers",
 		func(r *http.Request) (*http.Response, error) {
 			return httpmock.NewJsonResponse(200, map[string]interface{}{
 				"result": "Issuer published",
@@ -180,7 +180,7 @@ func TestPublishResource(t *testing.T) {
 	)
 	ctx := &pkg.AppContext{
 		ApiVersion: "v2",
-		Namespace:  "ns-sampler",
+		Gateway:    "ns-sampler",
 		Host:       "aps.gov.bc.ca",
 	}
 	doc := map[string]interface{}{
@@ -198,7 +198,7 @@ func TestPublishGatewayService(t *testing.T) {
 	defer httpmock.DeactivateAndReset()
 	httpmock.RegisterResponder(
 		"PUT",
-		"https://aps.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway",
+		"https://aps.gov.bc.ca/gw/api/v2/gateways/ns-sampler/gateway",
 		func(r *http.Request) (*http.Response, error) {
 			err := r.ParseMultipartForm(10 << 20)
 			if err != nil {
@@ -238,7 +238,7 @@ func TestPublishGatewayService(t *testing.T) {
 	}
 	ctx := &pkg.AppContext{
 		ApiVersion: "v2",
-		Namespace:  "ns-sampler",
+		Gateway:    "ns-sampler",
 		Host:       "aps.gov.bc.ca",
 	}
 	res, err := PublishGatewayService(ctx, doc)
@@ -260,7 +260,7 @@ func TestApplyStdout(t *testing.T) {
 				"✓ Gateway Services published",
 				"Pubished: 2\nSkipped: 1",
 				"4/4 Published, 1 Skipped",
-				"- [Namespace] ns-sampler",
+				"- [Gateway] ns-sampler",
 				"↑ [CredentialIssuer] aps-moh-proto default",
 				"✓ [CredentialIssuer] aps-moh-proto default: Published",
 				"↑ [DraftDataset] my-service-dataset",
@@ -276,7 +276,7 @@ func TestApplyStdout(t *testing.T) {
 				"↑ Publishing Gateway Services",
 				"x Gateway Services publish failed",
 				"0/4 Published, 1 Skipped",
-				"- [Namespace] ns-sampler",
+				"- [Gateway] ns-sampler",
 				"↑ [CredentialIssuer] aps-moh-proto default",
 				"x [CredentialIssuer] aps-moh-proto default failed",
 				"↑ [DraftDataset] my-service-dataset",
@@ -292,7 +292,7 @@ func TestApplyStdout(t *testing.T) {
 		httpmock.Activate()
 		defer httpmock.DeactivateAndReset()
 
-		regexPattern := `=~^https://api\.gov\.bc\.ca/ds/api/v2/namespaces/ns-sampler/\w+$`
+		regexPattern := `=~^https://api\.gov\.bc\.ca/ds/api/v2/gateways/ns-sampler/\w+$`
 		httpmock.RegisterResponder("PUT", regexPattern, func(_ *http.Request) (*http.Response, error) {
 			fmt.Println("Resource publish")
 			return httpmock.NewJsonResponse(tt.responseCode, map[string]interface{}{
@@ -301,7 +301,7 @@ func TestApplyStdout(t *testing.T) {
 		})
 		httpmock.RegisterResponder(
 			"PUT",
-			"https://api.gov.bc.ca/gw/api/v2/namespaces/ns-sampler/gateway",
+			"https://api.gov.bc.ca/gw/api/v2/gateways/ns-sampler/gateway",
 			func(_ *http.Request) (*http.Response, error) {
 				fmt.Println("gateway publish")
 				return httpmock.NewJsonResponse(tt.responseCode, map[string]interface{}{
@@ -314,7 +314,7 @@ func TestApplyStdout(t *testing.T) {
 		cwd := t.TempDir()
 		ctx := &pkg.AppContext{
 			Cwd:        cwd,
-			Namespace:  "ns-sampler",
+			Gateway:    "ns-sampler",
 			ApiHost:    "api.gov.bc.ca",
 			ApiVersion: "v2",
 		}

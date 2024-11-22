@@ -1,0 +1,44 @@
+kind: GatewayService
+name: {{ kebabCase .Service }}-dev
+tags: [ns.{{ .Gateway }}]
+url: {{ .UpstreamUrl }}
+protocol: {{ .UpstreamUrl.Scheme }}
+routes:
+  - name: {{ kebabCase .Service }}-dev
+    tags: [ns.{{ .Gateway }}]
+    hosts:
+      - {{ kebabCase .Service }}.dev.api.gov.bc.ca
+    {{- if .UpstreamUrl.Path }}
+    paths: [{{ .UpstreamUrl.Path }}]
+    {{- end }}
+---
+kind: DraftDataset
+name: {{ kebabCase .Service }}-dataset
+title: {{ .Service }}
+organization: {{ .Organization }}
+organizationUnit: {{ .OrganizationUnit }}
+notes: |
+  The {{ .Service }} API is a versatile toolset for developers.
+  {{ .Service }} API offers a variety of endpoints to streamline application development.
+
+  The endpoints in this API are accessible without authentication.
+
+  To learn more about the API, visit the {{ .Service }} API [developer site](https://your-api-developer-site.com)
+  or view the [API specification](https://openapi.apps.gov.bc.ca/?url=https://your-api-developer-site.com/openapi.yaml).
+
+  Use the following URLs to access this API:
+  - Development environment: https://{{ kebabCase .Service }}.dev.api.gov.bc.ca{{- if .UpstreamUrl.Path }}{{ .UpstreamUrl.Path }}{{- end }}
+tags: [{{ kebabCase .Service }}, openapi]
+license_title: Access Only
+security_class: PUBLIC
+record_publish_date: '2024-01-01'
+---
+kind: Product
+name: {{ .Service }} API
+dataset: {{ kebabCase .Service }}-dataset
+environments:
+  - name: dev
+    active: false
+    approval: false
+    flow: public
+    services: [{{ kebabCase .Service }}-dev]

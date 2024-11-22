@@ -17,11 +17,11 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 		Use:          "gwa <command> <subcommand> [flags]",
 		Short:        "CLI tool supported by the APS team",
 		SilenceUsage: true,
-		Long:         `GWA CLI helps manage gateway resources in a declarative fashion.`,
+		Long:         `GWA command line interface (CLI) helps manage gateway resources in a declarative fashion.`,
 		Version:      ctx.Version,
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Debug {
-				pkg.Info("Namespace: " + ctx.Namespace)
+				pkg.Info("Gateway: " + ctx.Gateway)
 				pkg.Info("API Version: " + ctx.ApiVersion)
 				pkg.PrintLog()
 			}
@@ -39,16 +39,16 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd.AddCommand(NewApplyCmd(ctx))
 	rootCmd.AddCommand(NewGenerateConfigCmd(ctx))
 	rootCmd.AddCommand(NewLoginCmd(ctx))
-	rootCmd.AddCommand(NewNamespaceCmd(ctx))
+	rootCmd.AddCommand(NewGatewayCmd(ctx, nil))
 	rootCmd.AddCommand(NewStatusCmd(ctx, nil))
 	// Disable these for now since they don't do anything
 	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.gwa-confg.yaml)")
 	// rootCmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "only print results, ideal for CI/CD")
+	// rootCmd.PersistentFlags().StringVar(&ctx.ApiVersion, "api-version", ctx.ApiVersion, "Set the global API version")
 	rootCmd.PersistentFlags().BoolVarP(&ctx.Debug, "debug", "D", false, "Print debug information to stdout when the command has exited")
-	rootCmd.PersistentFlags().StringVar(&ctx.ApiVersion, "api-version", ctx.ApiVersion, "Set the global API version")
 	rootCmd.PersistentFlags().StringVar(&ctx.ApiHost, "host", ctx.ApiHost, "Set the default host to use for the API")
 	rootCmd.PersistentFlags().StringVar(&ctx.Scheme, "scheme", "", "Use to override default https")
-	rootCmd.PersistentFlags().StringVar(&ctx.Namespace, "namespace", "", "Assign the namespace you would like to use")
+	rootCmd.PersistentFlags().StringVar(&ctx.Gateway, "gateway", "", "Assign the Gateway (ID) you would like to use")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
 	return rootCmd
@@ -56,10 +56,10 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 
 func Execute(ctx *pkg.AppContext) *cobra.Command {
 	rootCmd := NewRootCommand(ctx)
-	viper.BindPFlag("namespace", rootCmd.Flags().Lookup("namespace"))
+	viper.BindPFlag("gateway", rootCmd.Flags().Lookup("gateway"))
 	cobra.OnInitialize(initConfig, func() {
 		ctx.ApiKey = viper.GetString("api_key")
-		ctx.Namespace = viper.GetString("namespace")
+		ctx.Gateway = viper.GetString("gateway")
 		ctx.Scheme = viper.GetString("scheme")
 
 		f := rootCmd.Flags().Lookup("host")
@@ -87,7 +87,7 @@ func initConfig() {
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".gwa-config")
 		viper.SetDefault("scheme", "https")
-		pkg.Warning(fmt.Sprintf("No config file exists, creating new file at %s/.gwa-config.yml", home))
+		pkg.Warning(fmt.Sprintf("No config file exists, creating new file at %s/.gwa-config.yaml", home))
 
 		viper.SafeWriteConfig()
 	}

@@ -21,7 +21,7 @@ type NewApi[T any] struct {
 	Request *http.Request
 }
 
-// Using the std `http.NewRequest` pattern, `New` instaniates a request
+// Using the std `http.NewRequest` pattern, `New` instantiates a request
 func (m *NewApi[T]) New() (*NewApi[T], error) {
 	Info(fmt.Sprintf("Request URL: %s", m.url))
 	Info(fmt.Sprintf("Request Method: %s", m.method))
@@ -66,6 +66,12 @@ func (m *NewApi[T]) makeRequest() (ApiResponse[T], error) {
 		return result, err
 	}
 
+	// Check the Content-Type header
+	contentType := response.Header.Get("Content-Type")
+	if strings.Contains(contentType, "text/html") {
+		return result, fmt.Errorf("received HTML error page (status code %d)", response.StatusCode)
+	}
+
 	var errorResponse ApiErrorResponse
 	err = json.Unmarshal(body, &errorResponse)
 	if err != nil {
@@ -91,7 +97,7 @@ func (m *NewApi[T]) Do() (ApiResponse[T], error) {
 	return response, err
 }
 
-// Convience methods
+// Convenience methods
 func NewApiGet[T any](ctx *AppContext, url string) (*NewApi[T], error) {
 	config := NewApi[T]{ctx: ctx, method: "GET", url: url}
 	request, err := config.New()

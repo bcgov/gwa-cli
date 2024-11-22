@@ -31,8 +31,8 @@ func TestContextUrl(t *testing.T) {
 			}{
 				"ns-sampler",
 			},
-			path:   "/namespace",
-			expect: "https://api.bc.gov.ca/namespace?name=ns-sampler",
+			path:   "/gateway",
+			expect: "https://api.bc.gov.ca/gateway?name=ns-sampler",
 			ctx:    x,
 		},
 		{
@@ -46,8 +46,8 @@ func TestContextUrl(t *testing.T) {
 			}{
 				"ns-sampler",
 			},
-			path:   "/namespace",
-			expect: "http://my.local.dev:8000/namespace?name=ns-sampler",
+			path:   "/gateway",
+			expect: "http://my.local.dev:8000/gateway?name=ns-sampler",
 		},
 		{
 			name: "works with ports",
@@ -59,8 +59,8 @@ func TestContextUrl(t *testing.T) {
 			}{
 				"ns-sampler",
 			},
-			path:   "/namespace",
-			expect: "https://my.local.dev:8000/namespace?name=ns-sampler",
+			path:   "/gateway",
+			expect: "https://my.local.dev:8000/gateway?name=ns-sampler",
 		},
 		{
 			name: "builds a URL with multiple param types",
