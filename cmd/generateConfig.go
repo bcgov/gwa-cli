@@ -118,8 +118,6 @@ func (o *GenerateConfigOptions) ImportFromForm(m pkg.GenerateModel) tea.Cmd {
 		o.Service = m.Prompts[service].Value
 		o.Template = m.Prompts[template].Value
 		o.Upstream = m.Prompts[upstream].Value
-		o.Organization = m.Prompts[organization].Value
-		o.OrganizationUnit = m.Prompts[orgUnit].Value
 		o.Out = m.Prompts[outfile].Value
 		return pkg.PromptCompleteEvent("")
 	}
@@ -232,13 +230,11 @@ const (
 	service = iota
 	template
 	upstream
-	organization
-	orgUnit
 	outfile
 )
 
 func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.GenerateModel {
-	var prompts = make([]pkg.PromptField, 6)
+	var prompts = make([]pkg.PromptField, 4)
 
 	prompts[service] = pkg.NewTextInput("Service", "", true)
 	prompts[service].TextInput.Focus()
@@ -262,8 +258,9 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 		return err
 	}
 
-	prompts[organization] = pkg.NewTextInput("Organization", "", false)
-	prompts[orgUnit] = pkg.NewTextInput("Org Unit", "", false)
+	opts.Organization = "ministry-of-citizens-services"
+	opts.OrganizationUnit = "databc"
+
 	prompts[outfile] = pkg.NewTextInput("Filename", "Must be a YAML file", true)
 	prompts[outfile].TextInput.SetValue("gw-config.yaml")
 	prompts[outfile].Validator = func(input string) error {
