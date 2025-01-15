@@ -267,6 +267,6 @@ func TestInteractiveGenerator(t *testing.T) {
 	assert.Contains(t, compare, "tags: [ns.test-gateway]")
 	assert.Contains(t, compare, "url: https://httpbin.org/post")
 	assert.Contains(t, compare, "- my-service.dev.api.gov.bc.ca")
-	assert.Contains(t, compare, "organization: ministry-of-citizens-services")
-	assert.Contains(t, compare, "organizationUnit: databc")
+	assert.Contains(t, compare, "organization: "+ctx.DefaultOrg)
+	assert.Contains(t, compare, "organizationUnit: "+ctx.DefaultOrgUnit)
 }

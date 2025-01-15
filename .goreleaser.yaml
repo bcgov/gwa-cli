@@ -15,6 +15,8 @@ builds:
       - -X main.ClientId={{ .Env.GWA_CLIENT_ID }}
       - -X main.ApiVersion={{ .Env.GWA_VERSION }}
       - -X main.Version={{ .Env.CLI_VERSION }}
+      - -X main.DefaultOrg={{ .Env.DEFAULT_ORG }}
+      - -X main.DefaultOrgUnit={{ .Env.DEFAULT_ORG_UNIT }}
   - id: linux
     binary: gwa
     env:
@@ -30,6 +32,8 @@ builds:
       - -X main.ClientId={{ .Env.GWA_CLIENT_ID }}
       - -X main.ApiVersion={{ .Env.GWA_VERSION }}
       - -X main.Version={{ .Env.CLI_VERSION }}
+      - -X main.DefaultOrg={{ .Env.DEFAULT_ORG }}
+      - -X main.DefaultOrgUnit={{ .Env.DEFAULT_ORG_UNIT }}
   - id: windows
     binary: gwa
     env:
@@ -45,6 +49,8 @@ builds:
       - -X main.ClientId={{ .Env.GWA_CLIENT_ID }}
       - -X main.ApiVersion={{ .Env.GWA_VERSION }}
       - -X main.Version={{ .Env.CLI_VERSION }}
+      - -X main.DefaultOrg={{ .Env.DEFAULT_ORG }}
+      - -X main.DefaultOrgUnit={{ .Env.DEFAULT_ORG_UNIT }}
 
 archives:
   - format: zip

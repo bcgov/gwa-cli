@@ -188,8 +188,8 @@ $ gwa generate-config --template client-credentials-shared-idp \
 	generateConfigCmd.Flags().StringVarP(&opts.Template, "template", "t", "", "Name of a pre-defined template (quick-start, client-credentials-shared-idp, kong-httpbin)")
 	generateConfigCmd.Flags().StringVarP(&opts.Service, "service", "s", "", "A unique service subdomain for your vanity url: https://<service>.api.gov.bc.ca")
 	generateConfigCmd.Flags().StringVarP(&opts.Upstream, "upstream", "u", "", "The upstream implementation of the API")
-	generateConfigCmd.Flags().StringVar(&opts.Organization, "org", "ministry-of-citizens-services", "Set the organization")
-	generateConfigCmd.Flags().StringVar(&opts.OrganizationUnit, "org-unit", "databc", "Set the organization unit")
+	generateConfigCmd.Flags().StringVar(&opts.Organization, "org", ctx.DefaultOrg, "Set the organization")
+	generateConfigCmd.Flags().StringVar(&opts.OrganizationUnit, "org-unit", ctx.DefaultOrgUnit, "Set the organization unit")
 	generateConfigCmd.Flags().StringVarP(&opts.Out, "out", "o", "gw-config.yaml", "The file to output the generate config to")
 
 	return generateConfigCmd
@@ -258,8 +258,8 @@ func initGenerateModel(ctx *pkg.AppContext, opts *GenerateConfigOptions) pkg.Gen
 		return err
 	}
 
-	opts.Organization = "ministry-of-citizens-services"
-	opts.OrganizationUnit = "databc"
+	opts.Organization = ctx.DefaultOrg
+	opts.OrganizationUnit = ctx.DefaultOrgUnit
 
 	prompts[outfile] = pkg.NewTextInput("Filename", "Must be a YAML file", true)
 	prompts[outfile].TextInput.SetValue("gw-config.yaml")
