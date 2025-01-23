@@ -9,6 +9,8 @@ env:
   GWA_API_HOST: api.gov.bc.ca
   GWA_CLIENT_ID: gwa-cli
   GWA_VERSION: v3
+  DEFAULT_ORG: ministry-of-citizens-services
+  DEFAULT_ORG_UNIT: databc
 
 jobs:
   release-tag:

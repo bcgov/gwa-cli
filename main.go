@@ -10,16 +10,20 @@ import (
 var ApiHost string
 var ApiVersion string
 var ClientId string
+var DefaultOrg string
+var DefaultOrgUnit string
 var Version string
 
 func main() {
 	cwd, _ := os.Getwd()
 	ctx := &pkg.AppContext{
-		ApiHost:    ApiHost,
-		ApiVersion: ApiVersion,
-		ClientId:   ClientId,
-		Cwd:        cwd,
-		Version:    Version,
+		ApiHost:        ApiHost,
+		ApiVersion:     ApiVersion,
+		ClientId:       ClientId,
+		Cwd:            cwd,
+		DefaultOrg:     DefaultOrg,
+		DefaultOrgUnit: DefaultOrgUnit,
+		Version:        Version,
 	}
 	cmd.Execute(ctx)
 }
