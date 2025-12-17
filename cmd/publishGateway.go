@@ -115,14 +115,6 @@ func PrepareConfigFile(ctx *pkg.AppContext, opts *PublishGatewayOptions) (io.Rea
 
 	// validate all the inputs are YAML, if directory loop through
 	for _, input := range opts.inputs {
-		if input == "-" {
-			// read from stdin
-			content, err := io.ReadAll(os.Stdin)
-			if err != nil {
-				return nil, err
-			}
-			return bytes.NewReader(content), nil
-		}
 		filePath := filepath.Join(ctx.Cwd, input)
 		info, err := os.Stat(filePath)
 		if err != nil {
