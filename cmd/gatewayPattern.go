@@ -145,7 +145,7 @@ func GatewayPattern(ctx *pkg.AppContext, opts *GatewayPatternOptions, configFile
 		return result, err
 	}
 
-	path := fmt.Sprintf("/ds/api/%s/sdx/%s/config-from-pattern", ctx.ApiVersion, ctx.Gateway)
+	path := fmt.Sprintf("/ds/api/%s/gateways/%s/pattern", ctx.ApiVersion, ctx.Gateway)
 	URL, _ := ctx.CreateUrl(path, nil)
 	r, err := pkg.NewApiPut[GatewayPatternResponse](ctx, URL, body)
 	if err != nil {
