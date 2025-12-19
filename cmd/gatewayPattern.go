@@ -27,7 +27,6 @@ func GatewayPatternCmd(ctx *pkg.AppContext) *cobra.Command {
 		Long: heredoc.Doc(`
     `),
 		Example: heredoc.Doc(`
-    $ gwa gateway-pattern
     $ gwa gateway-pattern path/to/config1.yaml
     `),
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, args []string) error {
