@@ -124,10 +124,11 @@ func NewApiDelete[T any](ctx *AppContext, url string) (*NewApi[T], error) {
 
 // API error parsing
 type ApiErrorResponse struct {
-	Error        string `json:"error"`
-	ErrorMessage string `json:"error_description"`
-	Message      string `json:"message"`
-	Results      string `json:"results"`
+	Error        string         `json:"error"`
+	ErrorMessage string         `json:"error_description"`
+	Message      string         `json:"message"`
+	Results      string         `json:"results"`
+	Fields       map[string]any `json:"fields"`
 	Details      struct {
 		Item struct {
 			Message string `json:"message"`
@@ -142,6 +143,11 @@ func (e *ApiErrorResponse) GetError() error {
 	}
 	if e.Message != "" {
 		result = append(result, e.Message)
+	}
+	if e.Fields != nil {
+		for k, v := range e.Fields {
+			result = append(result, fmt.Sprintf("%s: %s", k, v.(map[string]interface{})["message"].(string)))
+		}
 	}
 	if e.Results != "" {
 		result = append(result, e.Results)

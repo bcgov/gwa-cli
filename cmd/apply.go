@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
@@ -53,14 +54,27 @@ type ApplyOptions struct {
 func (o *ApplyOptions) Parse() error {
 	var gatewayService = GatewayService{}
 
-	filePath := filepath.Join(o.cwd, o.input)
-	ext := filepath.Ext(filePath)
-	if ext != ".yaml" && ext != ".yml" {
-		return fmt.Errorf("Invalid file type. %s is not a YAML file", o.input)
-	}
-	file, err := os.ReadFile(filePath)
-	if err != nil {
-		return err
+	var file []byte
+	if o.input == "-" {
+		// read from stdin
+		content, err := io.ReadAll(os.Stdin)
+		if err != nil {
+			return err
+		}
+		file = content
+	} else {
+
+		filePath := filepath.Join(o.cwd, o.input)
+		ext := filepath.Ext(filePath)
+		if ext != ".yaml" && ext != ".yml" {
+			return fmt.Errorf("Invalid file type. %s is not a YAML file", o.input)
+		}
+		content, err := os.ReadFile(filePath)
+		if err != nil {
+			return err
+		}
+
+		file = content
 	}
 
 	splitDocs, err := pkg.SplitYAML(file)
