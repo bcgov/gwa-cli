@@ -37,7 +37,11 @@ func GatewayPatternCmd(ctx *pkg.AppContext) *cobra.Command {
           Example:
             $ gwa config set gateway YOUR_GATEWAY_NAME
         `))
-				return fmt.Errorf("mo gateway has been set")
+				return fmt.Errorf("no gateway has been set")
+			}
+
+			if len(args) == 0 {
+				return fmt.Errorf("a pattern input file is required")
 			}
 
 			opts.input = args[0]

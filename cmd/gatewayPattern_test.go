@@ -51,8 +51,8 @@ name: sdx.test-abc
 		},
 
 		{
-			name:   "eval invalid gateway pattern",
-			expect: `Error: missing required parameter: service_name`,
+			name:   "eval missing parameter",
+			expect: `Error: Invalid input`,
 			method: "PUT",
 			payload: `{
 				"pattern": "simple-service.r1",
@@ -63,10 +63,39 @@ name: sdx.test-abc
 			}`,
 			gateway: "/ns-sampler/pattern",
 			response: func(r *http.Request) (*http.Response, error) {
-				return httpmock.NewJsonResponse(400, map[string]interface{}{
-					"message": "missing required parameter: service_name",
+				return httpmock.NewJsonResponse(422, map[string]interface{}{
+					"message": "Invalid input",
+					"fields": map[string]interface{}{
+						"service_name": map[string]interface{}{
+							"message": "service_name is required",
+						},
+					},
 				},
 				)
+			},
+		},
+
+		{
+			name:   "eval invalid gateway pattern",
+			expect: `Error: Invalid input`,
+			method: "PUT",
+			payload: `{
+				"pattern": "simple-service.r1",
+				"parameters": {
+					"gateway_id": "gw-1",
+					"service_url": "https://httpbun.com"
+				}
+			}`,
+			gateway: "/ns-sampler/pattern",
+			response: func(r *http.Request) (*http.Response, error) {
+				return httpmock.NewJsonResponse(422, map[string]interface{}{
+					"message": "Invalid input",
+					"fields": map[string]interface{}{
+						"pattern": map[string]interface{}{
+							"message": "pattern not found",
+						},
+					},
+				})
 			},
 		},
 	}
