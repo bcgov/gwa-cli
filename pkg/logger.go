@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 )
 
 var (
@@ -30,6 +31,12 @@ func Info(msg string) {
 // Prints `[WARN] 00:00:00 message`
 func Warning(msg string) {
 	WarningLogger.Println(msg)
+}
+
+// WarnImmediate prints a warning directly to stderr (not buffered).
+// Use for critical warnings that the user should see regardless of --debug.
+func WarnImmediate(msg string) {
+	fmt.Fprintln(os.Stderr, WarningStyle.Render("[WARN] ")+msg)
 }
 
 // Prints logger buffer to stderr once rest of the program has finished running

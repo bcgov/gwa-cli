@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/bcgov/gwa-cli/pkg"
 	"github.com/spf13/cobra"
@@ -12,11 +13,27 @@ import (
 var cfgFile string
 var quiet bool
 
+func isLocalHost(ctx *pkg.AppContext) bool {
+	host := ctx.Host
+	if host == "" {
+		host = ctx.ApiHost
+	}
+	h := strings.ToLower(host)
+	return strings.Contains(h, "localtest.me") ||
+		strings.Contains(h, "localhost") ||
+		strings.Contains(h, "127.0.0.1")
+}
+
 func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 	var rootCmd = &cobra.Command{
 		Use:          "gwa <command> <subcommand> [flags]",
 		Short:        "CLI tool supported by the APS team",
 		SilenceUsage: true,
+		PersistentPreRun: func(_ *cobra.Command, _ []string) {
+			if ctx.Scheme == "http" && !isLocalHost(ctx) {
+				pkg.WarnImmediate("HTTP scheme is configured. The API redirects to HTTPS - use 'gwa config set scheme https' to avoid unexpected behavior.")
+			}
+		},
 		Long:         `GWA command line interface (CLI) helps manage gateway resources in a declarative fashion.`,
 		Version:      ctx.Version,
 		PersistentPostRunE: func(_ *cobra.Command, _ []string) error {
