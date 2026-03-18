@@ -31,7 +31,7 @@ func NewRootCommand(ctx *pkg.AppContext) *cobra.Command {
 		SilenceUsage: true,
 		PersistentPreRun: func(_ *cobra.Command, _ []string) {
 			if ctx.Scheme == "http" && !isLocalHost(ctx) {
-				pkg.WarnImmediate("HTTP scheme is configured. The API redirects to HTTPS - use 'gwa config set scheme https' to avoid unexpected behavior.")
+				pkg.WarnImmediate("HTTP scheme is configured. The API redirects to HTTPS - use 'gwa config set scheme https' to avoid unexpected behaviour.")
 			}
 		},
 		Long:         `GWA command line interface (CLI) helps manage gateway resources in a declarative fashion.`,
