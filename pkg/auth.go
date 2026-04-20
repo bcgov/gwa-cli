@@ -18,7 +18,6 @@ import (
 )
 
 const PKCEMethodNone = "None"
-const PKCEMethodPlain = "plain"
 const PKCEMethodS256 = "S256"
 
 var boldText = lipgloss.NewStyle().Bold(true)
@@ -236,8 +235,6 @@ func generatePKCECodeChallenge(codeVerifier string, pkceMethod string) (string, 
 	case PKCEMethodS256, "":
 		sum := sha256.Sum256([]byte(codeVerifier))
 		return base64.RawURLEncoding.EncodeToString(sum[:]), nil
-	case PKCEMethodPlain:
-		return codeVerifier, nil
 	default:
 		return "", fmt.Errorf("unsupported PKCE method: %s", pkceMethod)
 	}
@@ -293,6 +290,9 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.
 		err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode, codeVerifier)
 		if err == nil {
 			return nil
+		} else if !strings.Contains(err.Error(), "authorization_pending") {
+
+			fmt.Printf("poll %d/60 response: %v\n", i+1, err)
 		}
 		time.Sleep(time.Second * timeout)
 	}
