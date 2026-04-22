@@ -1,6 +1,9 @@
 package pkg
 
 import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,6 +16,9 @@ import (
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
 )
+
+const PKCEMethodNone = "None"
+const PKCEMethodS256 = "S256"
 
 var boldText = lipgloss.NewStyle().Bold(true)
 
@@ -42,7 +48,16 @@ func DeviceLogin(ctx *AppContext) error {
 	}
 	Info("Config updated")
 
-	err = deviceLogin(wellKnownConfig, ctx.ClientId, 8)
+	pkceMethod := viper.GetString("pkce_method")
+	// Default to S256 if pkce_method is not set, and allow opting out of PKCE by setting pkce_method to "None"
+	switch pkceMethod {
+	case "":
+		pkceMethod = PKCEMethodS256
+	case PKCEMethodNone:
+		pkceMethod = ""
+	}
+
+	err = deviceLogin(wellKnownConfig, ctx.ClientId, 8, pkceMethod)
 	if err != nil {
 		return err
 	}
@@ -206,9 +221,52 @@ type DeviceData struct {
 	VerificationUriComplete string `json:"verification_uri_complete"`
 }
 
-func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.Duration) error {
+func generatePKCECodeVerifier() (string, error) {
+	b := make([]byte, 32)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(b), nil
+}
+
+func generatePKCECodeChallenge(codeVerifier string, pkceMethod string) (string, error) {
+	switch pkceMethod {
+	case PKCEMethodS256, "":
+		sum := sha256.Sum256([]byte(codeVerifier))
+		return base64.RawURLEncoding.EncodeToString(sum[:]), nil
+	default:
+		return "", fmt.Errorf("unsupported PKCE method: %s", pkceMethod)
+	}
+}
+
+func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.Duration, pkceMethod string) error {
+
+	var err error
+
 	data := url.Values{}
 	data.Set("client_id", clientId)
+
+	var codeVerifier string
+	var codeChallenge string
+
+	if pkceMethod != "" {
+
+		data.Set("code_challenge_method", pkceMethod)
+
+		codeVerifier, err = generatePKCECodeVerifier()
+		if err != nil {
+			return err
+		}
+
+		codeChallenge, err = generatePKCECodeChallenge(codeVerifier, pkceMethod)
+		if err != nil {
+			return err
+		}
+
+		data.Set("code_challenge", codeChallenge)
+	}
+
 	URL := wellKnownConfig.DeviceAuthorizationEndpoint
 	request, err := NewApiPost[DeviceData](&AppContext{}, URL, strings.NewReader(data.Encode()))
 	if err != nil {
@@ -229,9 +287,12 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.
 	fmt.Println("\nWaiting for you to complete the login process...")
 
 	for i := 0; i < 60; i++ {
-		err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode)
+		err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode, codeVerifier)
 		if err == nil {
 			return nil
+		} else if !strings.Contains(err.Error(), "authorization_pending") {
+
+			fmt.Printf("poll %d/60 response: %v\n", i+1, err)
 		}
 		time.Sleep(time.Second * timeout)
 	}
@@ -258,11 +319,14 @@ func fetchWellKnown(url string) (WellKnownConfig, error) {
 	return response.Data, nil
 }
 
-func pollAuthStatus(URL string, clientId string, deviceCode string) error {
+func pollAuthStatus(URL string, clientId string, deviceCode string, codeVerifier string) error {
 	data := url.Values{}
 	data.Set("device_code", deviceCode)
 	data.Set("client_id", clientId)
 	data.Set("grant_type", "urn:ietf:params:oauth:grant-type:device_code")
+	if codeVerifier != "" {
+		data.Set("code_verifier", codeVerifier)
+	}
 
 	request, err := NewApiPost[TokenResponse](&AppContext{}, URL, strings.NewReader(data.Encode()))
 	if err != nil {
