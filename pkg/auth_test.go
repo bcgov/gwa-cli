@@ -178,7 +178,7 @@ func TestDeviceLogin(t *testing.T) {
 			"refresh_token": "y6u7i8o9p0",
 		})
 	})
-	deviceLogin(wellKnownConfig, clientId, 0, PKCEMethodS256)
+	deviceLogin(&AppContext{}, wellKnownConfig, clientId, 0, PKCEMethodS256)
 	assert.Equal(t, "q1w2e3r4t5", viper.GetString("api_key"))
 	assert.Equal(t, "y6u7i8o9p0", viper.GetString("refresh_token"))
 }
@@ -211,7 +211,7 @@ func TestFetchWellKnown(t *testing.T) {
 			"token_endpoint":                fmt.Sprintf("https://authz-%s/auth/realms/app/protocol/openid-connect/token", host),
 		})
 	})
-	result, err := fetchWellKnown(url)
+	result, err := fetchWellKnown(&AppContext{}, url)
 	assert.NoError(t, err)
 	assert.Equal(t, WellKnownConfig{
 		DeviceAuthorizationEndpoint: fmt.Sprintf("https://authz-%s/auth/realms/app/protocol/openid-connect/auth/device", host),
@@ -241,7 +241,7 @@ func TestPollAuthStatus(t *testing.T) {
 		i += 1
 		return httpmock.NewJsonResponse(401, "")
 	})
-	pollAuthStatus(url, "client123", "ABCD-EFGH", "")
+	pollAuthStatus(&AppContext{}, url, "client123", "ABCD-EFGH", "")
 	if i > 2 {
 		assert.Equal(t, "q1w2e3r4t5y6", viper.GetString("api_key"))
 		assert.Equal(t, "r5t6y7u8i9o0", viper.GetString("refresh_token"))
@@ -311,7 +311,7 @@ func TestClientCredentialLogin(t *testing.T) {
 			"refresh_expires_in": 0,
 		})
 	})
-	ClientCredentialLogin(tokenUrl, "client123", "$3cr3t")
+	ClientCredentialLogin(&AppContext{}, tokenUrl, "client123", "$3cr3t")
 
 	assert.Equal(t, viper.GetString("api_key"), apiKey)
 	assert.Equal(t, viper.GetString("refresh_token"), refreshToken)
