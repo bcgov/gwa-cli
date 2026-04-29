@@ -17,7 +17,7 @@ func Indeterminate() string {
 }
 
 func Checkmark() string {
-	return SuccessStyle.Render("✓")
+	return SuccessStyle.Render("√")
 }
 
 func Times() string {

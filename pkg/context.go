@@ -9,17 +9,19 @@ import (
 )
 
 type AppContext struct {
-	ApiHost    string
-	ApiKey     string
-	Auth       AuthDetails
-	ApiVersion string
-	ClientId   string
-	Cwd        string
-	Debug      bool
-	Host       string
-	Gateway    string
-	Scheme     string
-	Version    string
+	ApiHost        string
+	ApiKey         string
+	Auth           AuthDetails
+	ApiVersion     string
+	ClientId       string
+	Cwd            string
+	DefaultOrg     string
+	DefaultOrgUnit string
+	Debug          bool
+	Host           string
+	Gateway        string
+	Scheme         string
+	Version        string
 }
 
 func (a *AppContext) CreateUrl(path string, params interface{}) (string, error) {

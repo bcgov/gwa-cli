@@ -130,7 +130,7 @@ func initialModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	prompts[displayName].TextInput.Focus()
 
 	s := spinner.New()
-	s.Spinner = spinner.Dot
+	s.Spinner = spinner.Line
 
 	m := pkg.GenerateModel{
 		Action: runCreateRequest,

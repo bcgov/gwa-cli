@@ -152,6 +152,8 @@ func TestDeviceLogin(t *testing.T) {
 	deviceCode := "1q2w3e4r"
 	httpmock.RegisterResponder("POST", wellKnownConfig.DeviceAuthorizationEndpoint, func(r *http.Request) (*http.Response, error) {
 		assert.Equal(t, clientId, r.PostFormValue("client_id"))
+		assert.Equal(t, PKCEMethodS256, r.PostFormValue("code_challenge_method"))
+		assert.NotEmpty(t, r.PostFormValue("code_challenge"))
 		return httpmock.NewJsonResponse(200, map[string]interface{}{
 			"device_code":               deviceCode,
 			"user_code":                 "ABCD-EFGH",
@@ -165,6 +167,7 @@ func TestDeviceLogin(t *testing.T) {
 	httpmock.RegisterResponder("POST", wellKnownConfig.TokenEndpoint, func(r *http.Request) (*http.Response, error) {
 		assert.Equal(t, deviceCode, r.FormValue("device_code"))
 		assert.Equal(t, clientId, r.FormValue("client_id"))
+		assert.NotEmpty(t, r.FormValue("code_verifier"))
 		fmt.Println("count", count)
 		if count > 0 {
 			count -= 1
@@ -175,9 +178,26 @@ func TestDeviceLogin(t *testing.T) {
 			"refresh_token": "y6u7i8o9p0",
 		})
 	})
-	deviceLogin(wellKnownConfig, clientId, 0)
+	deviceLogin(wellKnownConfig, clientId, 0, PKCEMethodS256)
 	assert.Equal(t, "q1w2e3r4t5", viper.GetString("api_key"))
 	assert.Equal(t, "y6u7i8o9p0", viper.GetString("refresh_token"))
+}
+
+func TestGeneratePKCECodeChallenge_S256(t *testing.T) {
+	verifier := "test-verifier"
+
+	challenge, err := generatePKCECodeChallenge(verifier, PKCEMethodS256)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, challenge)
+	assert.NotEqual(t, verifier, challenge)
+}
+
+func TestGeneratePKCECodeChallenge_InvalidMethod(t *testing.T) {
+	verifier := "test-verifier"
+
+	_, err := generatePKCECodeChallenge(verifier, "plain")
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "unsupported PKCE method")
 }
 
 func TestFetchWellKnown(t *testing.T) {
@@ -221,11 +241,8 @@ func TestPollAuthStatus(t *testing.T) {
 		i += 1
 		return httpmock.NewJsonResponse(401, "")
 	})
-	pollAuthStatus(url, "client123", "ABCD-EFGH")
+	pollAuthStatus(url, "client123", "ABCD-EFGH", "")
 	if i > 2 {
-		// assert.Error(t, err)
-		// } else {
-		// assert.NoError(t, err)
 		assert.Equal(t, "q1w2e3r4t5y6", viper.GetString("api_key"))
 		assert.Equal(t, "r5t6y7u8i9o0", viper.GetString("refresh_token"))
 	}

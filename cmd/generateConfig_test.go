@@ -137,8 +137,8 @@ func TestClientCredentialsGenerator(t *testing.T) {
 
 func TestValidateService_Available(t *testing.T) {
 	ctx := &pkg.AppContext{
-		Gateway: "test-gateway",
-		ApiHost: "api.gov.ca",
+		Gateway:    "test-gateway",
+		ApiHost:    "api.gov.ca",
 		ApiVersion: "v3",
 	}
 	serviceName := "available-service"
@@ -161,8 +161,8 @@ func TestValidateService_Available(t *testing.T) {
 
 func TestValidateService_NotAvailable(t *testing.T) {
 	ctx := &pkg.AppContext{
-		Gateway: "test-gateway",
-		ApiHost: "api.gov.ca",
+		Gateway:    "test-gateway",
+		ApiHost:    "api.gov.ca",
 		ApiVersion: "v3",
 	}
 	serviceName := "unavailable-service"
@@ -202,8 +202,8 @@ func TestQuickStartGenerator(t *testing.T) {
 			Path:   "/post",
 			Scheme: "https",
 		},
-		Organization:     "ministry-of-citizens-services",
-		OrganizationUnit: "databc",
+		Organization:     "ministry-of-kittens-and-puppies",
+		OrganizationUnit: "puppy-wash",
 		Out:              "gw-config.yaml",
 	}
 	err := GenerateConfig(ctx, opts)
@@ -220,4 +220,53 @@ func TestQuickStartGenerator(t *testing.T) {
 	assert.Contains(t, compare, "url: https://httpbin.org/post")
 	assert.Contains(t, compare, "- my-service.dev.api.gov.bc.ca")
 	assert.Contains(t, compare, "paths: [/post]")
+	assert.Contains(t, compare, "organization: ministry-of-kittens-and-puppies")
+	assert.Contains(t, compare, "organizationUnit: puppy-wash")
+}
+
+func TestInteractiveGenerator(t *testing.T) {
+	dir := t.TempDir()
+	ctx := &pkg.AppContext{
+		Cwd:     dir,
+		Gateway: "test-gateway",
+	}
+	opts := &GenerateConfigOptions{
+		Gateway: "test-gateway",
+	}
+
+	// Initialize model and simulate interactive input
+	model := initGenerateModel(ctx, opts)
+	model.Prompts[service].Value = "my-service"
+	model.Prompts[template].Value = "quick-start"
+	model.Prompts[upstream].Value = "https://httpbin.org/post"
+	model.Prompts[outfile].Value = "gw-config.yaml"
+
+	// Import form values
+	_ = opts.ImportFromForm(model)()
+
+	// Parse the upstream URL
+	err := opts.ParseUpstream()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Generate the config file
+	err = GenerateConfig(ctx, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Read and verify the generated file
+	file, err := os.ReadFile(path.Join(ctx.Cwd, opts.Out))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	compare := string(file)
+	assert.Contains(t, compare, "name: my-service-dev")
+	assert.Contains(t, compare, "tags: [ns.test-gateway]")
+	assert.Contains(t, compare, "url: https://httpbin.org/post")
+	assert.Contains(t, compare, "- my-service.dev.api.gov.bc.ca")
+	assert.Contains(t, compare, "organization: "+ctx.DefaultOrg)
+	assert.Contains(t, compare, "organizationUnit: "+ctx.DefaultOrgUnit)
 }

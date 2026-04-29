@@ -131,11 +131,14 @@ func initialSetModel(ctx *pkg.AppContext) pkg.GenerateModel {
 	prompts[key] = pkg.NewList("Select a config key to set", []string{"host", "gateway", "scheme", "token"})
 	prompts[value] = pkg.NewTextInput("Value", "", true)
 
+	s := spinner.New()
+	s.Spinner = spinner.Line
+
 	m := pkg.GenerateModel{
 		Action:  setConfigValue,
 		Ctx:     ctx,
 		Prompts: prompts,
-		Spinner: spinner.New(),
+		Spinner: s,
 	}
 
 	return m
