@@ -150,7 +150,10 @@ func TestDeviceLogin(t *testing.T) {
 	}
 	verificationUrl := fmt.Sprintf("https://authz-%s/auth/realms/app/device", host)
 	deviceCode := "1q2w3e4r"
+	expectedUA := "gwa-cli/v3.0.0-test"
 	httpmock.RegisterResponder("POST", wellKnownConfig.DeviceAuthorizationEndpoint, func(r *http.Request) (*http.Response, error) {
+		assert.Equal(t, expectedUA, r.Header.Get("User-Agent"))
+		assert.Empty(t, r.Header.Get("Authorization"), "auth device request must not reuse ApiKey from AppContext")
 		assert.Equal(t, clientId, r.PostFormValue("client_id"))
 		assert.Equal(t, PKCEMethodS256, r.PostFormValue("code_challenge_method"))
 		assert.NotEmpty(t, r.PostFormValue("code_challenge"))
@@ -165,6 +168,8 @@ func TestDeviceLogin(t *testing.T) {
 	})
 	count := 2
 	httpmock.RegisterResponder("POST", wellKnownConfig.TokenEndpoint, func(r *http.Request) (*http.Response, error) {
+		assert.Equal(t, expectedUA, r.Header.Get("User-Agent"))
+		assert.Empty(t, r.Header.Get("Authorization"), "auth token poll must not reuse ApiKey from AppContext")
 		assert.Equal(t, deviceCode, r.FormValue("device_code"))
 		assert.Equal(t, clientId, r.FormValue("client_id"))
 		assert.NotEmpty(t, r.FormValue("code_verifier"))
@@ -178,7 +183,10 @@ func TestDeviceLogin(t *testing.T) {
 			"refresh_token": "y6u7i8o9p0",
 		})
 	})
-	deviceLogin(wellKnownConfig, clientId, 0, PKCEMethodS256)
+	deviceLogin(&AppContext{
+		Version: "v3.0.0-test",
+		ApiKey:  "stale-access-token-should-not-be-sent",
+	}, wellKnownConfig, clientId, 0, PKCEMethodS256)
 	assert.Equal(t, "q1w2e3r4t5", viper.GetString("api_key"))
 	assert.Equal(t, "y6u7i8o9p0", viper.GetString("refresh_token"))
 }
@@ -211,12 +219,67 @@ func TestFetchWellKnown(t *testing.T) {
 			"token_endpoint":                fmt.Sprintf("https://authz-%s/auth/realms/app/protocol/openid-connect/token", host),
 		})
 	})
-	result, err := fetchWellKnown(url)
+	result, err := fetchWellKnown(&AppContext{}, url)
 	assert.NoError(t, err)
 	assert.Equal(t, WellKnownConfig{
 		DeviceAuthorizationEndpoint: fmt.Sprintf("https://authz-%s/auth/realms/app/protocol/openid-connect/auth/device", host),
 		TokenEndpoint:               fmt.Sprintf("https://authz-%s/auth/realms/app/protocol/openid-connect/token", host),
 	}, result)
+}
+
+// TestFetchWellKnown_NewAuthRequestContextHeaders ensures auth HTTP uses Version for User-Agent
+// and does not forward ApiKey as Authorization (newAuthRequestContext).
+func TestFetchWellKnown_NewAuthRequestContextHeaders(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	url := "https://auth.example/.well-known/openid-configuration"
+	expectedUA := "gwa-cli/v9.9.9"
+
+	httpmock.RegisterResponder("GET", url, func(r *http.Request) (*http.Response, error) {
+		assert.Equal(t, expectedUA, r.Header.Get("User-Agent"))
+		assert.Empty(t, r.Header.Get("Authorization"), "well-known fetch must not reuse ApiKey from AppContext")
+		return httpmock.NewJsonResponse(200, map[string]interface{}{
+			"device_authorization_endpoint": "https://auth.example/device",
+			"token_endpoint":                "https://auth.example/token",
+		})
+	})
+
+	ctx := &AppContext{
+		Version: "v9.9.9",
+		ApiKey:  "stale-access-token-should-not-be-sent",
+	}
+	_, err := fetchWellKnown(ctx, url)
+	assert.NoError(t, err)
+}
+
+// TestPollAuthStatus_NewAuthRequestContextHeaders ensures auth HTTP uses Version for User-Agent
+// and does not forward ApiKey as Authorization (newAuthRequestContext).
+func TestPollAuthStatus_NewAuthRequestContextHeaders(t *testing.T) {
+	dir := t.TempDir()
+	SetupAuthConfig(dir)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	tokenURL := "https://auth.example/token"
+	expectedUA := "gwa-cli/v1.2.3"
+
+	httpmock.RegisterResponder("POST", tokenURL, func(r *http.Request) (*http.Response, error) {
+		assert.Equal(t, expectedUA, r.Header.Get("User-Agent"))
+		assert.Empty(t, r.Header.Get("Authorization"), "token poll must not reuse ApiKey from AppContext")
+		return httpmock.NewJsonResponse(200, map[string]interface{}{
+			"access_token":       "abc",
+			"refresh_token":      "def",
+			"refresh_expires_in": 3600,
+		})
+	})
+
+	ctx := &AppContext{
+		Version: "v1.2.3",
+		ApiKey:  "stale-access-token-should-not-be-sent",
+	}
+	err := pollAuthStatus(ctx, tokenURL, "gwa-cli", "device-code", "verifier")
+	assert.NoError(t, err)
 }
 
 func TestPollAuthStatus(t *testing.T) {
@@ -241,7 +304,7 @@ func TestPollAuthStatus(t *testing.T) {
 		i += 1
 		return httpmock.NewJsonResponse(401, "")
 	})
-	pollAuthStatus(url, "client123", "ABCD-EFGH", "")
+	pollAuthStatus(&AppContext{}, url, "client123", "ABCD-EFGH", "")
 	if i > 2 {
 		assert.Equal(t, "q1w2e3r4t5y6", viper.GetString("api_key"))
 		assert.Equal(t, "r5t6y7u8i9o0", viper.GetString("refresh_token"))
@@ -300,7 +363,10 @@ func TestClientCredentialLogin(t *testing.T) {
 
 	apiKey := "12ad54kl"
 	refreshToken := "34fg78hj"
+	expectedUA := "gwa-cli/v2.0.0-cc"
 	httpmock.RegisterResponder("POST", tokenUrl, func(r *http.Request) (*http.Response, error) {
+		assert.Equal(t, expectedUA, r.Header.Get("User-Agent"))
+		assert.Empty(t, r.Header.Get("Authorization"), "client-credentials token request must not reuse ApiKey from AppContext")
 		assert.Equal(t, "client123", r.FormValue("client_id"))
 		assert.Equal(t, "$3cr3t", r.FormValue("client_secret"))
 		assert.Equal(t, "client_credentials", r.FormValue("grant_type"))
@@ -311,7 +377,10 @@ func TestClientCredentialLogin(t *testing.T) {
 			"refresh_expires_in": 0,
 		})
 	})
-	ClientCredentialLogin(tokenUrl, "client123", "$3cr3t")
+	ClientCredentialLogin(&AppContext{
+		Version: "v2.0.0-cc",
+		ApiKey:  "stale-access-token-should-not-be-sent",
+	}, tokenUrl, "client123", "$3cr3t")
 
 	assert.Equal(t, viper.GetString("api_key"), apiKey)
 	assert.Equal(t, viper.GetString("refresh_token"), refreshToken)

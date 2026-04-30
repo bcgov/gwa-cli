@@ -31,6 +31,7 @@ func (m *NewApi[T]) New() (*NewApi[T], error) {
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accepts", "application/json")
+	request.Header.Set("User-Agent", fmt.Sprintf("gwa-cli/%s", m.ctx.Version))
 
 	m.Request = request
 
