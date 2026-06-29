@@ -22,6 +22,14 @@ const PKCEMethodS256 = "S256"
 
 var boldText = lipgloss.NewStyle().Bold(true)
 
+// newAuthRequestContext returns a minimal AppContext for auth-flow HTTP requests.
+// It intentionally omits ApiKey (to avoid sending a stale Bearer token to auth
+// endpoints) and other stateful fields, while preserving Version so the
+// User-Agent header is still set correctly.
+func newAuthRequestContext(ctx *AppContext) *AppContext {
+	return &AppContext{Version: ctx.Version}
+}
+
 func DeviceLogin(ctx *AppContext) error {
 	Info("Auth: Device login selected")
 	openApiPathname, err := fetchConfigUrl(ctx)
@@ -36,7 +44,7 @@ func DeviceLogin(ctx *AppContext) error {
 	}
 	Info("Auth token recieved")
 
-	wellKnownConfig, err := fetchWellKnown(authTokenUrl)
+	wellKnownConfig, err := fetchWellKnown(ctx, authTokenUrl)
 	if err != nil {
 		return err
 	}
@@ -57,7 +65,7 @@ func DeviceLogin(ctx *AppContext) error {
 		pkceMethod = ""
 	}
 
-	err = deviceLogin(wellKnownConfig, ctx.ClientId, 8, pkceMethod)
+	err = deviceLogin(ctx, wellKnownConfig, ctx.ClientId, 8, pkceMethod)
 	if err != nil {
 		return err
 	}
@@ -80,7 +88,7 @@ func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret strin
 	}
 	Info("Auth token recieved")
 
-	wellKnownConfig, err := fetchWellKnown(authTokenUrl)
+	wellKnownConfig, err := fetchWellKnown(ctx, authTokenUrl)
 	if err != nil {
 		return err
 	}
@@ -92,7 +100,7 @@ func ClientCredentialsLogin(ctx *AppContext, clientId string, clientSecret strin
 	}
 	Info("Config updated")
 
-	err = ClientCredentialLogin(wellKnownConfig.TokenEndpoint, clientId, clientSecret)
+	err = ClientCredentialLogin(ctx, wellKnownConfig.TokenEndpoint, clientId, clientSecret)
 	if err != nil {
 		return err
 	}
@@ -240,7 +248,7 @@ func generatePKCECodeChallenge(codeVerifier string, pkceMethod string) (string, 
 	}
 }
 
-func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.Duration, pkceMethod string) error {
+func deviceLogin(ctx *AppContext, wellKnownConfig WellKnownConfig, clientId string, timeout time.Duration, pkceMethod string) error {
 
 	var err error
 
@@ -268,7 +276,7 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.
 	}
 
 	URL := wellKnownConfig.DeviceAuthorizationEndpoint
-	request, err := NewApiPost[DeviceData](&AppContext{}, URL, strings.NewReader(data.Encode()))
+	request, err := NewApiPost[DeviceData](newAuthRequestContext(ctx), URL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
 	}
@@ -287,7 +295,7 @@ func deviceLogin(wellKnownConfig WellKnownConfig, clientId string, timeout time.
 	fmt.Println("\nWaiting for you to complete the login process...")
 
 	for i := 0; i < 60; i++ {
-		err := pollAuthStatus(wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode, codeVerifier)
+		err := pollAuthStatus(ctx, wellKnownConfig.TokenEndpoint, clientId, response.Data.DeviceCode, codeVerifier)
 		if err == nil {
 			return nil
 		} else if !strings.Contains(err.Error(), "authorization_pending") {
@@ -306,8 +314,8 @@ type WellKnownConfig struct {
 	DeviceAuthorizationEndpoint string `json:"device_authorization_endpoint"`
 }
 
-func fetchWellKnown(url string) (WellKnownConfig, error) {
-	request, err := NewApiGet[WellKnownConfig](&AppContext{}, url)
+func fetchWellKnown(ctx *AppContext, url string) (WellKnownConfig, error) {
+	request, err := NewApiGet[WellKnownConfig](newAuthRequestContext(ctx), url)
 	if err != nil {
 		return WellKnownConfig{}, err
 	}
@@ -319,7 +327,7 @@ func fetchWellKnown(url string) (WellKnownConfig, error) {
 	return response.Data, nil
 }
 
-func pollAuthStatus(URL string, clientId string, deviceCode string, codeVerifier string) error {
+func pollAuthStatus(ctx *AppContext, URL string, clientId string, deviceCode string, codeVerifier string) error {
 	data := url.Values{}
 	data.Set("device_code", deviceCode)
 	data.Set("client_id", clientId)
@@ -328,7 +336,7 @@ func pollAuthStatus(URL string, clientId string, deviceCode string, codeVerifier
 		data.Set("code_verifier", codeVerifier)
 	}
 
-	request, err := NewApiPost[TokenResponse](&AppContext{}, URL, strings.NewReader(data.Encode()))
+	request, err := NewApiPost[TokenResponse](newAuthRequestContext(ctx), URL, strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
 	}
@@ -399,13 +407,12 @@ func RefreshToken(ctx *AppContext) error {
 	return errorResponse.GetError()
 }
 
-func ClientCredentialLogin(tokenEndpoint string, clientId string, clientSecret string) error {
+func ClientCredentialLogin(ctx *AppContext, tokenEndpoint string, clientId string, clientSecret string) error {
 	data := make(url.Values)
 	data.Set("client_id", clientId)
 	data.Set("client_secret", clientSecret)
 	data.Set("grant_type", "client_credentials")
-	ctx := &AppContext{}
-	r, err := NewApiPost[TokenResponse](ctx, tokenEndpoint, strings.NewReader(data.Encode()))
+	r, err := NewApiPost[TokenResponse](newAuthRequestContext(ctx), tokenEndpoint, strings.NewReader(data.Encode()))
 	if err != nil {
 		return err
 	}
