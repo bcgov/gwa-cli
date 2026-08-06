@@ -1,6 +1,6 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: GWA CLI Feature Request Issue Template
+about: Generic template for feature request GitHub issues
 title: ''
 labels: enhancement, jira
 assignees: ''
