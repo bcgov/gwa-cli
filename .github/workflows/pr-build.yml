@@ -2,6 +2,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 name: PR Unit Tests
+permissions:
+  contents: read
 jobs:
   tests:
     runs-on: ubuntu-latest

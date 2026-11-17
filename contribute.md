@@ -44,6 +44,7 @@ To generate a Markdown-formatted string of every command's documentation to `std
    ```sh
    $ go version
    ```
+   
    If you don't have `go` installed on your machine, follow instructions on [the Go website](https://golang.org/doc/install).
 
 2. Clone this repository
