@@ -465,6 +465,11 @@ func TestGetWithoutGateway(t *testing.T) {
 			expectOut: "planning-and-innovation-division",
 		},
 		{
+			name:        "org-units needs --org",
+			args:        []string{"org-units"},
+			expectError: "the --org flag is required for org-units",
+		},
+		{
 			name:        "datasets needs a gateway",
 			args:        []string{"datasets"},
 			expectError: "no gateway has been set",

@@ -42,6 +42,13 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				return fmt.Errorf("Must provide an argument of %s to get command", pkg.ArgumentsSliceToString(validArgs, "or"))
 			}
 
+			if args[0] == "org-units" && filters.Org == "" {
+				return fmt.Errorf(`the --org flag is required for org-units
+
+Run 'gwa get organizations' to see organization names, then:
+    $ gwa get org-units --org ORGANIZATION_NAME`)
+			}
+
 			// organizations and org-units aren't scoped to a gateway
 			needsGateway := args[0] != "organizations" && args[0] != "org-units"
 			if needsGateway && ctx.Gateway == "" {
