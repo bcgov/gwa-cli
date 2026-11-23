@@ -336,3 +336,33 @@ func TestApplyStdout(t *testing.T) {
 		}
 	}
 }
+
+func TestApplyNoGateway(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	cwd := t.TempDir()
+	ctx := &pkg.AppContext{
+		Cwd:        cwd,
+		ApiHost:    "api.gov.bc.ca",
+		ApiVersion: "v2",
+	}
+	filename := "gw-config.yaml"
+	os.WriteFile(filepath.Join(cwd, filename), []byte(input), 0644)
+
+	mainCmd := &cobra.Command{
+		Use: "gwa",
+	}
+	mainCmd.AddCommand(NewApplyCmd(ctx))
+	mainCmd.SetArgs([]string{"apply", "--input", filename})
+
+	var err error
+	out := capturer.CaptureOutput(func() {
+		err = mainCmd.Execute()
+	})
+
+	assert.EqualError(t, err, "no gateway has been set")
+	assert.Contains(t, out, "gwa config set gateway YOUR_GATEWAY_ID")
+	assert.Contains(t, out, "--gateway YOUR_GATEWAY_ID")
+	assert.Equal(t, 0, httpmock.GetTotalCallCount(), "makes no API calls without a gateway")
+}
