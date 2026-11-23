@@ -25,6 +25,13 @@ func writeDocument(rootCmd *cobra.Command) string {
 	output.WriteString("<!-- NOTE: This file is generated from gwa-cli, do not edit directly -->\n\n")
 	output.WriteString(fmt.Sprintf("%s\n", rootCmd.Long))
 
+	globalFlags := rootCmd.PersistentFlags().FlagUsages()
+	if globalFlags != "" {
+		output.WriteString("\n## Global flags\n\n")
+		output.WriteString("These flags work with every command.\n\n")
+		writeFlagTable(globalFlags, &output)
+	}
+
 	for _, cmd := range rootCmd.Commands() {
 		renderCommand(cmd, &output)
 		if cmd.HasSubCommands() {
@@ -69,23 +76,26 @@ func renderCommand(cmd *cobra.Command, output *strings.Builder) {
 	flagUsages := cmd.Flags().FlagUsages()
 	if flagUsages != "" {
 		output.WriteString("**Flags**\n\n")
-		output.WriteString("| Flag | Description |\n")
-		output.WriteString("| ----- | ------ |\n")
-
-		flags := strings.Split(flagUsages, "\n")
-		for _, f := range flags {
-			trimmedString := strings.TrimSpace(f)
-			r := regexp.MustCompile(`\s{2,}`)
-			result := r.Split(trimmedString, -1)
-			if len(result) == 2 {
-				output.WriteString(fmt.Sprintf("| `%s` | %s |\n", result[0], result[1]))
-			}
-		}
-		output.WriteString("\n\n")
+		writeFlagTable(flagUsages, output)
 	}
 
 	if cmd.Example != "" {
 		output.WriteString("**Examples**\n\n")
 		output.WriteString(fmt.Sprintf("```shell\n%s\n```\n\n", strings.TrimRight(cmd.Example, "\n ")))
 	}
+}
+
+// writeFlagTable renders pflag's FlagUsages() text as a Markdown table.
+func writeFlagTable(flagUsages string, output *strings.Builder) {
+	output.WriteString("| Flag | Description |\n")
+	output.WriteString("| ----- | ------ |\n")
+
+	r := regexp.MustCompile(`\s{2,}`)
+	for _, f := range strings.Split(flagUsages, "\n") {
+		result := r.Split(strings.TrimSpace(f), -1)
+		if len(result) == 2 {
+			output.WriteString(fmt.Sprintf("| `%s` | %s |\n", result[0], result[1]))
+		}
+	}
+	output.WriteString("\n\n")
 }
