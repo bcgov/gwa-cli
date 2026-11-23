@@ -1,5 +1,11 @@
 name: Sync GitHub issues to Jira
-on: [issues, issue_comment]
+on:
+  issues:
+    # Only the event types the sync action handles. Others (e.g. status_changed)
+    # fall through to an "Update" webhook call, which races the "Create" from the
+    # labeled event and produces duplicate Jira issues.
+    types: [opened, edited, labeled, unlabeled, assigned, unassigned, closed, reopened, deleted]
+  issue_comment:
 
 permissions:
   contents: read
