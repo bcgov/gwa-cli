@@ -42,7 +42,9 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 				return fmt.Errorf("Must provide an argument of %s to get command", pkg.ArgumentsSliceToString(validArgs, "or"))
 			}
 
-			if ctx.Gateway == "" {
+			// organizations and org-units aren't scoped to a gateway
+			needsGateway := args[0] != "organizations" && args[0] != "org-units"
+			if needsGateway && ctx.Gateway == "" {
 				return errNoGateway(fmt.Sprintf("gwa get %s", args[0]))
 			}
 

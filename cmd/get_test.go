@@ -446,3 +446,62 @@ func TestGetter(t *testing.T) {
 		})
 	}
 }
+
+func TestGetWithoutGateway(t *testing.T) {
+	setupConfig(t.TempDir())
+	tests := []struct {
+		name        string
+		args        []string
+		url         string
+		response    httpmock.Responder
+		expectError string
+		expectOut   string
+	}{
+		{
+			name:      "org-units doesn't need a gateway",
+			args:      []string{"org-units", "--org", "ministry-of-citizens-services"},
+			url:       "/ds/api/v2/organizations/ministry-of-citizens-services",
+			response:  orgResponse,
+			expectOut: "planning-and-innovation-division",
+		},
+		{
+			name:        "datasets needs a gateway",
+			args:        []string{"datasets"},
+			expectError: "no gateway has been set",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+			if tt.url != "" {
+				httpmock.RegisterResponder("GET", fmt.Sprintf("https://%s%s", apiHost, tt.url), tt.response)
+			}
+
+			ctx := &pkg.AppContext{
+				ApiHost:    apiHost,
+				ApiVersion: "v2",
+			}
+			buf := &bytes.Buffer{}
+			mainCmd := &cobra.Command{
+				Use: "gwa",
+			}
+			mainCmd.AddCommand(NewGetCmd(ctx, buf))
+			mainCmd.SetArgs(append([]string{"get"}, tt.args...))
+
+			var err error
+			capturer.CaptureOutput(func() {
+				err = mainCmd.Execute()
+			})
+
+			if tt.expectError != "" {
+				assert.ErrorContains(t, err, tt.expectError)
+				assert.Equal(t, 0, httpmock.GetTotalCallCount())
+				return
+			}
+			assert.NoError(t, err)
+			assert.Contains(t, buf.String(), tt.expectOut)
+		})
+	}
+}
