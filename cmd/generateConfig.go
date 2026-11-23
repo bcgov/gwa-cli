@@ -148,14 +148,7 @@ $ gwa generate-config --template client-credentials-shared-idp \
 		},
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if ctx.Gateway == "" {
-				fmt.Println(heredoc.Doc(`
-          A gateway must be set via the config command
-
-          Example:
-              $ gwa config set gateway YOUR_GATEWAY_NAME
-          `),
-				)
-				return fmt.Errorf("No gateway has been set")
+				return errNoGateway("gwa generate-config --template quick-start --service my-service --upstream https://httpbin.org")
 			}
 
 			opts.Gateway = ctx.Gateway

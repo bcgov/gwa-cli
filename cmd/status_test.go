@@ -30,7 +30,7 @@ func TestStatusCmds(t *testing.T) {
 		},
 		{
 			name:      "no gateway",
-			expect:    "no gateway has been defined",
+			expect:    "Error: no gateway has been set",
 			noGateway: true,
 		},
 		{

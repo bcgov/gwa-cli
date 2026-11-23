@@ -43,7 +43,7 @@ func NewGetCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 			}
 
 			if ctx.Gateway == "" {
-				return fmt.Errorf("no gateway selected")
+				return errNoGateway(fmt.Sprintf("gwa get %s", args[0]))
 			}
 
 			req := NewRequest(ctx, args[0], filters)

@@ -238,7 +238,7 @@ func GatewayCurrentCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
 		Short: "Display the current gateway",
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Gateway == "" {
-				return fmt.Errorf("no gateway has been defined")
+				return errNoGateway("gwa gateway current")
 			}
 
 			path := fmt.Sprintf("/ds/api/%s/gateways/%s", ctx.ApiVersion, ctx.Gateway)
@@ -297,14 +297,7 @@ func GatewayDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 		Short: "Destroy the current gateway",
 		RunE: pkg.WrapError(ctx, func(_ *cobra.Command, _ []string) error {
 			if ctx.Gateway == "" {
-				fmt.Println(heredoc.Doc(`
-          A gateway must be set via the config command
-
-          Example:
-              $ gwa config set gateway YOUR_GATEWAY_NAME
-          `),
-				)
-				return fmt.Errorf("No gateway has been set")
+				return errNoGateway("gwa gateway destroy")
 			}
 
 			loader := pkg.NewSpinner()
@@ -359,4 +352,19 @@ func validateGateway(input string) error {
 	}
 
 	return nil
+}
+
+// errNoGateway is returned by commands that need a gateway when none is set.
+// The guidance is part of the error so it prints right after "Error: ..." on
+// stderr. example is the command line to show with --gateway added.
+func errNoGateway(example string) error {
+	return fmt.Errorf(`no gateway has been set
+
+Either save it to your config:
+    $ gwa config set gateway YOUR_GATEWAY_ID
+
+or pass it with this command:
+    $ %s --gateway YOUR_GATEWAY_ID
+
+Run 'gwa gateway list' to see your gateways, or 'gwa gateway create' to create one.`, example)
 }

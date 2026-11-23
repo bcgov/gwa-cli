@@ -157,17 +157,7 @@ $ gwa apply --input gw-config.yaml
     `),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Gateway == "" {
-				fmt.Println(heredoc.Doc(`
-          A gateway must be set before applying resources. Either save it to your config:
-              $ gwa config set gateway YOUR_GATEWAY_ID
-
-          or pass it with this command:
-              $ gwa apply --input gw-config.yaml --gateway YOUR_GATEWAY_ID
-
-          Run 'gwa gateway list' to see your gateways.
-          `),
-				)
-				return fmt.Errorf("no gateway has been set")
+				return errNoGateway("gwa apply --input gw-config.yaml")
 			}
 
 			err := opts.Parse()

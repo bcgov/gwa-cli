@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/bcgov/gwa-cli/pkg"
@@ -361,8 +362,14 @@ func TestApplyNoGateway(t *testing.T) {
 		err = mainCmd.Execute()
 	})
 
-	assert.EqualError(t, err, "no gateway has been set")
-	assert.Contains(t, out, "gwa config set gateway YOUR_GATEWAY_ID")
-	assert.Contains(t, out, "--gateway YOUR_GATEWAY_ID")
+	assert.ErrorContains(t, err, "no gateway has been set")
+	assert.Contains(t, err.Error(), "$ gwa config set gateway YOUR_GATEWAY_ID")
+	assert.Contains(t, err.Error(), "$ gwa apply --input gw-config.yaml --gateway YOUR_GATEWAY_ID")
+
+	// The error comes first, then the guidance
+	errAt := strings.Index(out, "Error: no gateway has been set")
+	hintAt := strings.Index(out, "gwa config set gateway")
+	assert.GreaterOrEqual(t, errAt, 0)
+	assert.Greater(t, hintAt, errAt)
 	assert.Equal(t, 0, httpmock.GetTotalCallCount(), "makes no API calls without a gateway")
 }
