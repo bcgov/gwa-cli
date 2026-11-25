@@ -9,6 +9,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// fakeConfigValue stands in for a config file value for the rest of the test.
+// "" means not set. It overrides any config another test loaded.
+func fakeConfigValue(t *testing.T, key string, value string) {
+	t.Helper()
+	viper.Set(key, value)
+	// A nil override is skipped by viper, which clears it
+	t.Cleanup(func() { viper.Set(key, nil) })
+}
+
+// runWithGlobalFlags parses args with a stand-in subcommand, the way cobra
+// parses them for real commands, then applies the config. No network calls.
+func runWithGlobalFlags(t *testing.T, ctx *pkg.AppContext, args []string) {
+	t.Helper()
+	rootCmd := NewRootCommand(ctx)
+	probe := &cobra.Command{
+		Use:                "probe",
+		PersistentPostRunE: func(_ *cobra.Command, _ []string) error { return nil },
+		RunE: func(_ *cobra.Command, _ []string) error {
+			applyConfigToContext(ctx, rootCmd)
+			return nil
+		},
+	}
+	rootCmd.AddCommand(probe)
+	rootCmd.SetArgs(append([]string{"probe"}, args...))
+	assert.NoError(t, rootCmd.Execute())
+}
+
 func TestGlobalFlagsOverrideConfig(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -49,30 +76,11 @@ func TestGlobalFlagsOverrideConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			for _, key := range []string{"gateway", "scheme"} {
-				k := key
-				// Override any config another test loaded; "" means not set
-				viper.Set(k, tt.config[k])
-				// A nil override is skipped by viper, which clears it
-				t.Cleanup(func() { viper.Set(k, nil) })
-			}
+			fakeConfigValue(t, "gateway", tt.config["gateway"])
+			fakeConfigValue(t, "scheme", tt.config["scheme"])
 
 			ctx := &pkg.AppContext{}
-			rootCmd := NewRootCommand(ctx)
-			// Stand-in subcommand so the global flags are parsed the way
-			// cobra parses them for real commands, without network calls.
-			probe := &cobra.Command{
-				Use:                "probe",
-				PersistentPostRunE: func(_ *cobra.Command, _ []string) error { return nil },
-				RunE: func(_ *cobra.Command, _ []string) error {
-					applyConfigToContext(ctx, rootCmd)
-					return nil
-				},
-			}
-			rootCmd.AddCommand(probe)
-			rootCmd.SetArgs(append([]string{"probe"}, tt.args...))
-
-			assert.NoError(t, rootCmd.Execute())
+			runWithGlobalFlags(t, ctx, tt.args)
 			assert.Equal(t, tt.expectGateway, ctx.Gateway)
 			assert.Equal(t, tt.expectScheme, ctx.Scheme)
 		})
@@ -116,23 +124,10 @@ func TestHostFlagOverridesConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			viper.Set("host", tt.configHost)
-			t.Cleanup(func() { viper.Set("host", nil) })
+			fakeConfigValue(t, "host", tt.configHost)
 
 			ctx := &pkg.AppContext{ApiHost: compiledHost}
-			rootCmd := NewRootCommand(ctx)
-			probe := &cobra.Command{
-				Use:                "probe",
-				PersistentPostRunE: func(_ *cobra.Command, _ []string) error { return nil },
-				RunE: func(_ *cobra.Command, _ []string) error {
-					applyConfigToContext(ctx, rootCmd)
-					return nil
-				},
-			}
-			rootCmd.AddCommand(probe)
-			rootCmd.SetArgs(append([]string{"probe"}, tt.args...))
-
-			assert.NoError(t, rootCmd.Execute())
+			runWithGlobalFlags(t, ctx, tt.args)
 			assert.Equal(t, tt.expectHost, ctx.ApiHost)
 		})
 	}
