@@ -69,7 +69,7 @@ func Execute(ctx *pkg.AppContext) *cobra.Command {
 
 // applyConfigToContext fills ctx from the config file. Cobra has already
 // parsed the flags into ctx by the time this runs, so a global flag the user
-// passed (--gateway, --scheme) wins over the config file value.
+// passed (--gateway, --scheme, --host) wins over the config file value.
 func applyConfigToContext(ctx *pkg.AppContext, rootCmd *cobra.Command) {
 	flags := rootCmd.PersistentFlags()
 
@@ -81,10 +81,9 @@ func applyConfigToContext(ctx *pkg.AppContext, rootCmd *cobra.Command) {
 		ctx.Scheme = viper.GetString("scheme")
 	}
 
-	f := flags.Lookup("host")
-	hostValue, _ := flags.GetString("host")
-
-	if viper.GetString("host") != "" && f.DefValue == hostValue {
+	// --host defaults to the compiled-in host, so a config host only
+	// replaces that default, not a host the user passed
+	if !flags.Changed("host") && viper.GetString("host") != "" {
 		ctx.ApiHost = viper.GetString("host")
 	}
 }

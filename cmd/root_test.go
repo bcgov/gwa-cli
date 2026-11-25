@@ -78,3 +78,62 @@ func TestGlobalFlagsOverrideConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestHostFlagOverridesConfig(t *testing.T) {
+	// Release builds compile in api.gov.bc.ca as the --host default
+	compiledHost := "api.gov.bc.ca"
+	tests := []struct {
+		name       string
+		configHost string
+		args       []string
+		expectHost string
+	}{
+		{
+			name:       "config host replaces the compiled default",
+			configHost: "dev.example.com",
+			args:       []string{},
+			expectHost: "dev.example.com",
+		},
+		{
+			name:       "--host set to the compiled default still wins",
+			configHost: "dev.example.com",
+			args:       []string{"--host", compiledHost},
+			expectHost: compiledHost,
+		},
+		{
+			name:       "--host set to another host wins",
+			configHost: "dev.example.com",
+			args:       []string{"--host", "other.example.com"},
+			expectHost: "other.example.com",
+		},
+		{
+			name:       "compiled default with no config or flag",
+			configHost: "",
+			args:       []string{},
+			expectHost: compiledHost,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			viper.Set("host", tt.configHost)
+			t.Cleanup(func() { viper.Set("host", nil) })
+
+			ctx := &pkg.AppContext{ApiHost: compiledHost}
+			rootCmd := NewRootCommand(ctx)
+			probe := &cobra.Command{
+				Use:                "probe",
+				PersistentPostRunE: func(_ *cobra.Command, _ []string) error { return nil },
+				RunE: func(_ *cobra.Command, _ []string) error {
+					applyConfigToContext(ctx, rootCmd)
+					return nil
+				},
+			}
+			rootCmd.AddCommand(probe)
+			rootCmd.SetArgs(append([]string{"probe"}, tt.args...))
+
+			assert.NoError(t, rootCmd.Execute())
+			assert.Equal(t, tt.expectHost, ctx.ApiHost)
+		})
+	}
+}
