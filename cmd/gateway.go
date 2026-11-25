@@ -308,9 +308,12 @@ func GatewayDestroyCmd(ctx *pkg.AppContext) *cobra.Command {
 				return err
 			}
 
-			err = setCurrentGateway("")
-			if err != nil {
-				return err
+			// ctx.Gateway may come from --gateway, so only clear the saved
+			// gateway if it's the one that was just destroyed
+			if viper.GetString("gateway") == ctx.Gateway {
+				if err := setCurrentGateway(""); err != nil {
+					return err
+				}
 			}
 
 			fmt.Println("Gateway destroyed:", ctx.Gateway)

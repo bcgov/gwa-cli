@@ -51,9 +51,8 @@ func TestGlobalFlagsOverrideConfig(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			for _, key := range []string{"gateway", "scheme"} {
 				k := key
-				if v, ok := tt.config[k]; ok {
-					viper.Set(k, v)
-				}
+				// Override any config another test loaded; "" means not set
+				viper.Set(k, tt.config[k])
 				// A nil override is skipped by viper, which clears it
 				t.Cleanup(func() { viper.Set(k, nil) })
 			}
