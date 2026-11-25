@@ -196,3 +196,75 @@ janis's Gateway  ns-sampler
 		})
 	}
 }
+
+func TestGatewayDestroySavedGateway(t *testing.T) {
+	tests := []struct {
+		name        string
+		destroy     string
+		expectSaved string
+	}{
+		{
+			name:        "destroying another gateway keeps the saved one",
+			destroy:     "other-gw",
+			expectSaved: "saved-gw",
+		},
+		{
+			name:        "destroying the saved gateway clears it",
+			destroy:     "saved-gw",
+			expectSaved: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			configPath := path.Join(t.TempDir(), ".gwa-config.yaml")
+			os.WriteFile(configPath, []byte("gateway: saved-gw\n"), 0644)
+			// Drop any override left by other tests so the file value is read
+			viper.Set("gateway", nil)
+			viper.SetConfigFile(configPath)
+			assert.NoError(t, viper.ReadInConfig())
+			t.Cleanup(func() {
+				// Unload this config so later tests don't see saved-gw
+				viper.Set("gateway", nil)
+				os.WriteFile(configPath, []byte{}, 0644)
+				viper.ReadInConfig()
+			})
+
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+			URL := "https://api.gov.ca/ds/api/v3/gateways/" + tt.destroy
+			httpmock.RegisterResponder("DELETE", URL, httpmock.NewStringResponder(200, `{}`))
+
+			// Same as passing --gateway, which sets ctx.Gateway
+			ctx := &pkg.AppContext{
+				ApiHost:    "api.gov.ca",
+				ApiVersion: "v3",
+				Gateway:    tt.destroy,
+			}
+			mainCmd := &cobra.Command{
+				Use:          "gwa",
+				SilenceUsage: true,
+			}
+			mainCmd.AddCommand(NewGatewayCmd(ctx, &bytes.Buffer{}))
+			mainCmd.SetArgs([]string{"gateway", "destroy"})
+
+			var err error
+			out := capturer.CaptureOutput(func() {
+				err = mainCmd.Execute()
+			})
+
+			assert.NoError(t, err)
+			assert.Contains(t, out, "Gateway destroyed: "+tt.destroy)
+			assert.Equal(t, 1, httpmock.GetCallCountInfo()["DELETE "+URL])
+
+			saved, _ := os.ReadFile(configPath)
+			if tt.expectSaved == "" {
+				assert.Equal(t, "", viper.GetString("gateway"))
+				assert.NotContains(t, string(saved), "saved-gw")
+			} else {
+				assert.Equal(t, tt.expectSaved, viper.GetString("gateway"))
+				assert.Contains(t, string(saved), "gateway: "+tt.expectSaved)
+			}
+		})
+	}
+}

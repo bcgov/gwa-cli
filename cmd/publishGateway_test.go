@@ -57,7 +57,7 @@ func TestPublishCommands(t *testing.T) {
 			setup:      nil,
 			configFile: "config.yaml",
 			response:   httpmock.NewStringResponder(500, `{"error": "something went wrong"}`),
-			expect:     "No gateway has been set",
+			expect:     "Error: no gateway has been set",
 			args:       []string{"config.yaml"},
 			gateway:    "",
 		},

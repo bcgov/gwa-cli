@@ -156,6 +156,10 @@ func NewApplyCmd(ctx *pkg.AppContext) *cobra.Command {
 $ gwa apply --input gw-config.yaml
     `),
 		RunE: func(_ *cobra.Command, _ []string) error {
+			if ctx.Gateway == "" {
+				return errNoGateway("gwa apply --input gw-config.yaml")
+			}
+
 			err := opts.Parse()
 			if err != nil {
 				return err

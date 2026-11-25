@@ -118,3 +118,37 @@ This command pings a server
 		assert.Equal(t, tt.expect, output.String())
 	}
 }
+
+func TestWriteDocumentGlobalFlags(t *testing.T) {
+	rootCmd := &cobra.Command{
+		Use:  "gwa",
+		Long: "This is a long title",
+	}
+	rootCmd.PersistentFlags().String("gateway", "", "Assign the Gateway (ID) you would like to use")
+	rootCmd.PersistentFlags().BoolP("debug", "D", false, "Print debug information")
+	rootCmd.Flags().Bool("local-only", false, "not a global flag")
+	pingCmd := &cobra.Command{
+		Use: "ping",
+	}
+	rootCmd.AddCommand(pingCmd)
+
+	output := writeDocument(rootCmd)
+	expect := heredoc.Doc(`
+		This is a long title
+
+		## Global flags
+
+		These flags work with every command.
+
+		| Flag | Description |
+		| ----- | ------ |
+		| ` + "`-D, --debug`" + ` | Print debug information |
+		| ` + "`--gateway string`" + ` | Assign the Gateway (ID) you would like to use |
+
+
+
+		## ping
+	`)
+	assert.Contains(t, output, expect)
+	assert.NotContains(t, output, "local-only")
+}

@@ -22,12 +22,7 @@ func NewStatusCmd(ctx *pkg.AppContext, buf *bytes.Buffer) *cobra.Command {
   $ gwa status --json`),
 		RunE: func(_ *cobra.Command, _ []string) error {
 			if ctx.Gateway == "" {
-				fmt.Println(heredoc.Doc(`
-          You can create a gateway by running:
-              $ gwa gateway create
-          `),
-				)
-				return fmt.Errorf("no gateway has been defined")
+				return errNoGateway("gwa status")
 			}
 			data, err := FetchStatus(ctx)
 			if err != nil {
